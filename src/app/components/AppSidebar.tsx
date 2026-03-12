@@ -141,22 +141,154 @@ export function AppSidebar({
 
   // ── Collapsed state ───────────────────────────────────────────────────────
   if (collapsed) {
+    const hoverBg = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)';
+    const visibleFolders = plan === 'free' ? folders.slice(0, FREE_LIMITS.folders) : folders;
+
     return (
       <aside
-        className="flex flex-col flex-shrink-0 h-full items-center justify-between py-3"
+        className="flex flex-col flex-shrink-0 h-full"
         style={{ width: 52, borderRight: `1px solid ${border}`, background: sidebarBg }}
       >
-        <button
-          title="New Transcript"
-          onClick={onNewTranscript ?? goToDash}
-          className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
-          style={{ background: isDark ? '#1a1a1a' : '#111111', color: '#ffffff' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#2a2a2a' : '#333'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#1a1a1a' : '#111111'; }}
-        >
-          <Plus className="w-3.5 h-3.5" />
-        </button>
-        <div className="flex flex-col items-center gap-2">
+        {/* + New Transcript button */}
+        <div className="flex items-center justify-center pt-4 pb-2 flex-shrink-0">
+          <button
+            title="New Transcript"
+            onClick={onNewTranscript ?? goToDash}
+            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: isDark ? '#1a1a1a' : '#111111', color: '#ffffff' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#2a2a2a' : '#333'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#1a1a1a' : '#111111'; }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Icon-only navigation */}
+        <div className="flex-1 overflow-y-auto flex flex-col items-center gap-0.5 pt-3">
+          {/* ── MENU ── */}
+          <button
+            title="Dashboard"
+            onClick={goToDash}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: navBg('dashboard') }}
+            onMouseEnter={e => { if (!isActive('dashboard')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isActive('dashboard')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <LayoutDashboard className="w-[18px] h-[18px]" style={{ color: navIcon('dashboard') }} strokeWidth={isActive('dashboard') ? 2 : 1.75} />
+          </button>
+          <button
+            title="Prompt Base"
+            onClick={() => navigate('/prompt-base')}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: navBg('prompt-base') }}
+            onMouseEnter={e => { if (!isActive('prompt-base')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isActive('prompt-base')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <BookOpen className="w-[18px] h-[18px]" style={{ color: navIcon('prompt-base') }} strokeWidth={isActive('prompt-base') ? 2 : 1.75} />
+          </button>
+          <button
+            title="Discover"
+            onClick={() => navigate('/discover')}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: navBg('discover') }}
+            onMouseEnter={e => { if (!isActive('discover')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isActive('discover')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <Compass className="w-[18px] h-[18px]" style={{ color: navIcon('discover') }} strokeWidth={isActive('discover') ? 2 : 1.75} />
+          </button>
+
+          {/* Separator */}
+          <div className="my-1.5 flex-shrink-0" style={{ width: 20, height: 1, background: border }} />
+
+          {/* ── LIBRARY ── */}
+          <button
+            title="Singles"
+            onClick={onSelectSingles ?? (() => navigate('/dashboard', { state: { view: 'singles' } }))}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: libBg('singles') }}
+            onMouseEnter={e => { if (!isLibActive('singles')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isLibActive('singles')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: libIconColor('singles') }}>
+              <path d="M2 20L5.52396 14.9098C5.86325 14.4198 6.0329 14.1747 6.25638 14.0603C6.45278 13.9597 6.67692 13.9269 6.8939 13.967C7.1408 14.0126 7.37353 14.1988 7.83898 14.5712L8.38213 15.0057C8.59864 15.1789 8.70689 15.2655 8.82352 15.29C8.92612 15.3115 9.0329 15.3002 9.12875 15.2578C9.2377 15.2095 9.32549 15.1022 9.50105 14.8876L12.3804 11.3683C12.7684 10.8942 12.9624 10.6571 13.1997 10.5613C13.4081 10.477 13.6389 10.4655 13.8547 10.5286C14.1004 10.6004 14.317 10.817 14.7502 11.2502L17 13.5M17 5.8V16.2C17 17.8802 17 18.7202 16.673 19.362C16.3854 19.9265 15.9265 20.3854 15.362 20.673C14.7202 21 13.8802 21 12.2 21H5.8C4.11984 21 3.27976 21 2.63803 20.673C2.07354 20.3854 1.6146 19.9265 1.32698 19.362C1 18.7202 1 17.8802 1 16.2V5.8C1 4.11984 1 3.27976 1.32698 2.63803C1.6146 2.07354 2.07354 1.6146 2.63803 1.32698C3.27976 1 4.11984 1 5.8 1H12.2C13.8802 1 14.7202 1 15.362 1.32698C15.9265 1.6146 16.3854 2.07354 16.673 2.63803C17 3.27976 17 4.11984 17 5.8ZM9 7C9 8.10457 8.10457 9 7 9C5.89543 9 5 8.10457 5 7C5 5.89543 5.89543 5 7 5C8.10457 5 9 5.89543 9 7Z" stroke="currentColor" strokeWidth={isLibActive('singles') ? 2 : 1.75} strokeLinejoin="round" />
+            </svg>
+          </button>
+          <button
+            title="Collections"
+            onClick={() => {
+              if (onSelectCollections) onSelectCollections();
+              else navigate('/dashboard', { state: { view: 'collections' } });
+            }}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: libBg('collections') }}
+            onMouseEnter={e => { if (!isLibActive('collections')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isLibActive('collections')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: libIconColor('collections') }}>
+              <path d="M1 5.8C1 4.11984 1 3.27976 1.32698 2.63803C1.6146 2.07354 2.07354 1.6146 2.63803 1.32698C3.27976 1 4.11984 1 5.8 1H12.2C13.8802 1 14.7202 1 15.362 1.32698C15.9265 1.6146 16.3854 2.07354 16.673 2.63803C17 3.27976 17 4.11984 17 5.8V16.2C17 17.8802 17 18.7202 16.673 19.362C16.3854 19.9265 15.9265 20.3854 15.362 20.673C14.7202 21 13.8802 21 12.2 21H5.8C4.11984 21 3.27976 21 2.63803 20.673C2.07354 20.3854 1.6146 19.9265 1.32698 19.362C1 18.7202 1 17.8802 1 16.2V5.8Z" stroke="currentColor" strokeLinecap="round" strokeWidth={isLibActive('collections') ? 2 : 1.75} />
+              <path d="M6.03174 10.8997V10.7904C6.03174 9.51802 6.03174 8.88185 6.29976 8.49597C6.53384 8.15896 6.89576 7.93255 7.30121 7.86949C7.76546 7.79729 8.33752 8.07559 9.48165 8.63219L9.57799 8.67906C10.8284 9.28734 11.4535 9.59149 11.6825 10.0271C11.8822 10.4069 11.9097 10.854 11.758 11.2554C11.584 11.7157 11.0007 12.094 9.83413 12.8507L9.7378 12.9132C8.53146 13.6957 7.92829 14.0869 7.42916 14.0527C6.99422 14.0229 6.59377 13.8054 6.33207 13.4567C6.03174 13.0566 6.03174 12.3376 6.03174 10.8997Z" stroke="currentColor" strokeLinecap="round" strokeWidth={isLibActive('collections') ? 2 : 1.75} />
+            </svg>
+          </button>
+          <button
+            title="Bulks"
+            onClick={() => {
+              if (onSelectBulk) onSelectBulk();
+              else navigate('/dashboard', { state: { view: 'bulk' } });
+            }}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: libBg('bulk') }}
+            onMouseEnter={e => { if (!isLibActive('bulk')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isLibActive('bulk')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: libIconColor('bulk') }}>
+              <path d="M5 6L13 6M5 10L13 10M5 14H9M17 5.8V16.2C17 17.8802 17 18.7202 16.673 19.362C16.3854 19.9265 15.9265 20.3854 15.362 20.673C14.7202 21 13.8802 21 12.2 21H5.8C4.11984 21 3.27976 21 2.63803 20.673C2.07354 20.3854 1.6146 19.9265 1.32698 19.362C1 18.7202 1 17.8802 1 16.2V5.8C1 4.11984 1 3.27976 1.32698 2.63803C1.6146 2.07354 2.07354 1.6146 2.63803 1.32698C3.27976 1 4.11984 1 5.8 1H12.2C13.8802 1 14.7202 1 15.362 1.32698C15.9265 1.6146 16.3854 2.07354 16.673 2.63803C17 3.27976 17 4.11984 17 5.8Z" stroke="currentColor" strokeWidth={isLibActive('bulk') ? 2 : 1.75} strokeLinecap="round" />
+            </svg>
+          </button>
+          <button
+            title="Profiles"
+            onClick={() => navigate('/profiles')}
+            className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ background: isActive('profiles') ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent' }}
+            onMouseEnter={e => { if (!isActive('profiles')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { if (!isActive('profiles')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: isActive('profiles') ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.45)' : muted) }}>
+              <path d="M16 20C16 17.2386 13.7614 15 11 15H7C4.23858 15 2 17.2386 2 20M17 5.8V16.2C17 17.8802 17 18.7202 16.673 19.362C16.3854 19.9265 15.9265 20.3854 15.362 20.673C14.7202 21 13.8802 21 12.2 21H5.8C4.11984 21 3.27976 21 2.63803 20.673C2.07354 20.3854 1.6146 19.9265 1.32698 19.362C1 18.7202 1 17.8802 1 16.2V5.8C1 4.11984 1 3.27976 1.32698 2.63803C1.6146 2.07354 2.07354 1.6146 2.63803 1.32698C3.27976 1 4.11984 1 5.8 1H12.2C13.8802 1 14.7202 1 15.362 1.32698C15.9265 1.6146 16.3854 2.07354 16.673 2.63803C17 3.27976 17 4.11984 17 5.8ZM11.5532 9C11.5532 10.4101 10.4101 11.5532 9 11.5532C7.58989 11.5532 6.44678 10.4101 6.44678 9C6.44678 7.58989 7.58989 6.44678 9 6.44678C10.4101 6.44678 11.5532 7.58989 11.5532 9Z" stroke="currentColor" strokeWidth={isActive('profiles') ? 2 : 1.75} strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {/* Separator before folders */}
+          {visibleFolders.length > 0 && (
+            <div className="my-1.5 flex-shrink-0" style={{ width: 20, height: 1, background: border }} />
+          )}
+
+          {/* ── FOLDERS ── */}
+          {visibleFolders.map((f) => {
+            const isFavourites = f.id === FAVOURITES_ID;
+            const isActiveFolder = activeFolderId === f.id ||
+              (isFavourites && activeLibraryItem === 'favourites');
+            const handleClick = isFavourites && onSelectFavourites
+              ? onSelectFavourites
+              : () => navigate(`/folder/${f.id}`);
+
+            return (
+              <button
+                key={f.id}
+                title={f.name}
+                onClick={handleClick}
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
+                style={{ background: isActiveFolder ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent' }}
+                onMouseEnter={e => { if (!isActiveFolder) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                onMouseLeave={e => { if (!isActiveFolder) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+              >
+                <Folder className="w-4 h-4" style={{ color: isActiveFolder ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.35)' : muted) }} />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Bottom group */}
+        <div className="flex flex-col items-center gap-2 py-3 flex-shrink-0">
           {plan === 'free' && (
             <button
               onClick={openUpgrade}
