@@ -1,8 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useRef, useCallback } from 'react';
 import {
   Search, Copy, CheckCheck, BookOpen, Zap, BarChart2,
   RefreshCw, FileText, MessageSquare, Layers, ChevronDown,
   X, TrendingUp, FolderPlus, Download, Heart, Play, Eye, Star,
+  ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import ReactDOM from 'react-dom';
 import { ThemeContext } from '../context/ThemeContext';
@@ -948,13 +949,34 @@ export function PromptBasePage() {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<PromptCategory>('All');
-  const [filterSearchFocused, setFilterSearchFocused] = useState(false);
   const [sortBy, setSortBy] = useState<'popular' | 'az' | 'za'>('popular');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [promptPage, setPromptPage] = useState(1);
   const [promptsPerPage, setPromptsPerPage] = useState(30);
   const [ppDropdownPos, setPpDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const ppBtnRef = React.useRef<HTMLButtonElement>(null);
+  const pillsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkPillsScroll = useCallback(() => {
+    const el = pillsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 2);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 2);
+  }, []);
+
+  React.useEffect(() => {
+    const el = pillsRef.current;
+    if (!el) return;
+    checkPillsScroll();
+    el.addEventListener('scroll', checkPillsScroll, { passive: true });
+    window.addEventListener('resize', checkPillsScroll);
+    return () => {
+      el.removeEventListener('scroll', checkPillsScroll);
+      window.removeEventListener('resize', checkPillsScroll);
+    };
+  }, [checkPillsScroll]);
 
   const bg     = isDark ? '#0d0d0d' : '#ffffff';
   const border = isDark ? '#262626' : '#e5e7eb';
@@ -1020,29 +1042,31 @@ export function PromptBasePage() {
 
 
           {/* Page title bar */}
-          <div
-            className="flex items-center justify-between px-6 py-3 flex-shrink-0"
-            style={{ borderBottom: `1px solid ${border}` }}
-          >
-            <div className="flex items-center gap-3">
-              <BookOpen className="w-4 h-4 flex-shrink-0" style={{ color: muted }} />
-              <span className="text-sm" style={{ color: text, fontWeight: 600 }}>Prompt Base</span>
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6', color: muted }}>
-                {filtered.length} prompt{filtered.length !== 1 ? 's' : ''}
-              </span>
+          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+            <div className="max-w-[1280px] mx-auto w-full px-6 pt-6 pb-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h1 style={{ color: text, fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                    Prompt Base
+                  </h1>
+                  <p className="mt-1 text-xs" style={{ color: muted, lineHeight: 1.6, maxWidth: 480 }}>
+                    Browse and download ready-to-use prompts for your content — {filtered.length} prompt{filtered.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* ── Filter Bar ──────────────────────────────────────────────── */}
-          <div className="flex items-center gap-2 px-6 py-3 flex-shrink-0 overflow-hidden" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
 
             {/* Search */}
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs flex-shrink-0"
               style={{
-                background: filterSearchFocused || searchQuery ? (isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6') : 'transparent',
-                border: `1px solid ${filterSearchFocused || searchQuery ? border : 'transparent'}`,
+                background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+                border: `1px solid ${border}`,
                 color: muted, width: 220, transition: 'all 0.15s',
               }}
             >
@@ -1050,8 +1074,6 @@ export function PromptBasePage() {
               <input
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                onFocus={() => setFilterSearchFocused(true)}
-                onBlur={() => setFilterSearchFocused(false)}
                 placeholder="Search prompts…"
                 className="flex-1 bg-transparent outline-none text-xs min-w-0"
                 style={{ color: text }}
@@ -1100,28 +1122,59 @@ export function PromptBasePage() {
 
             <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
 
-            {/* Category pills — horizontally scrollable */}
-            <div
-              className="flex items-center gap-2 flex-1 overflow-x-auto min-w-0"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <style>{`.prompt-pill-scroll::-webkit-scrollbar { display: none; }`}</style>
-              {CATEGORIES.map(cat => (
+            {/* Category pills — horizontally scrollable with arrows */}
+            <div className="relative flex-1 min-w-0">
+              {/* Left arrow */}
+              {canScrollLeft && (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all flex-shrink-0"
+                  onClick={() => pillsRef.current?.scrollBy({ left: -200, behavior: 'smooth' })}
+                  className="absolute left-0 top-0 bottom-0 z-10 flex items-center pl-0.5 pr-2"
                   style={{
-                    background: activeCategory === cat ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'),
-                    color: activeCategory === cat ? (isDark ? '#111111' : '#ffffff') : (isDark ? 'rgba(255,255,255,0.55)' : muted),
-                    fontWeight: activeCategory === cat ? 600 : 400,
-                    border: `1px solid ${activeCategory === cat ? 'transparent' : border}`,
+                    background: `linear-gradient(to right, ${bg} 60%, transparent)`,
+                    border: 'none', cursor: 'pointer',
                   }}
                 >
-                  {cat !== 'All' && CATEGORY_ICONS[cat as Exclude<PromptCategory, 'All'>]}
-                  {cat}
+                  <ChevronLeft className="w-4 h-4" style={{ color: muted }} />
                 </button>
-              ))}
+              )}
+
+              <div
+                ref={pillsRef}
+                className="flex items-center gap-2 overflow-x-auto prompt-pill-scroll"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                <style>{`.prompt-pill-scroll::-webkit-scrollbar { display: none; }`}</style>
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all flex-shrink-0"
+                    style={{
+                      background: activeCategory === cat ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'),
+                      color: activeCategory === cat ? (isDark ? '#111111' : '#ffffff') : (isDark ? 'rgba(255,255,255,0.55)' : muted),
+                      fontWeight: activeCategory === cat ? 600 : 400,
+                      border: `1px solid ${activeCategory === cat ? 'transparent' : border}`,
+                    }}
+                  >
+                    {cat !== 'All' && CATEGORY_ICONS[cat as Exclude<PromptCategory, 'All'>]}
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Right arrow */}
+              {canScrollRight && (
+                <button
+                  onClick={() => pillsRef.current?.scrollBy({ left: 200, behavior: 'smooth' })}
+                  className="absolute right-0 top-0 bottom-0 z-10 flex items-center pr-0.5 pl-2"
+                  style={{
+                    background: `linear-gradient(to left, ${bg} 60%, transparent)`,
+                    border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  <ChevronRight className="w-4 h-4" style={{ color: muted }} />
+                </button>
+              )}
             </div>
 
             {/* Active filter count + clear */}
@@ -1141,10 +1194,11 @@ export function PromptBasePage() {
               </>
             )}
           </div>
+          </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-6 py-6">
-            <div className="max-w-[1280px] mx-auto w-full">
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-[1280px] mx-auto w-full px-6 py-6">
 
             {/* Featured prompts - only when not on Featured tab */}
             {activeCategory !== 'Featured' && visibleFeatured.length > 0 && (
