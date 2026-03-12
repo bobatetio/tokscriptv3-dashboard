@@ -10,6 +10,7 @@ import {
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
+import { useNewTranscript } from '../context/NewTranscriptContext';
 import svgPathsLock from '../../imports/svg-ri7w7ruor2';
 import svgPathsLockLight from '../../imports/svg-hfbknm512l';
 import imgBannerBg from '../../assets/b3a148853965f0eea6c20b8748026b122bc3fc9c.png';
@@ -27,7 +28,6 @@ interface AppSidebarProps {
   collapsed: boolean;
   activeFolderId?: number;
   // Dashboard-specific overrides
-  onNewTranscript?: () => void;
   activeLibraryItem?: LibraryItem;
   activeGroupId?: number;
   onSelectSingles?: () => void;
@@ -57,7 +57,6 @@ export function AppSidebar({
   activePage,
   collapsed,
   activeFolderId,
-  onNewTranscript,
   activeLibraryItem,
   activeGroupId,
   onSelectSingles,
@@ -71,6 +70,7 @@ export function AppSidebar({
   const { isDark } = useContext(ThemeContext);
   const { folders, createFolder } = useContext(FolderContext);
   const { plan, openUpgrade, transcriptionsUsed, transcriptionsLimit } = useContext(UserContext);
+  const { open: openNewTranscript } = useNewTranscript();
 
   const [collectionsOpen, setCollectionsOpen] = useState(activeLibraryItem === 'collections');
   const [bulkOpen,        setBulkOpen]        = useState(activeLibraryItem === 'bulk');
@@ -153,11 +153,11 @@ export function AppSidebar({
         <div className="flex items-center justify-center pt-4 pb-2 flex-shrink-0">
           <button
             title="New Transcript"
-            onClick={onNewTranscript ?? goToDash}
+            onClick={openNewTranscript}
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
-            style={{ background: isDark ? '#1a1a1a' : '#111111', color: '#ffffff' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#2a2a2a' : '#333'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#1a1a1a' : '#111111'; }}
+            style={{ background: isDark ? '#ffffff' : '#111111', color: isDark ? '#111111' : '#ffffff' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#e5e5e5' : '#333'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#ffffff' : '#111111'; }}
           >
             <Plus className="w-3.5 h-3.5" />
           </button>
@@ -328,15 +328,15 @@ export function AppSidebar({
       {/* New Transcript button */}
       <div className="px-3 pt-4 pb-3 flex-shrink-0">
         <button
-          onClick={onNewTranscript ?? goToDash}
+          onClick={openNewTranscript}
           className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs transition-all"
           style={{
-            border: `1px solid ${isDark ? '#262626' : 'transparent'}`,
-            background: isDark ? '#1a1a1a' : '#111111',
-            color: '#ffffff', fontWeight: 500,
+            border: '1px solid transparent',
+            background: isDark ? '#ffffff' : '#111111',
+            color: isDark ? '#111111' : '#ffffff', fontWeight: 500,
           }}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#222222' : '#2a2a2a'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#1a1a1a' : '#111111'; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#e5e5e5' : '#2a2a2a'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#ffffff' : '#111111'; }}
         >
           <Plus className="w-3.5 h-3.5" />
           New Transcript

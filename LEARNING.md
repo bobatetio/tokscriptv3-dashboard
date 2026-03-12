@@ -5,10 +5,11 @@
 - Modals must be sized to fit ALL content without internal scrollbars. The Retranslate dropdown must open fully visible inside the modal — no nested scroll containers.
 
 ## Architecture
-- `DashboardPage.tsx` is the largest component file (~3900+ lines). The `InlineNewTranscriptionView` component lives inside it (starts ~line 297).
-- The modal shell for New Transcript is at ~line 3835-3850 — overlay + dialog box + close button. The `InlineNewTranscriptionView` renders inside it.
-- The modal dialog uses `max-w-2xl` and `max-h-[90vh]` with `overflow-y-auto` — this constrains height and causes nested scrollbars if content is too tall.
-- `LANGUAGES`, `MAX_LINKS`, `isValidUrl` are defined OUTSIDE `InlineNewTranscriptionView` (~lines 286-294) — shared utilities, do not delete.
+- `DashboardPage.tsx` is the largest component file (~3500+ lines after modal extraction).
+- The New Transcript modal was extracted to `src/app/components/NewTranscriptModal.tsx` with global context at `src/app/context/NewTranscriptContext.tsx`. It's accessible from ANY page via `useNewTranscript().open()`.
+- `App.tsx` uses a layout route (`AppLayout`) wrapping all routes with `NewTranscriptProvider` + `NewTranscriptModal` — the modal renders alongside `<Outlet />` inside the router tree so `useNavigate` works.
+- `AppSidebar` uses `useNewTranscript()` directly — no more `onNewTranscript` prop needed.
+- `LANGUAGES`, `MAX_LINKS`, `isValidUrl`, `InputTab`, `INPUT_TABS`, `TAB_PLATFORMS`, `TAB_STEPS`, `TAB_HOW_DESC` all live in `NewTranscriptModal.tsx` now.
 - Vite handles TypeScript transforms; no standalone `tsc` devDep. Use `vite build` to verify.
 
 ## Patterns

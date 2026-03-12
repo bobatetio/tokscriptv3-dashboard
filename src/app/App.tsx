@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router';
 import { ThemeProvider } from './context/ThemeContext';
 import { FolderProvider } from './context/FolderContext';
 import { UserProvider, UserContext } from './context/UserContext';
@@ -20,23 +20,39 @@ import { SettingsPage } from './components/SettingsPage';
 import { FolderPage } from './components/FolderPage';
 import { UpgradeModal } from './components/UpgradeModal';
 import { PlanDevToggle } from './components/PlanDevToggle';
+import { NewTranscriptProvider } from './context/NewTranscriptContext';
+import NewTranscriptModal from './components/NewTranscriptModal';
+
+function AppLayout() {
+  return (
+    <NewTranscriptProvider>
+      <Outlet />
+      <NewTranscriptModal />
+    </NewTranscriptProvider>
+  );
+}
 
 const router = createBrowserRouter([
-  { path: '/', Component: LandingPage },
-  { path: '/results', Component: TranscriptResultPage },
-  { path: '/freeresult', Component: FreeResultPage },
-  { path: '/login', Component: LoginPage },
-  { path: '/signup', Component: SignUpPage },
-  { path: '/forgot-password', Component: ForgotPasswordPage },
-  { path: '/dashboard', Component: DashboardPage },
-  { path: '/transcribe', Component: NewTranscriptionPage },
-  { path: '/prompt-base', Component: PromptBasePage },
-  { path: '/prompt-base/:id', Component: PromptDetailPage },
-  { path: '/discover', Component: DiscoverPage },
-  { path: '/profiles', Component: ProfilesPage },
-  { path: '/profile/:creator', Component: CreatorProfilePage },
-  { path: '/settings', Component: SettingsPage },
-  { path: '/folder/:id', Component: FolderPage },
+  {
+    element: <AppLayout />,
+    children: [
+      { path: '/', Component: LandingPage },
+      { path: '/results', Component: TranscriptResultPage },
+      { path: '/freeresult', Component: FreeResultPage },
+      { path: '/login', Component: LoginPage },
+      { path: '/signup', Component: SignUpPage },
+      { path: '/forgot-password', Component: ForgotPasswordPage },
+      { path: '/dashboard', Component: DashboardPage },
+      { path: '/transcribe', Component: NewTranscriptionPage },
+      { path: '/prompt-base', Component: PromptBasePage },
+      { path: '/prompt-base/:id', Component: PromptDetailPage },
+      { path: '/discover', Component: DiscoverPage },
+      { path: '/profiles', Component: ProfilesPage },
+      { path: '/profile/:creator', Component: CreatorProfilePage },
+      { path: '/settings', Component: SettingsPage },
+      { path: '/folder/:id', Component: FolderPage },
+    ],
+  },
 ]);
 
 function AppInner() {
