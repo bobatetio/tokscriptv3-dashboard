@@ -6,7 +6,7 @@
  */
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
-import { Users, BadgeCheck, Search, FolderPlus, Heart, ScanLine, X, Link2, UserPlus } from 'lucide-react';
+import { Users, BadgeCheck, Search, FolderPlus, Heart, ScanLine, X, Link2, UserPlus, ChevronDown, SlidersHorizontal, CheckCheck, FileText } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { AppSidebar } from './AppSidebar';
@@ -94,6 +94,24 @@ const PROFILES_DATA = [
     avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80',
     verified: true,
   },
+];
+
+function parseCount(s: string): number {
+  const n = parseFloat(s);
+  if (s.endsWith('M')) return n * 1_000_000;
+  if (s.endsWith('K')) return n * 1_000;
+  return n;
+}
+
+const PROFILES_SORT_OPTIONS = [
+  { value: 'followers-desc', label: 'Most followers' },
+  { value: 'followers-asc', label: 'Fewest followers' },
+  { value: 'videos-desc', label: 'Most videos' },
+  { value: 'videos-asc', label: 'Fewest videos' },
+  { value: 'words-desc', label: 'Most words' },
+  { value: 'words-asc', label: 'Fewest words' },
+  { value: 'name-asc', label: 'Name A–Z' },
+  { value: 'name-desc', label: 'Name Z–A' },
 ];
 
 // ─── Platform icons ───────────────────────────────────────────────────────────
@@ -476,11 +494,78 @@ export function ProfilesPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanModal, setShowScanModal] = useState(false);
+  const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
+  const [activeFollowers, setActiveFollowers] = useState<string[]>([]);
+  const [activeVideos, setActiveVideos] = useState<string[]>([]);
+  const [activeWords, setActiveWords] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState('followers-desc');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const bg     = isDark ? '#0d0d0d' : '#ffffff';
   const border = isDark ? '#262626' : '#e5e7eb';
   const text   = isDark ? '#ffffff' : '#111827';
   const muted  = isDark ? '#888888' : '#6b7280';
+  const hoverBg = isDark ? 'rgba(255,255,255,0.06)' : '#f5f5f5';
+
+  const hasActiveFilter = activePlatforms.length > 0 || activeFollowers.length > 0 || activeVideos.length > 0 || activeWords.length > 0 || sortBy !== 'followers-desc' || searchQuery.trim() !== '';
+
+  const filteredProfiles = PROFILES_DATA
+    .filter(p => {
+      // Search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        if (!p.displayName.toLowerCase().includes(q) && !p.handle.toLowerCase().includes(q) && !p.bio.toLowerCase().includes(q)) return false;
+      }
+      // Platform filter
+      if (activePlatforms.length > 0 && !p.platforms.some(pl => activePlatforms.includes(pl))) return false;
+      // Followers filter
+      if (activeFollowers.length > 0) {
+        const f = parseCount(p.followers);
+        const match = activeFollowers.some(r => {
+          if (r === '<100K') return f < 100_000;
+          if (r === '100K–500K') return f >= 100_000 && f <= 500_000;
+          if (r === '500K+') return f > 500_000;
+          return false;
+        });
+        if (!match) return false;
+      }
+      // Videos filter
+      if (activeVideos.length > 0) {
+        const v = p.videoCount;
+        const match = activeVideos.some(r => {
+          if (r === '<100') return v < 100;
+          if (r === '100–300') return v >= 100 && v <= 300;
+          if (r === '300+') return v > 300;
+          return false;
+        });
+        if (!match) return false;
+      }
+      // Words filter
+      if (activeWords.length > 0) {
+        const w = parseCount(p.totalWords);
+        const match = activeWords.some(r => {
+          if (r === '<1M') return w < 1_000_000;
+          if (r === '1M–2M') return w >= 1_000_000 && w <= 2_000_000;
+          if (r === '2M+') return w > 2_000_000;
+          return false;
+        });
+        if (!match) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'followers-desc': return parseCount(b.followers) - parseCount(a.followers);
+        case 'followers-asc': return parseCount(a.followers) - parseCount(b.followers);
+        case 'videos-desc': return b.videoCount - a.videoCount;
+        case 'videos-asc': return a.videoCount - b.videoCount;
+        case 'words-desc': return parseCount(b.totalWords) - parseCount(a.totalWords);
+        case 'words-asc': return parseCount(a.totalWords) - parseCount(b.totalWords);
+        case 'name-asc': return a.displayName.localeCompare(b.displayName);
+        case 'name-desc': return b.displayName.localeCompare(a.displayName);
+        default: return 0;
+      }
+    });
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
@@ -495,7 +580,7 @@ export function ProfilesPage() {
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Title bar */}
           <div
-            className="flex items-center justify-between px-6 py-3 flex-shrink-0"
+            className="flex items-center px-6 py-3 flex-shrink-0"
             style={{ borderBottom: `1px solid ${border}` }}
           >
             <div className="flex items-center gap-3">
@@ -505,36 +590,231 @@ export function ProfilesPage() {
                 className="text-xs px-2 py-0.5 rounded-full"
                 style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6', color: muted }}
               >
-                {PROFILES_DATA.length} creators
+                {filteredProfiles.length} creators
               </span>
             </div>
+          </div>
+
+          {/* ── Unified Filter Bar ───────────────────────────────────── */}
+          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
 
             {/* Search */}
-            <div
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg"
-              style={{
-                background: isDark ? 'rgba(255,255,255,0.04)' : '#f3f4f6',
-                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb'}`,
-                width: 200,
-              }}
-            >
-              <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: muted }} />
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs flex-shrink-0"
+              style={{ background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6', border: `1px solid ${border}`, color: muted, width: 260 }}>
+              <Search className="w-3.5 h-3.5 flex-shrink-0" />
               <input
-                type="text"
-                placeholder="Search profiles…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent outline-none min-w-0 text-[12px]"
-                style={{ color: text, caretColor: text }}
+                placeholder="Search transcripts or profiles…"
+                className="flex-1 bg-transparent outline-none text-xs min-w-0"
+                style={{ color: text }}
               />
+              {searchQuery && <button onClick={() => setSearchQuery('')} style={{ color: muted }}><X className="w-3 h-3" /></button>}
             </div>
+
+            <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+
+            {/* Platform multi-select */}
+            <div className="relative flex-shrink-0">
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                style={{
+                  background: activePlatforms.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                  color: activePlatforms.length > 0 ? '#00b8b2' : muted,
+                  border: `1px solid ${activePlatforms.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
+                  fontWeight: activePlatforms.length > 0 ? 500 : 400,
+                }}
+                onClick={() => setOpenDropdown(openDropdown === 'platform' ? null : 'platform')}
+              >
+                {activePlatforms.length === 0 ? 'Platform' : activePlatforms.length === 1 ? activePlatforms[0] : `${activePlatforms.length} platforms`}
+                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'platform' ? 'rotate-180' : ''}`} />
+              </button>
+              {openDropdown === 'platform' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 148 }}>
+                    {['YouTube', 'TikTok', 'Instagram'].map(opt => {
+                      const sel = activePlatforms.includes(opt);
+                      return (
+                        <button key={opt}
+                          onClick={e => { e.stopPropagation(); setActivePlatforms(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
+                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
+                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Followers multi-select */}
+            <div className="relative flex-shrink-0">
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                style={{
+                  background: activeFollowers.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                  color: activeFollowers.length > 0 ? '#00b8b2' : muted,
+                  border: `1px solid ${activeFollowers.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
+                  fontWeight: activeFollowers.length > 0 ? 500 : 400,
+                }}
+                onClick={() => setOpenDropdown(openDropdown === 'followers' ? null : 'followers')}
+              >
+                <Users className="w-3 h-3" />
+                {activeFollowers.length === 0 ? 'Followers' : activeFollowers.length === 1 ? activeFollowers[0] : `${activeFollowers.length} ranges`}
+                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'followers' ? 'rotate-180' : ''}`} />
+              </button>
+              {openDropdown === 'followers' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 140 }}>
+                    {['<100K', '100K–500K', '500K+'].map(opt => {
+                      const sel = activeFollowers.includes(opt);
+                      return (
+                        <button key={opt}
+                          onClick={e => { e.stopPropagation(); setActiveFollowers(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
+                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
+                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Videos multi-select */}
+            <div className="relative flex-shrink-0">
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                style={{
+                  background: activeVideos.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                  color: activeVideos.length > 0 ? '#00b8b2' : muted,
+                  border: `1px solid ${activeVideos.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
+                  fontWeight: activeVideos.length > 0 ? 500 : 400,
+                }}
+                onClick={() => setOpenDropdown(openDropdown === 'videos' ? null : 'videos')}
+              >
+                <FileText className="w-3 h-3" />
+                {activeVideos.length === 0 ? 'Videos' : activeVideos.length === 1 ? activeVideos[0] : `${activeVideos.length} ranges`}
+                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'videos' ? 'rotate-180' : ''}`} />
+              </button>
+              {openDropdown === 'videos' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 130 }}>
+                    {['<100', '100–300', '300+'].map(opt => {
+                      const sel = activeVideos.includes(opt);
+                      return (
+                        <button key={opt}
+                          onClick={e => { e.stopPropagation(); setActiveVideos(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
+                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
+                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Words multi-select */}
+            <div className="relative flex-shrink-0">
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                style={{
+                  background: activeWords.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                  color: activeWords.length > 0 ? '#00b8b2' : muted,
+                  border: `1px solid ${activeWords.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
+                  fontWeight: activeWords.length > 0 ? 500 : 400,
+                }}
+                onClick={() => setOpenDropdown(openDropdown === 'words' ? null : 'words')}
+              >
+                <FileText className="w-3 h-3" />
+                {activeWords.length === 0 ? 'Words' : activeWords.length === 1 ? activeWords[0] : `${activeWords.length} ranges`}
+                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'words' ? 'rotate-180' : ''}`} />
+              </button>
+              {openDropdown === 'words' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 120 }}>
+                    {['<1M', '1M–2M', '2M+'].map(opt => {
+                      const sel = activeWords.includes(opt);
+                      return (
+                        <button key={opt}
+                          onClick={e => { e.stopPropagation(); setActiveWords(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
+                          className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
+                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
+                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Sort */}
+            <div className="relative flex-shrink-0">
+              <button
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                style={{
+                  background: sortBy !== 'followers-desc' ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                  color: sortBy !== 'followers-desc' ? '#00b8b2' : muted,
+                  border: `1px solid ${sortBy !== 'followers-desc' ? 'rgba(0,184,178,0.25)' : border}`,
+                }}
+                onClick={() => setOpenDropdown(openDropdown === 'sort' ? null : 'sort')}
+              >
+                <SlidersHorizontal className="w-3 h-3" />
+                {PROFILES_SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Most followers'}
+                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'sort' ? 'rotate-180' : ''}`} />
+              </button>
+              {openDropdown === 'sort' && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
+                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl py-1 z-50" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 156 }}>
+                    {PROFILES_SORT_OPTIONS.map(opt => (
+                      <button key={opt.value} onClick={() => { setSortBy(opt.value); setOpenDropdown(null); }}
+                        className="w-full flex items-center justify-between px-3 py-2 text-xs text-left"
+                        style={{ color: sortBy === opt.value ? '#00b8b2' : muted, background: sortBy === opt.value ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sortBy === opt.value ? 500 : 400 }}
+                        onMouseEnter={e => { if (sortBy !== opt.value) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                        onMouseLeave={e => { if (sortBy !== opt.value) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                      >{opt.label}{sortBy === opt.value && <CheckCheck className="w-3 h-3" style={{ color: '#00b8b2' }} />}</button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Clear all */}
+            {hasActiveFilter && (
+              <>
+                <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+                <button className="flex items-center gap-1 text-xs hover:opacity-70 flex-shrink-0" style={{ color: '#00b8b2', fontWeight: 500 }}
+                  onClick={() => { setActivePlatforms([]); setActiveFollowers([]); setActiveVideos([]); setActiveWords([]); setSortBy('followers-desc'); setSearchQuery(''); }}>
+                  <X className="w-3 h-3" /> Clear
+                </button>
+              </>
+            )}
+
+            <div className="flex-1" />
+          </div>
           </div>
 
           {/* Grid */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
+           <div className="max-w-[1280px] mx-auto w-full">
             <div
               className="grid gap-2"
-              style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))' }}
+              style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}
             >
               {/* ── Scan new profile CTA card ── */}
               <div
@@ -569,12 +849,7 @@ export function ProfilesPage() {
               </div>
 
               {/* ── Existing profile cards ── */}
-              {PROFILES_DATA.filter(p =>
-                !searchQuery.trim() ||
-                p.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.handle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                p.bio.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map(profile => (
+              {filteredProfiles.map(profile => (
                 <ProfileCard
                   key={profile.handle}
                   profile={profile}
@@ -585,6 +860,7 @@ export function ProfilesPage() {
                 />
               ))}
             </div>
+           </div>
           </div>
         </main>
       </div>

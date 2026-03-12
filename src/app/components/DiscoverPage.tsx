@@ -1075,7 +1075,7 @@ export function DiscoverPage() {
                   ))}
                 </div>
               ) : (
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                   {paginatedHistory.map(e => (
                     <HistoryCard key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg} onSelect={handleSelect} />
                   ))}

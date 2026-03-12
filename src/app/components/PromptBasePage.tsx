@@ -2,8 +2,9 @@ import React, { useState, useContext } from 'react';
 import {
   Search, Copy, CheckCheck, BookOpen, Zap, BarChart2,
   RefreshCw, FileText, MessageSquare, Layers, ChevronDown,
-  X, TrendingUp, FolderPlus, Download, Heart, Play, Eye,
+  X, TrendingUp, FolderPlus, Download, Heart, Play, Eye, Star,
 } from 'lucide-react';
+import ReactDOM from 'react-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
@@ -12,7 +13,7 @@ import { AppHeader } from './AppHeader';
 import { SaveToFolderModal } from './SaveToFolderModal';
 
 // ─── Prompt data ──────────────────────────────────────────────────────────────
-type PromptCategory = 'All' | 'Hooks' | 'Repurpose' | 'Analysis' | 'Script' | 'Summary' | 'Engagement' | 'SEO';
+type PromptCategory = 'All' | 'Featured' | 'Hooks' | 'Repurpose' | 'Analysis' | 'Script' | 'Summary' | 'Engagement' | 'SEO';
 
 export interface Prompt {
   id: number;
@@ -168,9 +169,10 @@ export const PROMPTS: Prompt[] = [
   { id: 50, category: 'Summary', featured: false, uses: 3340, title: 'Decision Log', description: 'Extract every decision made or recommended in a transcript into a structured decision register.', tags: ['Decisions', 'Documentation', 'Strategy'], prompt: `Extract all decisions from the transcript into a decision log:\n\n| # | Decision | Rationale | Owner | Date | Revisit? |\n|---|---|---|---|---|---|\n\nAlso note:\n- Any decisions that seem rushed or under-supported\n- Any pending decisions that were deferred\n- One question that should be asked before finalising each major decision\n\nTranscript:\n[TRANSCRIPT]` },
 ];
 
-export const CATEGORIES: PromptCategory[] = ['All', 'Hooks', 'Repurpose', 'Analysis', 'Script', 'Summary', 'Engagement', 'SEO'];
+export const CATEGORIES: PromptCategory[] = ['All', 'Featured', 'Hooks', 'Repurpose', 'Analysis', 'Script', 'Summary', 'Engagement', 'SEO'];
 
 export const CATEGORY_IMAGES: Record<Exclude<PromptCategory, 'All'>, string> = {
+  Featured:   'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400',
   Hooks:      'https://images.unsplash.com/photo-1712331676372-2fc48f449c56?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aXJhbCUyMGhvb2slMjBzY3JvbGwlMjBzb2NpYWwlMjBtZWRpYXxlbnwxfHx8fDE3NzI3NTQ3MTB8MA&ixlib=rb-4.1.0&q=80&w=1080',
   Repurpose:  'https://images.unsplash.com/photo-1607702706617-c1bb25e1d5e0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb250ZW50JTIwcmVwdXJwb3NlJTIwbXVsdGklMjBwbGF0Zm9ybSUyMHB1Ymxpc2hpbmd8ZW58MXx8fHwxNzcyNzU0NzExfDA&ixlib=rb-4.1.0&q=80&w=1080',
   Analysis:   'https://images.unsplash.com/photo-1748439281934-2803c6a3ee36?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkYXRhJTIwYW5hbHl0aWNzJTIwY2hhcnQlMjBncmFwaHxlbnwxfHx8fDE3NzI2OTk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
@@ -181,6 +183,7 @@ export const CATEGORY_IMAGES: Record<Exclude<PromptCategory, 'All'>, string> = {
 };
 
 export const CATEGORY_COLORS: Record<Exclude<PromptCategory, 'All'>, { bg: string; text: string; darkBg: string; darkText: string }> = {
+  Featured:   { bg: '#f0f0f0', text: '#555555', darkBg: 'rgba(255,255,255,0.06)', darkText: '#888888' },
   Hooks:      { bg: '#f0f0f0', text: '#555555', darkBg: 'rgba(255,255,255,0.06)', darkText: '#888888' },
   Repurpose:  { bg: '#f0f0f0', text: '#555555', darkBg: 'rgba(255,255,255,0.06)', darkText: '#888888' },
   Analysis:   { bg: '#f0f0f0', text: '#555555', darkBg: 'rgba(255,255,255,0.06)', darkText: '#888888' },
@@ -191,6 +194,7 @@ export const CATEGORY_COLORS: Record<Exclude<PromptCategory, 'All'>, { bg: strin
 };
 
 export const CATEGORY_ICONS: Record<Exclude<PromptCategory, 'All'>, React.ReactNode> = {
+  Featured:   <Star className="w-3.5 h-3.5" />,
   Hooks:      <Zap className="w-3.5 h-3.5" />,
   Repurpose:  <RefreshCw className="w-3.5 h-3.5" />,
   Analysis:   <BarChart2 className="w-3.5 h-3.5" />,
@@ -394,7 +398,7 @@ function PromptCard({ prompt, isDark, border, text, muted, hoverBg, gated, onGat
         {/* Copy */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] transition-all flex-shrink-0 whitespace-nowrap"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] transition-all flex-1 justify-center whitespace-nowrap"
           style={{ background: isDark ? '#1a1a1a' : '#111111', color: '#ffffff', fontWeight: 500, border: `1px solid ${isDark ? '#2a2a2a' : 'transparent'}` }}
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#222' : '#2a2a2a'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#1a1a1a' : '#111111'; }}
@@ -416,9 +420,9 @@ function PromptCard({ prompt, isDark, border, text, muted, hoverBg, gated, onGat
         </button>
 
         {/* Download with format dropdown */}
-        <div className="relative flex-shrink-0">
+        <div className="relative flex-1">
           <button
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] transition-all whitespace-nowrap"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] transition-all whitespace-nowrap w-full justify-center"
             style={{ color: isDark ? '#d1d5db' : '#374151', fontWeight: 500, background: 'transparent', border: `1px solid ${border}` }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
@@ -474,13 +478,14 @@ function PromptCard({ prompt, isDark, border, text, muted, hoverBg, gated, onGat
 }
 
 // ─── Prompt Detail Panel ──────────────────────────────────────────────────────
-function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }: {
+function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction, onSelectPrompt }: {
   prompt: Prompt | null;
   isDark: boolean;
   onClose: () => void;
   gated?: boolean;
   onGated?: () => void;
   onAction?: () => void;
+  onSelectPrompt?: (p: Prompt) => void;
 }) {
   const { getFoldersContaining } = useContext(FolderContext);
   const [copied, setCopied] = useState(false);
@@ -629,20 +634,20 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
             <div className="flex-1 flex overflow-hidden min-h-0">
 
               {/* Left: main content */}
-              <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-4">
+              <div className="flex-1 px-5 py-5 flex flex-col gap-4" style={{ overflow: 'hidden', minHeight: 0 }}>
 
                 {/* Title */}
-                <h2 style={{ color: text, fontWeight: 700, fontSize: '1.125rem', lineHeight: 1.3, margin: 0 }}>
+                <h2 className="flex-shrink-0" style={{ color: text, fontWeight: 700, fontSize: '1.125rem', lineHeight: 1.3, margin: 0 }}>
                   {prompt.title}
                 </h2>
 
                 {/* Description */}
-                <p style={{ color: muted, fontSize: '0.8375rem', lineHeight: 1.6, margin: 0 }}>
+                <p className="flex-shrink-0" style={{ color: muted, fontSize: '0.8375rem', lineHeight: 1.6, margin: 0 }}>
                   {prompt.description}
                 </p>
 
                 {/* Tags */}
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-1.5 flex-shrink-0">
                   {prompt.tags.map(tag => (
                     <span
                       key={tag}
@@ -655,20 +660,20 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                 </div>
 
                 {/* Divider */}
-                <div style={{ height: 1, background: border }} />
+                <div className="flex-shrink-0" style={{ height: 1, background: border }} />
 
-                {/* PROMPT section */}
-                <div>
-                  <p className="text-[10px]" style={{ color: muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 8px' }}>
+                {/* PROMPT section — grows to fill remaining space */}
+                <div className="flex flex-col" style={{ flex: 1, minHeight: 0 }}>
+                  <p className="text-[10px] flex-shrink-0" style={{ color: muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 8px' }}>
                     Prompt
                   </p>
                   <div
                     className="rounded-xl px-4 py-3"
-                    style={{ background: isDark ? '#0a0a0a' : '#f9fafb', border: `1px solid ${isDark ? '#1e1e1e' : '#efefef'}` }}
+                    style={{ background: isDark ? '#0a0a0a' : '#f9fafb', border: `1px solid ${isDark ? '#1e1e1e' : '#efefef'}`, flex: 1, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
                   >
                     <p
                       className="text-[12px] whitespace-pre-wrap break-words m-0"
-                      style={{ color: isDark ? 'rgba(255,255,255,0.65)' : '#374151', fontFamily: 'inherit', lineHeight: 1.75 }}
+                      style={{ color: isDark ? 'rgba(255,255,255,0.65)' : '#374151', fontFamily: 'inherit', lineHeight: 1.75, overflowY: 'auto', scrollbarWidth: 'none', flex: 1, minHeight: 0 }}
                     >
                       {prompt.prompt}
                     </p>
@@ -676,7 +681,7 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                 </div>
 
                 {/* Action buttons (inline) */}
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   <button
                     onClick={handleCopy}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-[12px] transition-all flex-1 justify-center"
@@ -689,7 +694,7 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                   </button>
                   <button
                     onClick={handleDownloadSkill}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-all justify-center"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-[12px] transition-all flex-1 justify-center"
                     style={{ color: isDark ? '#d1d5db' : '#374151', fontWeight: 500, background: 'transparent', border: `1px solid ${border}` }}
                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
@@ -697,7 +702,7 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                     <Download className="w-3.5 h-3.5 flex-shrink-0" />
                     <span>Download Skill</span>
                   </button>
-                  <div className="relative flex-shrink-0">
+                  <div className="relative flex-1">
                     <button
                       className="flex items-center gap-1 px-3 py-2 rounded-lg text-[12px] transition-all"
                       style={{ color: isDark ? '#d1d5db' : '#374151', fontWeight: 500, background: 'transparent', border: `1px solid ${border}` }}
@@ -740,8 +745,11 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                   </div>
                 </div>
 
-                {/* HOW TO USE — video thumbnail */}
-                <div>
+                {/* Divider before How to Use */}
+                <div className="flex-shrink-0" style={{ height: 1, background: border }} />
+
+                {/* HOW TO USE — pinned to bottom */}
+                <div className="flex-shrink-0">
                   <p className="text-[10px]" style={{ color: muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 10px' }}>
                     How to use
                   </p>
@@ -767,13 +775,14 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                       1:24
                     </div>
                   </div>
-                  <p className="text-[11px] mt-2 m-0" style={{ color: muted }}>
-                    1. Copy or download the prompt above.
-                  </p>
+                  <ol className="text-[11px] mt-2 m-0 pl-4 flex flex-col gap-1" style={{ color: muted }}>
+                    <li>Copy or download the prompt above.</li>
+                    <li>Open your preferred AI tool (ChatGPT, Claude, Gemini, etc.).</li>
+                    <li>Paste the prompt and replace [TRANSCRIPT] with your transcript text.</li>
+                    <li>Run and iterate — adjust tone or length as needed.</li>
+                  </ol>
                 </div>
 
-                {/* Bottom padding */}
-                <div style={{ height: 16 }} />
               </div>
 
               {/* ── Right: sidebar ──────────────────────────────────────────── */}
@@ -788,7 +797,7 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                   </p>
                   {/* Tabs */}
                   <div className="flex" style={{ borderBottom: `1px solid ${border}` }}>
-                    {(['Most Rec...', 'Related', 'Viral'] as const).map((tab, i) => {
+                    {(['Recent', 'Related', 'Viral'] as const).map((tab, i) => {
                       const key = i === 0 ? 'recent' : i === 1 ? 'related' : 'viral';
                       const active = mustTryTab === key;
                       return (
@@ -818,17 +827,18 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                     : mustTryTab === 'viral'
                     ? [...PROMPTS].filter(p => p.id !== prompt.id).sort((a, b) => b.uses - a.uses)
                     : [...PROMPTS].filter(p => p.id !== prompt.id)
-                  ).slice(0, 4).map(p => (
+                  ).slice(0, 3).map(p => (
                     <div
                       key={p.id}
                       className="rounded-xl px-3 py-2.5 flex flex-col gap-1 cursor-pointer"
                       style={{ background: isDark ? '#111111' : '#ffffff', border: `1px solid ${border}` }}
                       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#00b8b2'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isDark ? '#262626' : '#e5e7eb'; }}
+                      onClick={() => onSelectPrompt?.(p)}
                     >
                       <div className="flex items-center justify-between gap-1">
                         <span
-                          className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
+                          className="flex items-center gap-0.5 px-1.5 py-px rounded-full text-[9px] [&>svg]:w-2.5 [&>svg]:h-2.5"
                           style={{ background: isDark ? '#1a1a1a' : '#f3f4f6', color: muted, border: `1px solid ${border}` }}
                         >
                           {CATEGORY_ICONS[p.category]}
@@ -843,10 +853,10 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                 </div>
 
                 {/* Divider */}
-                <div style={{ height: 1, background: border, flexShrink: 0 }} />
+                <div style={{ height: 1, background: border, flexShrink: 0, marginTop: 12, marginBottom: 8 }} />
 
                 {/* MOST RECENT TRANSCRIPTS */}
-                <div className="px-4 pt-4 pb-2">
+                <div className="px-4 pt-5 pb-2">
                   <p className="text-[10px] m-0" style={{ color: muted, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                     Most Recent Transcripts
                   </p>
@@ -880,7 +890,7 @@ function PromptDetailPanel({ prompt, isDark, onClose, gated, onGated, onAction }
                       {/* Square thumbnail */}
                       <div
                         className="flex-shrink-0 rounded-xl overflow-hidden"
-                        style={{ width: 56, height: 100 }}
+                        style={{ width: 56, height: 56 }}
                       >
                         <img src={t.thumb} alt={t.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                       </div>
@@ -941,6 +951,10 @@ export function PromptBasePage() {
   const [filterSearchFocused, setFilterSearchFocused] = useState(false);
   const [sortBy, setSortBy] = useState<'popular' | 'az' | 'za'>('popular');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [promptPage, setPromptPage] = useState(1);
+  const [promptsPerPage, setPromptsPerPage] = useState(30);
+  const [ppDropdownPos, setPpDropdownPos] = useState<{ top: number; right: number } | null>(null);
+  const ppBtnRef = React.useRef<HTMLButtonElement>(null);
 
   const bg     = isDark ? '#0d0d0d' : '#ffffff';
   const border = isDark ? '#262626' : '#e5e7eb';
@@ -958,12 +972,15 @@ export function PromptBasePage() {
 
   const sortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Most popular';
 
+  React.useEffect(() => { setPromptPage(1); }, [activeCategory, searchQuery, sortBy]);
+
   const filtered = PROMPTS
     .filter(p => {
-      const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+      const matchesCat = activeCategory === 'All' || activeCategory === 'Featured' ? true : p.category === activeCategory;
+      const matchesFeatured = activeCategory === 'Featured' ? p.featured === true : true;
       const q = searchQuery.toLowerCase();
       const matchesQ = !q || p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.tags.some(t => t.toLowerCase().includes(q));
-      return matchesCat && matchesQ;
+      return matchesCat && matchesFeatured && matchesQ;
     })
     .sort((a, b) => {
       if (sortBy === 'popular') return b.uses - a.uses;
@@ -975,6 +992,10 @@ export function PromptBasePage() {
   // All prompts visible to everyone — gating is on action, not visibility
   const visibleFeatured = filtered.filter(p => p.featured);
   const visibleRest     = filtered.filter(p => !p.featured);
+
+  // Pagination
+  const paginationTarget = activeCategory === 'Featured' ? visibleFeatured : visibleRest;
+  const paginatedItems = paginationTarget.slice((promptPage - 1) * promptsPerPage, promptPage * promptsPerPage);
 
   // Action gating: free users get FREE_LIMITS.prompts free actions, then see upgrade modal
   const isGated   = isFree && actionsUsed >= FREE_LIMITS.prompts;
@@ -1123,34 +1144,203 @@ export function PromptBasePage() {
 
           {/* Scrollable content */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div className="max-w-[1280px] mx-auto w-full">
 
-            {/* Featured prompts */}
-            {visibleFeatured.length > 0 && (
+            {/* Featured prompts - only when not on Featured tab */}
+            {activeCategory !== 'Featured' && visibleFeatured.length > 0 && (
               <div className="mb-8">
                 <p className="text-xs mb-3 px-0.5" style={{ color: muted, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                   Featured
                 </p>
-                <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-                  {visibleFeatured.map((p) => (
+                <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  {visibleFeatured.slice(0, 6).map((p) => (
                     <PromptCard key={p.id} prompt={p} isDark={isDark} border={border} text={text} muted={muted} hoverBg={isDark ? '#141414' : '#ffffff'} gated={isGated} onGated={openUpgrade} onAction={onAction} onOpen={setSelectedPrompt} />
                   ))}
                 </div>
+                {visibleFeatured.length > 6 && (
+                  <button
+                    onClick={() => setActiveCategory('Featured')}
+                    className="mt-3 text-xs"
+                    style={{ color: '#00b8b2', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
+                    See all featured →
+                  </button>
+                )}
               </div>
             )}
 
-            {/* All Prompts */}
-            {visibleRest.length > 0 && (
+            {/* Divider - only when both sections have content and not on Featured tab */}
+            {activeCategory !== 'Featured' && visibleFeatured.length > 0 && visibleRest.length > 0 && (
+              <div className="my-6" style={{ height: 1, background: border }} />
+            )}
+
+            {/* All/Featured Prompts grid + pagination */}
+            {paginationTarget.length > 0 && (
               <div>
-                {visibleFeatured.length > 0 && (
-                  <p className="text-xs mb-3 px-0.5" style={{ color: muted, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                    All Prompts
-                  </p>
-                )}
-                <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
-                  {visibleRest.map((p) => (
+                <p className="text-xs mb-3 px-0.5" style={{ color: muted, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  {activeCategory === 'Featured' ? 'Featured Prompts' : (visibleFeatured.length > 0 ? 'All Prompts' : '')}
+                </p>
+                <div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  {paginatedItems.map((p) => (
                     <PromptCard key={p.id} prompt={p} isDark={isDark} border={border} text={text} muted={muted} hoverBg={isDark ? '#141414' : '#ffffff'} gated={isGated} onGated={openUpgrade} onAction={onAction} onOpen={setSelectedPrompt} />
                   ))}
                 </div>
+
+                {/* Pagination bar */}
+                {paginationTarget.length > promptsPerPage && (() => {
+                  const totalPages = Math.ceil(paginationTarget.length / promptsPerPage);
+                  return (
+                    <div
+                      className="mt-8 mb-2 rounded-2xl overflow-hidden"
+                      style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                    >
+                      <div className="flex items-center justify-between px-5 py-3.5 gap-3 flex-wrap">
+                        {/* Left: prev + page numbers + next */}
+                        <div className="flex items-center gap-0.5">
+                          {/* Prev */}
+                          <button
+                            disabled={promptPage === 1}
+                            onClick={() => setPromptPage(p => Math.max(1, p - 1))}
+                            title="Previous page"
+                            style={{
+                              width: 32, height: 32, borderRadius: 8,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'transparent', border: 'none',
+                              color: promptPage === 1 ? (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db') : muted,
+                              cursor: promptPage === 1 ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.12s',
+                            }}
+                            onMouseEnter={ev => { if (promptPage !== 1) { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; (ev.currentTarget as HTMLButtonElement).style.color = text; } }}
+                            onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; (ev.currentTarget as HTMLButtonElement).style.color = promptPage === 1 ? (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db') : muted; }}
+                          >
+                            <ChevronDown className="w-3.5 h-3.5 rotate-90" />
+                          </button>
+
+                          {/* Smart page numbers */}
+                          {(() => {
+                            const sp: (number | '…')[] = [];
+                            if (totalPages <= 7) {
+                              for (let i = 1; i <= totalPages; i++) sp.push(i);
+                            } else if (promptPage <= 4) {
+                              sp.push(1, 2, 3, 4, 5, '…', totalPages);
+                            } else if (promptPage >= totalPages - 3) {
+                              sp.push(1, '…', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                            } else {
+                              sp.push(1, '…', promptPage - 1, promptPage, promptPage + 1, '…', totalPages);
+                            }
+                            return sp.map((p, i) =>
+                              p === '…' ? (
+                                <span key={`el-${i}`} style={{ width: 32, height: 32, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: muted, fontSize: 12, flexShrink: 0, letterSpacing: 1 }}>···</span>
+                              ) : (
+                                <button
+                                  key={p}
+                                  onClick={() => setPromptPage(p as number)}
+                                  style={{
+                                    width: 32, height: 32, borderRadius: 8, fontSize: 13,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
+                                    background: promptPage === p ? text : 'transparent',
+                                    color: promptPage === p ? bg : muted,
+                                    border: 'none',
+                                    fontWeight: promptPage === p ? 600 : 400,
+                                  }}
+                                  onMouseEnter={ev => { if (promptPage !== p) { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; (ev.currentTarget as HTMLButtonElement).style.color = text; } }}
+                                  onMouseLeave={ev => { if (promptPage !== p) { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; (ev.currentTarget as HTMLButtonElement).style.color = muted; } }}
+                                >{p}</button>
+                              )
+                            );
+                          })()}
+
+                          {/* Next */}
+                          <button
+                            disabled={promptPage === totalPages}
+                            onClick={() => setPromptPage(p => Math.min(totalPages, p + 1))}
+                            title="Next page"
+                            style={{
+                              width: 32, height: 32, borderRadius: 8,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: 'transparent', border: 'none',
+                              color: promptPage === totalPages ? (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db') : muted,
+                              cursor: promptPage === totalPages ? 'not-allowed' : 'pointer',
+                              transition: 'all 0.12s',
+                            }}
+                            onMouseEnter={ev => { if (promptPage !== totalPages) { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; (ev.currentTarget as HTMLButtonElement).style.color = text; } }}
+                            onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; (ev.currentTarget as HTMLButtonElement).style.color = promptPage === totalPages ? (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db') : muted; }}
+                          >
+                            <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+                          </button>
+                        </div>
+
+                        {/* Right: items per page dropdown */}
+                        <div className="relative flex-shrink-0">
+                          <button
+                            ref={ppBtnRef}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+                            style={{ background: 'transparent', border: `1px solid ${border}`, color: muted, transition: 'all 0.12s' }}
+                            onClick={() => {
+                              if (openDropdown === 'pg-pp') { setOpenDropdown(null); setPpDropdownPos(null); }
+                              else {
+                                const rect = ppBtnRef.current?.getBoundingClientRect();
+                                if (rect) setPpDropdownPos({ top: rect.top - 8, right: window.innerWidth - rect.right });
+                                setOpenDropdown('pg-pp');
+                              }
+                            }}
+                            onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.color = text; (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                            onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.color = muted; (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                          >
+                            <span style={{ color: text, fontWeight: 600 }}>{promptsPerPage}</span>
+                            <span style={{ color: muted }}>&thinsp;/ page</span>
+                            <ChevronDown className={`w-3 h-3 ml-0.5 transition-transform ${openDropdown === 'pg-pp' ? 'rotate-180' : ''}`} />
+                          </button>
+
+                          {openDropdown === 'pg-pp' && ppDropdownPos && ReactDOM.createPortal(
+                            <>
+                              <div className="fixed inset-0 z-[9998]" onClick={() => { setOpenDropdown(null); setPpDropdownPos(null); }} />
+                              <div
+                                className="rounded-xl overflow-hidden py-1"
+                                style={{
+                                  position: 'fixed', top: ppDropdownPos.top, right: ppDropdownPos.right,
+                                  transform: 'translateY(-100%)', zIndex: 9999,
+                                  background: isDark ? '#1a1a1a' : '#fff',
+                                  border: `1px solid ${border}`,
+                                  boxShadow: isDark ? '0 -8px 24px rgba(0,0,0,0.55)' : '0 -8px 24px rgba(0,0,0,0.14)',
+                                  minWidth: 130,
+                                }}
+                              >
+                                <div className="px-3 pt-2 pb-1.5">
+                                  <span className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Per page</span>
+                                </div>
+                                {[12, 24, 30, 50, 100].map(n => (
+                                  <button
+                                    key={n}
+                                    onClick={() => { setPromptsPerPage(n); setPromptPage(1); setOpenDropdown(null); setPpDropdownPos(null); }}
+                                    className="w-full flex items-center justify-between px-3 py-2 text-xs"
+                                    style={{
+                                      color: promptsPerPage === n ? '#00b8b2' : muted,
+                                      background: promptsPerPage === n ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent',
+                                      fontWeight: promptsPerPage === n ? 600 : 400,
+                                      transition: 'background 0.1s', cursor: 'pointer',
+                                    }}
+                                    onMouseEnter={ev => { if (promptsPerPage !== n) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                                    onMouseLeave={ev => { if (promptsPerPage !== n) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                                  >
+                                    <span>{n} / page</span>
+                                    {promptsPerPage === n && (
+                                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                        <path d="M2 6l3 3 5-5" stroke="#00b8b2" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                      </svg>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            </>,
+                            document.body
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -1163,6 +1353,7 @@ export function PromptBasePage() {
                 </button>
               </div>
             )}
+            </div>
           </div>
         </main>
       </div>
@@ -1175,6 +1366,7 @@ export function PromptBasePage() {
         gated={isGated}
         onGated={openUpgrade}
         onAction={onAction}
+        onSelectPrompt={setSelectedPrompt}
       />
     </div>
   );

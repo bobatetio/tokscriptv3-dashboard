@@ -2264,7 +2264,7 @@ export function DashboardPage() {
               </div>
             ) : (
               /* grid */
-              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                 {(items as Transcript[]).map((item) => {
                   return (
                   <div
@@ -3087,7 +3087,7 @@ export function DashboardPage() {
                   })}
                 </div>
               ) : (
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                   {(items as VideoItem[]).map(item => {
                     const thumb = item.thumbnail ?? `https://picsum.photos/seed/${item.id}/400/700`;
                     return (

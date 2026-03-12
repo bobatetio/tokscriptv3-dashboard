@@ -1574,7 +1574,7 @@ export function CreatorProfilePage() {
               <div className="flex-1 overflow-y-auto px-6 py-5">
                 
                 {filteredVideos.length > 0 ? (
-                  <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+                  <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                     {paginatedVideos.map(v => (
                       <VideoCard
                         key={v.id}
