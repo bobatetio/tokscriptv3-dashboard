@@ -1,0 +1,2 @@
+/* Inter is loaded via <link> in the HTML entry point — no CSS @import needed.
+   System-font fallback applies until Inter loads at runtime. */
