@@ -1,4 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import imgBannerBg from "../../assets/b3a148853965f0eea6c20b8748026b122bc3fc9c.png";
 import imgBannerBgLight from "../../assets/ad9c0482dcac9cb102e3083cdd68a90c0bd9c4dc.png";
 import imgBannerRocket from "../../assets/9bf39e8d7f131ea242d7146ac4fd23d28eccaa3e.png";
@@ -16,6 +17,7 @@ import {
   Users, Folder, FolderPlus, MoreHorizontal,
   Copy, Link2, ExternalLink, FolderInput, Pencil, RefreshCw, Trash2, Eye, BookOpen,
   Video, User,
+  ImageDown,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -1361,6 +1363,51 @@ function InlineDashboardOverview({
   );
 }
 
+// ─── Bulk Bar ─────────────────────────────────────────────────────────────────
+function DashboardBulkBar({
+  selectedCount, isDark, border, onDeselect, label, onDownload,
+}: {
+  selectedCount: number; isDark: boolean; border: string; onDeselect: () => void; label: string; onDownload: () => void;
+}) {
+  const hasSelection = selectedCount > 0;
+  return ReactDOM.createPortal(
+    <div style={{
+      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+      zIndex: 60,
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '10px 20px',
+      borderRadius: 9999,
+      background: isDark ? '#1a1a1a' : '#ffffff',
+      border: `1px solid ${border}`,
+      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.15)',
+    }}>
+      {hasSelection ? (
+        <span style={{ color: '#00b8b2', fontWeight: 600, fontSize: 13 }}>{selectedCount} selected</span>
+      ) : (
+        <span style={{ color: '#888', fontWeight: 400, fontSize: 13 }}>0 selected — click cards to select</span>
+      )}
+      <div style={{ width: 1, height: 20, background: border }} />
+      <button
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+        style={{ background: hasSelection ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'), color: hasSelection ? '#ffffff' : '#888', fontWeight: 500, border: 'none', cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
+        onClick={() => { if (hasSelection) onDownload(); }}
+      >
+        <Download size={14} /> {label}
+      </button>
+      <div style={{ width: 1, height: 20, background: border }} />
+      <button
+        className="flex items-center justify-center p-1.5 rounded-lg"
+        style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer' }}
+        onClick={onDeselect}
+        title="Exit selection mode"
+      >
+        <X size={14} />
+      </button>
+    </div>,
+    document.body
+  );
+}
+
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 export function DashboardPage() {
   const _nav = useNavigate();
@@ -1436,6 +1483,43 @@ export function DashboardPage() {
   const [groupActiveDurations, setGroupActiveDurations] = useState<string[]>([]);
   const [groupActiveWords, setGroupActiveWords] = useState<string[]>([]);
   const [groupActiveDateRanges, setGroupActiveDateRanges] = useState<string[]>([]);
+  const [singlesSelectedIds, setSinglesSelectedIds] = useState<Set<number>>(new Set());
+  const [groupSelectedIds, setGroupSelectedIds] = useState<Set<number>>(new Set());
+
+  // Clear singles selection when leaving grid view
+  useEffect(() => {
+    if (singlesViewMode !== 'grid') {
+      setSinglesSelectedIds(new Set());
+    }
+  }, [singlesViewMode]);
+
+  // Clear group selection when leaving grid view
+  useEffect(() => {
+    if (groupViewMode !== 'grid') {
+      setGroupSelectedIds(new Set());
+    }
+  }, [groupViewMode]);
+
+  // Clear all selection on view/category change
+  useEffect(() => {
+    setSinglesSelectedIds(new Set());
+    setGroupSelectedIds(new Set());
+  }, [view.category, view.groupId]);
+
+  const toggleSinglesSelect = (id: number) => {
+    setSinglesSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleGroupSelect = (id: number) => {
+    setGroupSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const showToast = (msg: string) => {
     const id = Date.now();
@@ -1910,6 +1994,7 @@ export function DashboardPage() {
               </>
             )}
 
+
             <div className="flex-1" />
 
             {/* View toggle */}
@@ -2077,10 +2162,15 @@ export function DashboardPage() {
                   <div
                     key={item.id}
                     className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all relative"
-                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
-                    onClick={() => setSinglesSlideId(item.id)}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+                    style={{
+                      border: singlesSelectedIds.has(item.id) ? '2px solid #00b8b2' : `1px solid ${border}`,
+                      background: singlesSelectedIds.has(item.id)
+                        ? (isDark ? 'rgba(0,184,178,0.05)' : 'rgba(0,184,178,0.03)')
+                        : (isDark ? '#141414' : '#ffffff'),
+                    }}
+                    onClick={() => { setSinglesSlideId(item.id); }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = singlesSelectedIds.has(item.id) ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.06)') : hoverBg; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = singlesSelectedIds.has(item.id) ? (isDark ? 'rgba(0,184,178,0.05)' : 'rgba(0,184,178,0.03)') : (isDark ? '#141414' : '#ffffff'); }}
                   >
                     <div className="relative aspect-[9/16] w-full overflow-hidden flex-shrink-0">
                       <ImageWithFallback src={(item as Transcript).thumbnail ?? ''} alt={item.title} className="w-full h-full object-cover" />
@@ -2088,6 +2178,27 @@ export function DashboardPage() {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Play className="w-5 h-5 text-white fill-white opacity-80" />
                       </div>
+                      <div
+                          className="absolute top-2 left-2 flex items-center justify-center"
+                          style={{ width: 28, height: 28 }}
+                          onClick={e => { e.stopPropagation(); toggleSinglesSelect(item.id); }}
+                        >
+                          <div
+                            style={{
+                              width: 20, height: 20, borderRadius: '50%',
+                              background: singlesSelectedIds.has(item.id) ? '#00b8b2' : 'rgba(0,0,0,0.4)',
+                              border: singlesSelectedIds.has(item.id) ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {singlesSelectedIds.has(item.id) && (
+                              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                <path d="M2 5l2.5 2.5 3.5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </div>
+                        </div>
                       <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
                         <VideoPlatformBadge platform={(item as Transcript).platform} isDark={isDark} />
                         <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
@@ -2521,6 +2632,7 @@ export function DashboardPage() {
               </>
             )}
 
+
             <div className="flex-1" />
 
             {/* View toggle — only shown inside a specific group */}
@@ -2934,10 +3046,15 @@ export function DashboardPage() {
                       <div
                         key={item.id}
                         className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
-                        style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
-                        onClick={() => setGroupSlideId(item.id)}
-                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+                        style={{
+                          border: groupSelectedIds.has(item.id) ? '2px solid #00b8b2' : `1px solid ${border}`,
+                          background: groupSelectedIds.has(item.id)
+                            ? (isDark ? 'rgba(0,184,178,0.05)' : 'rgba(0,184,178,0.03)')
+                            : (isDark ? '#141414' : '#ffffff'),
+                        }}
+                        onClick={() => { setGroupSlideId(item.id); }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = groupSelectedIds.has(item.id) ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.06)') : hoverBg; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = groupSelectedIds.has(item.id) ? (isDark ? 'rgba(0,184,178,0.05)' : 'rgba(0,184,178,0.03)') : (isDark ? '#141414' : '#ffffff'); }}
                       >
                         <div className="relative aspect-[9/16] w-full overflow-hidden flex-shrink-0">
                           <ImageWithFallback src={thumb} alt={item.title} className="w-full h-full object-cover" />
@@ -2945,6 +3062,27 @@ export function DashboardPage() {
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Play className="w-5 h-5 text-white fill-white opacity-80" />
                           </div>
+                          <div
+                              className="absolute top-2 left-2 flex items-center justify-center"
+                              style={{ width: 28, height: 28 }}
+                              onClick={e => { e.stopPropagation(); toggleGroupSelect(item.id); }}
+                            >
+                              <div
+                                style={{
+                                  width: 20, height: 20, borderRadius: '50%',
+                                  background: groupSelectedIds.has(item.id) ? '#00b8b2' : 'rgba(0,0,0,0.4)',
+                                  border: groupSelectedIds.has(item.id) ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {groupSelectedIds.has(item.id) && (
+                                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                    <path d="M2 5l2.5 2.5 3.5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
+                                )}
+                              </div>
+                            </div>
                           <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
                             <VideoPlatformBadge platform={item.platform} isDark={isDark} />
                             <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
@@ -3825,6 +3963,28 @@ export function DashboardPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Bulk selection bars */}
+      {view.category === 'singles' && singlesSelectedIds.size > 0 && (
+        <DashboardBulkBar
+          selectedCount={singlesSelectedIds.size}
+          isDark={isDark}
+          border={border}
+          onDeselect={() => { setSinglesSelectedIds(new Set()); }}
+          label="Download Transcripts"
+          onDownload={() => { /* placeholder */ }}
+        />
+      )}
+      {(view.category === 'collections' || view.category === 'bulk') && view.groupId != null && groupSelectedIds.size > 0 && (
+        <DashboardBulkBar
+          selectedCount={groupSelectedIds.size}
+          isDark={isDark}
+          border={border}
+          onDeselect={() => { setGroupSelectedIds(new Set()); }}
+          label="Download Transcripts"
+          onDownload={() => { /* placeholder */ }}
+        />
       )}
     </div>
   );

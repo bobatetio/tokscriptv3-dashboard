@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {
   Search, Clock, CheckCheck, Play, Download, ImageDown,
   SlidersHorizontal, ChevronDown, Calendar, LayoutGrid, List, X,
-  FileText, MoreHorizontal, Columns2, Video, CheckSquare, Square, Layers,
+  FileText, MoreHorizontal, Columns2, Video, Layers,
   Heart, FolderPlus,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
@@ -165,11 +165,11 @@ function VideosTranscriptPanel({
 
 // ─── Video Card (grid view) ───────────────────────────────────────────────────
 function VideoCard({
-  entry, isDark, border, text, muted, hoverBg, onSelect, selectionMode, isSelected, onToggleSelect,
+  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect,
 }: {
   entry: HistoryEntry; isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
   onSelect: (e: HistoryEntry) => void;
-  selectionMode: boolean; isSelected: boolean; onToggleSelect: (id: number) => void;
+  isSelected: boolean; onToggleSelect: (id: number) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -191,11 +191,7 @@ function VideoCard({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => {
-        if (selectionMode) {
-          onToggleSelect(entry.id);
-        } else {
-          onSelect(entry);
-        }
+        onSelect(entry);
       }}
     >
       {/* Thumbnail */}
@@ -203,8 +199,8 @@ function VideoCard({
         <ImageWithFallback src={entry.thumbnail} alt={entry.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 55%)' }} />
 
-        {/* Play icon — only on hover, not in selection mode */}
-        {hovered && !selectionMode && (
+        {/* Play icon — only on hover */}
+        {hovered && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)' }}>
@@ -213,8 +209,8 @@ function VideoCard({
           </div>
         )}
 
-        {/* Checkbox top-left — visible only when selectionMode */}
-        {selectionMode && (
+        {/* Checkbox top-left — always visible */}
+        {(
           <div
             className="absolute top-2 left-2 flex items-center justify-center"
             style={{ width: 28, height: 28 }}
@@ -386,11 +382,11 @@ function VideoCard({
 
 // ─── Video Row (list view) ────────────────────────────────────────────────────
 function VideoRow({
-  entry, isDark, border, text, muted, hoverBg, onSelect, selectionMode, isSelected, onToggleSelect,
+  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect,
 }: {
   entry: HistoryEntry; isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
   onSelect: (e: HistoryEntry) => void;
-  selectionMode: boolean; isSelected: boolean; onToggleSelect: (id: number) => void;
+  isSelected: boolean; onToggleSelect: (id: number) => void;
 }) {
   return (
     <div
@@ -404,15 +400,11 @@ function VideoRow({
       onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
       onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
       onClick={() => {
-        if (selectionMode) {
-          onToggleSelect(entry.id);
-        } else {
-          onSelect(entry);
-        }
+        onSelect(entry);
       }}
     >
-      {/* Checkbox gutter in selection mode */}
-      {selectionMode && (
+      {/* Checkbox gutter — always visible */}
+      {(
         <div
           className="flex items-center justify-center flex-shrink-0"
           style={{ width: 32 }}
@@ -557,7 +549,6 @@ export function VideosPage() {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [ppDropdownPos, setPpDropdownPos] = useState<{ top: number; right: number } | null>(null);
   const ppBtnRef = useRef<HTMLButtonElement>(null);
-  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [ctaHovered, setCtaHovered] = useState(false);
   const [videosTab, setVideosTab] = useState<'all' | 'sessions'>('all');
@@ -565,10 +556,9 @@ export function VideosPage() {
 
   const allSessions = [...videoSessions, ...MOCK_SESSIONS];
 
-  // Auto-exit selection mode when switching to hybrid view
+  // Clear selection when switching to hybrid view
   useEffect(() => {
     if (viewMode === 'hybrid') {
-      setSelectionMode(false);
       setSelectedIds(new Set());
     }
   }, [viewMode]);
@@ -902,49 +892,6 @@ export function VideosPage() {
               </>
             )}
 
-            {/* Select toggle (not in hybrid mode) */}
-            {viewMode !== 'hybrid' && (
-              <>
-                <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
-                <button
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                  style={{
-                    background: selectionMode ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                    color: selectionMode ? '#00b8b2' : muted,
-                    border: `1px solid ${selectionMode ? 'rgba(0,184,178,0.25)' : border}`,
-                    fontWeight: selectionMode ? 500 : 400,
-                  }}
-                  onClick={() => {
-                    setSelectionMode(prev => {
-                      if (prev) setSelectedIds(new Set());
-                      return !prev;
-                    });
-                  }}
-                >
-                  {selectionMode ? <CheckSquare className="w-3 h-3" /> : <Square className="w-3 h-3" />}
-                  Select
-                </button>
-                {selectionMode && (
-                  <button
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                    style={{
-                      background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
-                      color: muted,
-                      border: `1px solid ${border}`,
-                    }}
-                    onClick={() => {
-                      if (selectedIds.size === filteredVideos.length) {
-                        setSelectedIds(new Set());
-                      } else {
-                        setSelectedIds(new Set(filteredVideos.map(v => v.id)));
-                      }
-                    }}
-                  >
-                    {selectedIds.size === filteredVideos.length ? 'Deselect All' : 'Select All'}
-                  </button>
-                )}
-              </>
-            )}
 
             <div className="flex-1" />
 
@@ -1108,7 +1055,7 @@ export function VideosPage() {
                       <VideoRow
                         key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
                         onSelect={entry => setSelectedEntry(entry)}
-                        selectionMode={selectionMode} isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
+                        isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
                       />
                     ))}
                   </div>
@@ -1147,7 +1094,7 @@ export function VideosPage() {
                       <VideoCard
                         key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
                         onSelect={entry => setSelectedEntry(entry)}
-                        selectionMode={selectionMode} isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
+                        isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
                       />
                     ))}
                   </div>
@@ -1401,12 +1348,12 @@ export function VideosPage() {
       </div>
 
       {/* Bulk selection bar */}
-      {videosTab === 'all' && selectionMode && (
+      {videosTab === 'all' && selectedIds.size > 0 && (
         <BulkSelectionBar
           selectedIds={selectedIds}
           isDark={isDark}
           border={border}
-          onDeselect={() => { setSelectionMode(false); setSelectedIds(new Set()); }}
+          onDeselect={() => { setSelectedIds(new Set()); }}
           allVideos={VIDEOS_DATA}
         />
       )}

@@ -1,19 +1,33 @@
-# Handoff — Fix Grid Column Cap (max-w approach)
+# Handoff: Always-On Checkbox Selection (Remove Toggle Mode)
 
 ## Status: DONE
 
-## What Changed
-Reverted calc-based grid formulas back to simple `minmax(195px/200px, 1fr)` across all 6 files. Added `max-w-[1280px] mx-auto` container wrappers to CreatorProfilePage (the only page missing them) to constrain content width — this is the correct approach matching DashboardPage Singles.
+## Changes Made
+All 3 files modified in parallel by agents:
 
-### Files Modified
-1. `src/app/components/DashboardPage.tsx` — reverted 3 grid formulas (2x 195px, 1x 200px)
-2. `src/app/components/VideosPage.tsx` — reverted 2 grid formulas
-3. `src/app/components/DiscoverPage.tsx` — reverted 1 grid formula
-4. `src/app/components/CreatorProfilePage.tsx` — reverted 1 grid formula + added max-w wrappers to 4 areas + removed self-end
-5. `src/app/components/videos/VideoResultsPage.tsx` — reverted 1 grid formula
-6. `src/app/components/videos/SessionDetailView.tsx` — reverted 1 grid formula
+### 1. `src/app/components/VideosPage.tsx`
+- Removed `selectionMode` state + `setSelectionMode` calls
+- Removed Select pill + Select All from filter bar
+- VideoCard: checkbox always visible, play icon always visible on hover, card click always opens detail
+- VideoCardList: same pattern
+- Floating bar gate: `selectedIds.size > 0`
+- Removed `Square`/`CheckSquare` imports
 
-### Verification
-- `vite build` clean (1.28s)
-- Screenshots verified: profile page centered with 6 cols, discover 6 cols, videos correct
-- "Scanned 2d ago · Rescan" properly aligned (not pushed right)
+### 2. `src/app/components/DashboardPage.tsx`
+- Removed `singlesSelectionMode` + `groupSelectionMode` states
+- Removed Select pill + Select All from both Singles and Collections/Bulks filter bars
+- Singles grid: checkbox always visible, play icon always visible, card click always opens slide
+- Collections/Bulks grid: same pattern
+- Floating bar gates: `singlesSelectedIds.size > 0` / `groupSelectedIds.size > 0`
+- Removed `Square`/`CheckSquare` imports
+
+### 3. `src/app/components/CreatorProfilePage.tsx`
+- Removed `selectionMode` state + `setSelectionMode` calls
+- Removed Select pill + Select All from filter bar
+- VideoCard: checkbox always visible, play icon always visible, card click always opens detail
+- Floating bar gate: `selectedIds.size > 0`
+- Removed `Square`/`CheckSquare` imports
+
+## Verification
+- `vite build` — clean, 0 errors
+- Screenshots verified: Singles, Collection detail, Profile detail, Videos — all show always-on checkboxes, no Select pill

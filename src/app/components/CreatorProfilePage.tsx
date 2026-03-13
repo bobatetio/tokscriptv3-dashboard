@@ -5,6 +5,7 @@
  * Clicking a video opens the TranscriptDetailPanel in a right-side split panel.
  */
 import React, { useState, useContext, useMemo, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import {
   ChevronRight, Play, Calendar, Copy, CheckCheck,
@@ -344,6 +345,7 @@ function VideoPlatformBadge({ platform, isDark }: { platform: string; isDark: bo
 // ─── Video Card (1-for-1 match with Discover HistoryCard) ─────────────────────
 function VideoCard({
   video, creator, isDark, border, text, muted, hoverBg, onSelect,
+  isSelected = false, onToggleSelect,
 }: {
   video: CreatorVideo;
   creator: string;
@@ -353,6 +355,8 @@ function VideoCard({
   muted: string;
   hoverBg: string;
   onSelect: (v: CreatorVideo) => void;
+  isSelected?: boolean;
+  onToggleSelect?: (id: number) => void;
 }) {
   const [copied, setCopied]       = useState(false);
   const [favourited, setFavourited] = useState(false);
@@ -364,18 +368,46 @@ function VideoCard({
   return (
     <div
       className="rounded-2xl overflow-hidden flex flex-col transition-all cursor-pointer"
-      style={{ border: `1px solid ${border}`, background: restBg }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = restBg; }}
-      onClick={() => onSelect(video)}
+      style={{
+        border: isSelected ? '2px solid #f59e0b' : `1px solid ${border}`,
+        background: isSelected
+          ? (isDark ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.03)')
+          : restBg,
+      }}
+      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? (isDark ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.03)') : restBg; }}
+      onClick={() => {
+        onSelect(video);
+      }}
     >
       {/* Thumbnail */}
       <div className="relative aspect-[9/16] w-full overflow-hidden flex-shrink-0">
         <ImageWithFallback src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 55%)' }} />
         <div className="absolute inset-0 flex items-center justify-center">
-          <Play className="w-5 h-5 text-white fill-white opacity-80" />
-        </div>
+            <Play className="w-5 h-5 text-white fill-white opacity-80" />
+          </div>
+        <div
+            className="absolute top-2 left-2 flex items-center justify-center"
+            style={{ width: 28, height: 28 }}
+            onClick={e => { e.stopPropagation(); onToggleSelect?.(video.id); }}
+          >
+            <div
+              style={{
+                width: 20, height: 20, borderRadius: '50%',
+                background: isSelected ? '#f59e0b' : 'rgba(0,0,0,0.4)',
+                border: isSelected ? 'none' : '1.5px solid rgba(255,255,255,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              {isSelected && (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 5l2.5 2.5 3.5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              )}
+            </div>
+          </div>
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
           <VideoPlatformBadge platform={video.platform} isDark={isDark} />
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(video.duration)}</span>
@@ -1058,6 +1090,66 @@ function CreatorHeader({
   );
 }
 
+// ─── Profile Bulk Selection Bar ───────────────────────────────────────────────
+function ProfileBulkBar({
+  selectedCount, isDark, border, onDeselect, onDownloadVideos, onDownloadCovers, onDownloadTranscripts,
+}: {
+  selectedCount: number; isDark: boolean; border: string; onDeselect: () => void;
+  onDownloadVideos: () => void; onDownloadCovers: () => void; onDownloadTranscripts: () => void;
+}) {
+  const hasSelection = selectedCount > 0;
+  return ReactDOM.createPortal(
+    <div style={{
+      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+      zIndex: 60,
+      display: 'flex', alignItems: 'center', gap: 12,
+      padding: '10px 20px',
+      borderRadius: 9999,
+      background: isDark ? '#1a1a1a' : '#ffffff',
+      border: `1px solid ${border}`,
+      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.15)',
+    }}>
+      {hasSelection ? (
+        <span style={{ color: '#f59e0b', fontWeight: 600, fontSize: 13 }}>{selectedCount} selected</span>
+      ) : (
+        <span style={{ color: '#888', fontWeight: 400, fontSize: 13 }}>0 selected — click videos to select</span>
+      )}
+      <div style={{ width: 1, height: 20, background: border }} />
+      <button
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+        style={{ background: hasSelection ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'), color: hasSelection ? '#ffffff' : '#888', fontWeight: 500, border: 'none', cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
+        onClick={() => { if (hasSelection) onDownloadVideos(); }}
+      >
+        <Download size={14} /> Download Videos
+      </button>
+      <button
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+        style={{ background: 'transparent', color: '#888', border: `1px solid ${border}`, cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
+        onClick={() => { if (hasSelection) onDownloadCovers(); }}
+      >
+        <Image size={14} /> Covers
+      </button>
+      <button
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+        style={{ background: 'transparent', color: '#888', border: `1px solid ${border}`, cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
+        onClick={() => { if (hasSelection) onDownloadTranscripts(); }}
+      >
+        <FileText size={14} /> Transcripts
+      </button>
+      <div style={{ width: 1, height: 20, background: border }} />
+      <button
+        className="flex items-center justify-center p-1.5 rounded-lg"
+        style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer' }}
+        onClick={onDeselect}
+        title="Exit selection mode"
+      >
+        <X size={14} />
+      </button>
+    </div>,
+    document.body
+  );
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export function CreatorProfilePage() {
   const { creator = '' } = useParams<{ creator: string }>();
@@ -1167,6 +1259,7 @@ export function CreatorProfilePage() {
   const [openDropdown, setOpenDropdown]                 = useState<string | null>(null);
   const [currentPage, setCurrentPage]                   = useState(1);
   const ITEMS_PER_PAGE = 12;
+  const [selectedIds, setSelectedIds]                   = useState<Set<number>>(new Set());
 
   // Theme tokens
   const bg      = isDark ? '#0d0d0d' : '#ffffff';
@@ -1222,6 +1315,19 @@ export function CreatorProfilePage() {
 
   // Reset to page 1 whenever filters change
   useEffect(() => { setCurrentPage(1); }, [searchQuery, activePlatform, activeDuration, activeWords, sortBy]);
+
+  // Clear selection when filters change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [searchQuery, activePlatform, activeDuration, activeWords, sortBy]);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   // Clear the nav-source tag whenever this page unmounts (browser Back, link click, etc.)
   // so a stale 'profiles' value never bleeds into a later navigation from Dashboard or elsewhere.
@@ -1637,6 +1743,7 @@ export function CreatorProfilePage() {
                   </>
                 )}
 
+
               </div>
               </div>
 
@@ -1701,6 +1808,8 @@ export function CreatorProfilePage() {
                         muted={muted}
                         hoverBg={hoverBg}
                         onSelect={setPanelVideo}
+                        isSelected={selectedIds.has(v.id)}
+                        onToggleSelect={toggleSelect}
                       />
                     ))}
                   </div>
@@ -1857,6 +1966,19 @@ export function CreatorProfilePage() {
             }
           `}</style>
         </>
+      )}
+
+      {/* Profile bulk selection bar */}
+      {selectedIds.size > 0 && (
+        <ProfileBulkBar
+          selectedCount={selectedIds.size}
+          isDark={isDark}
+          border={border}
+          onDeselect={() => { setSelectedIds(new Set()); }}
+          onDownloadVideos={() => { /* placeholder */ }}
+          onDownloadCovers={() => { /* placeholder */ }}
+          onDownloadTranscripts={() => { /* placeholder */ }}
+        />
       )}
     </div>
   );
