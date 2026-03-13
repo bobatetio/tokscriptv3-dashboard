@@ -16,6 +16,8 @@ import { PromptDetailPage } from './components/PromptDetailPage';
 import { DiscoverPage } from './components/DiscoverPage';
 import { CreatorProfilePage } from './components/CreatorProfilePage';
 import { ProfilesPage } from './components/ProfilesPage';
+import { VideosPage } from './components/VideosPage';
+import { VideoResultsPage } from './components/videos/VideoResultsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { FolderPage } from './components/FolderPage';
 import { UpgradeModal } from './components/UpgradeModal';
@@ -48,6 +50,8 @@ const router = createBrowserRouter([
       { path: '/prompt-base/:id', Component: PromptDetailPage },
       { path: '/discover', Component: DiscoverPage },
       { path: '/profiles', Component: ProfilesPage },
+      { path: '/videos/results', Component: VideoResultsPage },
+      { path: '/videos', Component: VideosPage },
       { path: '/profile/:creator', Component: CreatorProfilePage },
       { path: '/settings', Component: SettingsPage },
       { path: '/folder/:id', Component: FolderPage },

@@ -83,6 +83,7 @@ const TAB_HOW_DESC: Record<InputTab, string> = {
 function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
   const { isDark } = useContext(ThemeContext);
   const navigate = useNavigate();
+  const { close, setPendingVideoLinks } = useNewTranscript();
   const [activeInputTab, setActiveInputTab] = useState<InputTab>('transcripts');
   const [tabValues, setTabValues] = useState<Record<InputTab, string>>({
     transcripts: '',
@@ -264,7 +265,15 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={() => navigate('/freeresult')}
+                onClick={() => {
+                  if (activeInputTab === 'videos' && validLines.length > 0) {
+                    setPendingVideoLinks(validLines);
+                    close();
+                    navigate('/videos/results', { state: { links: validLines } });
+                  } else {
+                    navigate('/freeresult');
+                  }
+                }}
                 className="flex items-center gap-1.5 px-4 h-8 rounded-xl transition-colors text-white text-xs font-medium flex-shrink-0"
                 style={{ background: currentTab.color }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'; }}

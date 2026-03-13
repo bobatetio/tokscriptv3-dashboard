@@ -190,7 +190,7 @@ export function TranscriptResultPage() {
       {/* ══ BODY ════════════════════════════════════════════════════════════ */}
       <div className="flex flex-1 overflow-hidden">
 
-        <AppSidebar activePage="library" collapsed={sidebarCollapsed} />
+        <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} />
 
         {/* ── Detail content — identical shell to DashboardPage's right panel ── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

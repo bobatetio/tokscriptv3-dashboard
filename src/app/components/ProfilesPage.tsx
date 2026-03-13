@@ -494,6 +494,7 @@ export function ProfilesPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showScanModal, setShowScanModal] = useState(false);
+  const [ctaHovered, setCtaHovered] = useState(false);
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [activeFollowers, setActiveFollowers] = useState<string[]>([]);
   const [activeVideos, setActiveVideos] = useState<string[]>([]);
@@ -820,17 +821,19 @@ export function ProfilesPage() {
               <div
                 className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
                 style={{
-                  border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.13)'}`,
-                  background: isDark ? '#141414' : '#ffffff',
+                  border: `1.5px solid ${ctaHovered ? '#f59e0b55' : '#f59e0b35'}`,
+                  background: ctaHovered
+                    ? `linear-gradient(180deg, #f59e0b22 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`
+                    : `linear-gradient(180deg, #f59e0b14 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`,
                 }}
                 onClick={() => setShowScanModal(true)}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#1a1a1a' : '#f5f5f5'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+                onMouseEnter={() => setCtaHovered(true)}
+                onMouseLeave={() => setCtaHovered(false)}
               >
                 {/* Illustration */}
                 <div
                   className="flex items-center justify-center flex-1"
-                  style={{ background: isDark ? 'rgba(255,255,255,0.03)' : '#f9f9f9' }}
+                  style={{ background: isDark ? 'rgba(245,158,11,0.04)' : '#f59e0b08' }}
                 >
                   <div style={{ width: 44, height: 44 }}>
                     <ContainerUserPlus />
@@ -839,7 +842,7 @@ export function ProfilesPage() {
                 {/* Text */}
                 <div
                   className="px-3.5 py-3"
-                  style={{ borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'}` }}
+                  style={{ borderTop: '1px solid #f59e0b20' }}
                 >
                   <p className="text-xs" style={{ color: text, fontWeight: 600 }}>Scan a new profile</p>
                   <p className="text-[10px] mt-1" style={{ color: muted, lineHeight: 1.5 }}>
