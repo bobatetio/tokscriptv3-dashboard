@@ -1445,8 +1445,8 @@ export function CreatorProfilePage() {
                 <div
                   className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs flex-shrink-0"
                   style={{
-                    background: filterSearchFocused ? (isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6') : 'transparent',
-                    border: `1px solid ${filterSearchFocused ? border : 'transparent'}`,
+                    background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+                    border: `1px solid ${border}`,
                     color: muted, width: 220, transition: 'all 0.15s',
                   }}
                 >

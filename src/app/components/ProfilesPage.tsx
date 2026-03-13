@@ -28,6 +28,11 @@ const PROFILES_DATA = [
     totalWords: '2.4M',
     avatar: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',
     verified: true,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=200&q=80',
+      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&q=80',
+      'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=200&q=80',
+    ],
   },
   {
     handle: '@fitwithjess',
@@ -39,6 +44,11 @@ const PROFILES_DATA = [
     totalWords: '890K',
     avatar: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80',
     verified: true,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=200&q=80',
+      'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200&q=80',
+      'https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=200&q=80',
+    ],
   },
   {
     handle: '@roamingalex',
@@ -50,6 +60,11 @@ const PROFILES_DATA = [
     totalWords: '1.1M',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80',
     verified: false,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=200&q=80',
+      'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=80',
+      'https://images.unsplash.com/photo-1530789253388-582c481c54b0?w=200&q=80',
+    ],
   },
   {
     handle: '@webdevdaily',
@@ -61,6 +76,11 @@ const PROFILES_DATA = [
     totalWords: '3.1M',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&q=80',
     verified: true,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&q=80',
+      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200&q=80',
+      'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=200&q=80',
+    ],
   },
   {
     handle: '@techguru',
@@ -72,6 +92,11 @@ const PROFILES_DATA = [
     totalWords: '1.8M',
     avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=400&q=80',
     verified: false,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=200&q=80',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200&q=80',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&q=80',
+    ],
   },
   {
     handle: '@designsystem',
@@ -83,6 +108,11 @@ const PROFILES_DATA = [
     totalWords: '740K',
     avatar: 'https://images.unsplash.com/photo-1607990283143-e81e7a2c9349?w=400&q=80',
     verified: false,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=200&q=80',
+      'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=200&q=80',
+      'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=200&q=80',
+    ],
   },
   {
     handle: '@kitchenlabs',
@@ -94,6 +124,11 @@ const PROFILES_DATA = [
     totalWords: '620K',
     avatar: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=400&q=80',
     verified: true,
+    recentVideos: [
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=200&q=80',
+      'https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=200&q=80',
+      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&q=80',
+    ],
   },
 ];
 
@@ -198,8 +233,7 @@ function ProfileCard({
       }}
     >
       {/* Save to folder + Favourite buttons */}
-      {(hovered || savedCount > 0 || favourited) && (
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
           {/* Favourite button */}
           <button
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
@@ -231,10 +265,9 @@ function ProfileCard({
             <FolderPlus className="w-3.5 h-3.5" />
           </button>
         </div>
-      )}
 
       {/* ── Body ── */}
-      <div className="p-4 flex flex-col gap-3 flex-1">
+      <div className="p-4 flex flex-col gap-3">
 
         {/* Identity row */}
         <div className="flex items-center gap-3">
@@ -333,6 +366,50 @@ function ProfileCard({
             <span className="text-[10px] mt-0.5" style={{ color: muted }}>{s.label}</span>
           </div>
         ))}
+      </div>
+
+      {/* ── Video Preview Collage ── */}
+      <div className="relative flex-shrink-0 flex items-start justify-center overflow-hidden" style={{ height: 130 }}>
+        {/* Blurred ambient background */}
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url(${profile.recentVideos[0]})`,
+          backgroundSize: 'cover', backgroundPosition: 'center',
+          filter: 'blur(22px) saturate(0.6)', transform: 'scale(1.15)',
+          opacity: isDark ? 0.45 : 0.35,
+        }} />
+        {/* Scrim */}
+        <div className="absolute inset-0" style={{
+          background: isDark ? 'rgba(10,10,10,0.55)' : 'rgba(240,240,240,0.55)'
+        }} />
+        {/* Top gradient: card-bg → transparent (blends stats into collage) */}
+        <div className="absolute inset-x-0 top-0 h-20 z-[5]" style={{
+          background: `linear-gradient(to bottom, ${isDark ? '#141414' : '#ffffff'}, transparent)`
+        }} />
+        {/* Bottom gradient: transparent → card-bg (clean fade at card edge) */}
+        <div className="absolute inset-x-0 bottom-0 h-16 z-[5]" style={{
+          background: `linear-gradient(to top, ${isDark ? '#141414' : '#ffffff'}, transparent)`
+        }} />
+        {/* 3 fanned thumbnails */}
+        <div className="relative flex items-start justify-center pt-5" style={{ gap: 6, zIndex: 10 }}>
+          {/* Left */}
+          <div className="rounded-xl overflow-hidden flex-shrink-0 shadow-xl"
+            style={{ width: 48, height: 72, transform: 'rotate(-6deg) translateY(6px)', opacity: 0.85,
+              border: `0.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}` }}>
+            <img src={profile.recentVideos[1]} alt="" className="w-full h-full object-cover" />
+          </div>
+          {/* Center */}
+          <div className="rounded-xl overflow-hidden flex-shrink-0 shadow-2xl"
+            style={{ width: 56, height: 88, zIndex: 2,
+              border: `0.5px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)'}` }}>
+            <img src={profile.recentVideos[0]} alt="" className="w-full h-full object-cover" />
+          </div>
+          {/* Right */}
+          <div className="rounded-xl overflow-hidden flex-shrink-0 shadow-xl"
+            style={{ width: 48, height: 72, transform: 'rotate(6deg) translateY(6px)', opacity: 0.85,
+              border: `0.5px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}` }}>
+            <img src={profile.recentVideos[2]} alt="" className="w-full h-full object-cover" />
+          </div>
+        </div>
       </div>
 
       {/* Save to folder modal */}
