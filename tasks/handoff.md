@@ -1,18 +1,19 @@
-# Handoff — Redesign Download Buttons as Dashboard-Style Cards
+# Handoff — Fix Grid Column Cap (max-w approach)
 
 ## Status: DONE
 
-## File Modified
-- `src/app/components/videos/VideoResultsPage.tsx` (lines 401-458)
-
 ## What Changed
-- Replaced pill buttons with dashboard-style card shell (same border, padding, rounded-lg, transparent bg, hover as DashboardPage stat cards)
-- Row 1: icon + label in muted (Download + "Videos" / ImageDown + "Covers")
-- Row 2: "Download All" or "Download {N}" as bold action text (0.875rem, fontWeight 600)
-- Row 3: "{N} selected" or "{N} of {total}" in teal (0.6875rem, fontWeight 500)
-- Both cards: `minWidth: 150`, `px-4 pt-3 pb-3`, `1px solid border`, transparent bg
-- Hover: `rgba(255,255,255,0.04)` dark / `rgba(0,0,0,0.025)` light — same as dashboard
+Reverted calc-based grid formulas back to simple `minmax(195px/200px, 1fr)` across all 6 files. Added `max-w-[1280px] mx-auto` container wrappers to CreatorProfilePage (the only page missing them) to constrain content width — this is the correct approach matching DashboardPage Singles.
 
-## Verification
-- Build: `vite build` clean (0 errors)
-- Screenshot comparison: cards match dashboard stat card structure with action-appropriate content
+### Files Modified
+1. `src/app/components/DashboardPage.tsx` — reverted 3 grid formulas (2x 195px, 1x 200px)
+2. `src/app/components/VideosPage.tsx` — reverted 2 grid formulas
+3. `src/app/components/DiscoverPage.tsx` — reverted 1 grid formula
+4. `src/app/components/CreatorProfilePage.tsx` — reverted 1 grid formula + added max-w wrappers to 4 areas + removed self-end
+5. `src/app/components/videos/VideoResultsPage.tsx` — reverted 1 grid formula
+6. `src/app/components/videos/SessionDetailView.tsx` — reverted 1 grid formula
+
+### Verification
+- `vite build` clean (1.28s)
+- Screenshots verified: profile page centered with 6 cols, discover 6 cols, videos correct
+- "Scanned 2d ago · Rescan" properly aligned (not pushed right)

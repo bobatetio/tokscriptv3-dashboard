@@ -11,7 +11,7 @@ import {
   Users, Video, FileText, ExternalLink, BadgeCheck,
   Search, SlidersHorizontal, ChevronDown, Clock, X,
   Heart, MoreHorizontal, Download, Lock, Film, Image,
-  Zap, ArrowRight, Loader2,
+  Zap, ArrowRight, Loader2, RefreshCw,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
@@ -27,6 +27,17 @@ import {
 } from './TranscriptDetailPanel';
 import { UserContext } from '../context/UserContext';
 import Rd from '../../imports/Rd';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function formatRelativeTime(date: Date): string {
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
 
 // ─── Filter constants ─────────────────────────────────────────────────────────
 const PLATFORMS = ['All', 'TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter/X', 'Spotify'];
@@ -463,170 +474,50 @@ function VideoCard({
   );
 }
 
-// ─── Export Profile Panel ─────────────────────────────────────────────────────
-type ExportPhase = 'config' | 'running' | 'done';
-
-interface ExportSection {
-  id: string;
-  label: string;
-  icon: React.ReactNode;
-  proOnly: boolean;
-  checked: boolean;
-  options?: { key: string; label: string; choices: string[]; value: string }[];
-}
-
-function ExportProfilePanel({
-  profile, videos, plan, isDark, border, text, muted, hoverBg, onClose, onUpgrade,
+// ─── Scan Wizard Modal ────────────────────────────────────────────────────────
+function ScanWizardModal({
+  isDark, border, text, muted, hoverBg, onClose, onStart,
 }: {
-  profile: CreatorProfile;
-  videos: { id: number }[];
-  plan: 'free' | 'pro';
   isDark: boolean;
   border: string;
   text: string;
   muted: string;
   hoverBg: string;
   onClose: () => void;
-  onUpgrade: () => void;
+  onStart: (config: { dateRange: string; types: { videos: boolean; covers: boolean; data: boolean } }) => void;
 }) {
-  const panelBg   = isDark ? '#141414' : '#ffffff';
-  const sectionBg = isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb';
+  const bg = isDark ? '#141414' : '#ffffff';
+  const inputBg = isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb';
 
-  const [phase, setPhase] = useState<ExportPhase>('config');
-  const [progress, setProgress] = useState(0);
-  const [doneItems, setDoneItems] = useState<string[]>([]);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [dateRange, setDateRange] = useState('All content');
+  const [types, setTypes] = useState({ videos: true, covers: true, data: true });
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
 
-  const [sections, setSections] = useState<ExportSection[]>([
-    {
-      id: 'videos',
-      label: 'Video Files',
-      icon: <Film className="w-3.5 h-3.5" />,
-      proOnly: true,
-      checked: false,
-      options: [
-        { key: 'quality', label: 'Quality', choices: ['Best available', 'MP4 1080p', 'MP4 720p', 'MP4 480p'], value: 'Best available' },
-        { key: 'scope',   label: 'Scope',   choices: [`All (${videos.length})`, 'Last 30', 'Last 100'], value: `All (${videos.length})` },
-      ],
-    },
-    {
-      id: 'covers',
-      label: 'Cover Images',
-      icon: <Image className="w-3.5 h-3.5" />,
-      proOnly: true,
-      checked: false,
-      options: [
-        { key: 'format', label: 'Format', choices: ['JPG (original)', 'PNG', 'WebP'], value: 'JPG (original)' },
-        { key: 'scope',  label: 'Scope',  choices: [`All (${videos.length})`, 'Last 30', 'Last 100'], value: `All (${videos.length})` },
-      ],
-    },
-    {
-      id: 'transcripts_txt',
-      label: 'Transcripts — Plain Text (.txt)',
-      icon: <FileText className="w-3.5 h-3.5" />,
-      proOnly: false,
-      checked: true,
-      options: [
-        { key: 'scope', label: 'Scope', choices: [`All (${videos.length})`, 'Last 30', 'Last 100'], value: `All (${videos.length})` },
-      ],
-    },
-    {
-      id: 'transcripts_srt',
-      label: 'Subtitles (.srt)',
-      icon: <FileText className="w-3.5 h-3.5" />,
-      proOnly: true,
-      checked: false,
-    },
-    {
-      id: 'json',
-      label: 'Full Data Export (.json)',
-      icon: <Download className="w-3.5 h-3.5" />,
-      proOnly: true,
-      checked: false,
-    },
-    {
-      id: 'csv',
-      label: 'Metadata Spreadsheet (.csv)',
-      icon: <Download className="w-3.5 h-3.5" />,
-      proOnly: true,
-      checked: false,
-    },
-  ]);
+  const DATE_RANGES = ['Last 7 days', 'Last 14 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'Last 1 year', 'All content', 'Custom'];
 
-  const checkedSections = sections.filter(s => s.checked);
-  const hasProSelected  = checkedSections.some(s => s.proOnly) && plan === 'free';
-  const canStart        = checkedSections.length > 0;
-
-  function toggleSection(id: string) {
-    const sec = sections.find(s => s.id === id)!;
-    if (sec.proOnly && plan === 'free') { onUpgrade(); return; }
-    setSections(prev => prev.map(s => s.id === id ? { ...s, checked: !s.checked } : s));
-  }
-
-  function setOption(sectionId: string, optKey: string, val: string) {
-    setSections(prev => prev.map(s =>
-      s.id === sectionId
-        ? { ...s, options: s.options?.map(o => o.key === optKey ? { ...o, value: val } : o) }
-        : s
-    ));
-  }
-
-  function startExtraction() {
-    if (hasProSelected) { onUpgrade(); return; }
-    if (!canStart) return;
-    setPhase('running');
-    setProgress(0);
-    setDoneItems([]);
-    const items = checkedSections.map(s => s.label);
-    let i = 0;
-    const tick = () => {
-      i++;
-      const pct = Math.round((i / items.length) * 100);
-      setProgress(pct);
-      setDoneItems(items.slice(0, i));
-      if (i < items.length) {
-        setTimeout(tick, 900 + Math.random() * 600);
-      } else {
-        setTimeout(() => setPhase('done'), 400);
-      }
-    };
-    setTimeout(tick, 700);
-  }
-
-  const [openOpts, setOpenOpts] = useState<string | null>(null);
+  const canStart = types.videos || types.covers || types.data;
 
   return (
-    <>
-      {/* Backdrop */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
-        className="fixed inset-0 z-40"
-        style={{ background: isDark ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.18)' }}
-        onClick={onClose}
-      />
-
-      {/* Slide-in panel */}
-      <div
-        className="fixed right-0 top-0 bottom-0 z-50 flex flex-col overflow-hidden"
-        style={{
-          width: 520,
-          background: panelBg,
-          borderLeft: `1px solid ${border}`,
-          boxShadow: isDark ? '-12px 0 40px rgba(0,0,0,0.6)' : '-6px 0 32px rgba(0,0,0,0.1)',
-          animation: 'exportPanelIn 0.22s cubic-bezier(0.22,1,0.36,1)',
-        }}
+        className="relative rounded-2xl overflow-hidden flex flex-col"
+        style={{ width: 480, background: bg, border: `1px solid ${border}`, boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}
       >
-
-        {/* ── Header ── */}
-        <div
-          className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-          style={{ borderBottom: `1px solid ${border}` }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0" style={{ border: `1.5px solid ${border}` }}>
-              <ImageWithFallback src={profile.avatar} alt={profile.displayName} className="w-full h-full object-cover object-top" />
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(245,158,11,0.12)' }}>
+              <Download className="w-3.5 h-3.5" style={{ color: '#f59e0b' }} />
             </div>
             <div>
-              <p className="text-[13px]" style={{ color: text, fontWeight: 700, letterSpacing: '-0.01em' }}>Export Profile Data</p>
-              <p className="text-[11px]" style={{ color: muted }}>{profile.handle} · {videos.length} videos</p>
+              <span className="text-[13px]" style={{ color: text, fontWeight: 600 }}>Scan Profile</span>
+              <span className="text-[11px] ml-2" style={{ color: muted }}>Step {step} of 2</span>
             </div>
           </div>
           <button
@@ -640,294 +531,264 @@ function ExportProfilePanel({
           </button>
         </div>
 
-        {/* ── Body ── */}
-        <div className="flex-1 overflow-y-auto px-5 py-5">
-
-          {phase === 'config' && (
-            <div className="flex flex-col gap-2">
-              <p className="text-[11px] mb-2" style={{ color: muted }}>
-                Choose what to extract from this profile. Pro items require an active Pro plan.
-              </p>
-
-              {/* Group: Video & Image assets */}
-              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${border}`, background: sectionBg }}>
-                <p className="px-4 pt-3 pb-2 text-[10px] uppercase tracking-wider" style={{ color: muted, fontWeight: 600 }}>Media Files</p>
-                {sections.filter(s => ['videos','covers'].includes(s.id)).map((sec, i, arr) => (
-                  <div key={sec.id} style={{ borderTop: i > 0 ? `1px solid ${border}` : undefined }}>
-                    <ExportRow
-                      sec={sec} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
-                      plan={plan} openOpts={openOpts} setOpenOpts={setOpenOpts}
-                      onToggle={() => toggleSection(sec.id)}
-                      onSetOption={(k, v) => setOption(sec.id, k, v)}
-                    />
-                  </div>
-                ))}
+        {/* Body */}
+        <div className="px-5 py-5 flex flex-col gap-4">
+          {step === 1 && (
+            <>
+              <div>
+                <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
+                <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
               </div>
-
-              {/* Group: Transcripts & Data */}
-              <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${border}`, background: sectionBg }}>
-                <p className="px-4 pt-3 pb-2 text-[10px] uppercase tracking-wider" style={{ color: muted, fontWeight: 600 }}>Transcripts & Data</p>
-                {sections.filter(s => !['videos','covers'].includes(s.id)).map((sec, i) => (
-                  <div key={sec.id} style={{ borderTop: i > 0 ? `1px solid ${border}` : undefined }}>
-                    <ExportRow
-                      sec={sec} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
-                      plan={plan} openOpts={openOpts} setOpenOpts={setOpenOpts}
-                      onToggle={() => toggleSection(sec.id)}
-                      onSetOption={(k, v) => setOption(sec.id, k, v)}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* Plan note for free users */}
-              {plan === 'free' && (
-                <div
-                  className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl"
-                  style={{ background: isDark ? 'rgba(0,184,178,0.07)' : 'rgba(0,184,178,0.06)', border: '1px solid rgba(0,184,178,0.2)' }}
-                >
-                  <Zap className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: '#00b8b2' }} />
-                  <div>
-                    <p className="text-[11.5px]" style={{ color: text, fontWeight: 600 }}>Unlock all exports with Pro</p>
-                    <p className="text-[10.5px] mt-0.5" style={{ color: muted, lineHeight: 1.55 }}>
-                      Video files, cover images, SRT subtitles, JSON & CSV exports are Pro-only. Upgrade to access them.
-                    </p>
-                    <button
-                      className="mt-2 text-[11px] px-2.5 py-1 rounded-lg transition-all"
-                      style={{ background: '#00b8b2', color: '#fff', fontWeight: 600 }}
-                      onClick={onUpgrade}
-                    >
-                      Upgrade to Pro →
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {phase === 'running' && (
-            <div className="flex flex-col items-center gap-5 py-10">
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <svg className="absolute inset-0 w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                  <circle cx="32" cy="32" r="28" fill="none" stroke={isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'} strokeWidth="4" />
-                  <circle cx="32" cy="32" r="28" fill="none" stroke="#00b8b2" strokeWidth="4"
-                    strokeDasharray={`${2 * Math.PI * 28 * progress / 100} ${2 * Math.PI * 28 * (1 - progress / 100)}`}
-                    style={{ transition: 'stroke-dasharray 0.4s ease' }}
-                  />
-                </svg>
-                <span className="text-[13px]" style={{ color: text, fontWeight: 700 }}>{progress}%</span>
-              </div>
-              <div className="text-center">
-                <p className="text-[13px]" style={{ color: text, fontWeight: 600 }}>Extracting data…</p>
-                <p className="text-[11px] mt-1" style={{ color: muted }}>Please keep this window open</p>
-              </div>
-              <div className="w-full flex flex-col gap-1.5">
-                {checkedSections.map(sec => {
-                  const done = doneItems.includes(sec.label);
-                  const active = !done && doneItems.length === checkedSections.indexOf(sec) - 1 + (doneItems.length < checkedSections.length ? 1 : 0);
+              <div className="flex flex-wrap gap-2">
+                {DATE_RANGES.map(dr => {
+                  const isActive = dateRange === dr;
                   return (
-                    <div
-                      key={sec.id}
-                      className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl"
-                      style={{ background: done ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : sectionBg, border: `1px solid ${done ? 'rgba(0,184,178,0.2)' : border}` }}
+                    <button
+                      key={dr}
+                      onClick={() => setDateRange(dr)}
+                      className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                        color: isActive ? '#f59e0b' : muted,
+                        border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
                     >
-                      {done
-                        ? <CheckCheck className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00b8b2' }} />
-                        : <Loader2 className="w-3.5 h-3.5 flex-shrink-0 animate-spin" style={{ color: muted }} />
-                      }
-                      <span className="text-[12px]" style={{ color: done ? '#00b8b2' : text, fontWeight: done ? 600 : 400 }}>{sec.label}</span>
-                    </div>
+                      {dr}
+                    </button>
                   );
                 })}
               </div>
-            </div>
+              {dateRange === 'Custom' && (
+                <div className="flex items-center gap-2 mt-2.5">
+                  <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
+                  />
+                  <span className="text-[10px]" style={{ color: muted }}>to</span>
+                  <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
+                  />
+                </div>
+              )}
+            </>
           )}
 
-          {phase === 'done' && (
-            <div className="flex flex-col items-center gap-4 py-10 text-center">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'rgba(0,184,178,0.12)' }}>
-                <CheckCheck className="w-6 h-6" style={{ color: '#00b8b2' }} />
-              </div>
+          {step === 2 && (
+            <>
               <div>
-                <p className="text-[14px]" style={{ color: text, fontWeight: 700 }}>Extraction complete!</p>
-                <p className="text-[11.5px] mt-1" style={{ color: muted, lineHeight: 1.6 }}>
-                  Your files have been prepared and are ready to download.<br />
-                  Check your downloads folder.
-                </p>
+                <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Download Types</p>
+                <p className="text-[11px] mb-3" style={{ color: muted }}>Select what content to scan and download.</p>
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <button
-                  className="px-4 py-2 rounded-xl text-[12px] transition-all"
-                  style={{ background: '#00b8b2', color: '#fff', fontWeight: 600 }}
-                  onClick={onClose}
-                >
-                  Done
-                </button>
-                <button
-                  className="px-4 py-2 rounded-xl text-[12px] transition-all"
-                  style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', fontWeight: 500 }}
-                  onClick={() => { setPhase('config'); setProgress(0); setDoneItems([]); }}
-                >
-                  Export more
-                </button>
+              <div className="grid grid-cols-3 gap-2.5">
+                {([
+                  { key: 'videos' as const, label: 'Videos', desc: 'MP4 video files', icon: <Film className="w-4 h-4" /> },
+                  { key: 'covers' as const, label: 'Cover Images', desc: 'PNG thumbnails', icon: <Image className="w-4 h-4" /> },
+                  { key: 'data' as const, label: 'Data', desc: 'Metadata & transcripts', icon: <FileText className="w-4 h-4" /> },
+                ]).map(item => {
+                  const checked = types[item.key];
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => setTypes(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                      className="flex flex-col rounded-xl overflow-hidden text-center"
+                      style={{
+                        border: `1px solid ${checked ? 'rgba(245,158,11,0.3)' : border}`,
+                        background: checked
+                          ? (isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)')
+                          : 'transparent',
+                      }}
+                    >
+                      <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
+                        <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
+                        <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
+                        <span className="text-[10px]" style={{ color: muted }}>{item.desc}</span>
+                      </div>
+                      <div
+                        className="flex items-center justify-center py-2"
+                        style={{ borderTop: `1px solid ${checked ? 'rgba(245,158,11,0.2)' : border}` }}
+                      >
+                        <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
+                          style={{
+                            background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
+                            border: `1.5px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
+                          }}
+                        >
+                          {checked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
+            </>
           )}
-
         </div>
 
-        {/* ── Footer ── */}
-        {phase === 'config' && (
-          <div
-            className="flex items-center justify-between px-5 py-4 flex-shrink-0"
-            style={{ borderTop: `1px solid ${border}` }}
-          >
-            <span className="text-[11px]" style={{ color: muted }}>
-              {checkedSections.length} item{checkedSections.length !== 1 ? 's' : ''} selected
-            </span>
-            <button
-              onClick={startExtraction}
-              disabled={!canStart}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] transition-all"
-              style={{
-                background: canStart ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'),
-                color: canStart ? '#fff' : muted,
-                fontWeight: 600,
-                cursor: canStart ? 'pointer' : 'not-allowed',
-              }}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              Start Extraction
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderTop: `1px solid ${border}` }}>
+          {step === 1 ? (
+            <>
+              <button
+                onClick={onClose}
+                className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
+                style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setStep(2)}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+                style={{ background: '#f59e0b', color: '#fff', fontWeight: 600 }}
+              >
+                Next
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => setStep(1)}
+                className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
+                style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+              >
+                Back
+              </button>
+              <button
+                onClick={() => { if (canStart) onStart({ dateRange, types }); }}
+                disabled={!canStart}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+                style={{
+                  background: canStart ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'),
+                  color: canStart ? '#fff' : muted,
+                  fontWeight: 600,
+                  cursor: canStart ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <Zap className="w-3 h-3" />
+                Start Scanning
+              </button>
+            </>
+          )}
+        </div>
       </div>
-
-      <style>{`
-        @keyframes exportPanelIn {
-          from { transform: translateX(100%); opacity: 0.5; }
-          to   { transform: translateX(0);    opacity: 1;   }
-        }
-      `}</style>
-    </>
+    </div>
   );
 }
 
-// ─── Export Row (single item inside the export panel) ─────────────────────────
-function ExportRow({
-  sec, isDark, border, text, muted, hoverBg, plan, openOpts, setOpenOpts, onToggle, onSetOption,
+// ─── Format Picker Modal ──────────────────────────────────────────────────────
+function FormatPickerModal({
+  isDark, border, text, muted, hoverBg, selectedFormat, onSelectFormat, onDownload, onClose,
 }: {
-  sec: ExportSection;
   isDark: boolean;
   border: string;
   text: string;
   muted: string;
   hoverBg: string;
-  plan: 'free' | 'pro';
-  openOpts: string | null;
-  setOpenOpts: (k: string | null) => void;
-  onToggle: () => void;
-  onSetOption: (k: string, v: string) => void;
+  selectedFormat: string;
+  onSelectFormat: (f: string) => void;
+  onDownload: () => void;
+  onClose: () => void;
 }) {
-  const locked = sec.proOnly && plan === 'free';
+  const bg = isDark ? '#141414' : '#ffffff';
+  const formats = ['JSON', 'TXT', 'PDF', 'Markdown', 'XML'];
 
   return (
-    <div className="px-4 py-3">
-      {/* Row header */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
       <div
-        className="flex items-center gap-3 cursor-pointer select-none"
-        onClick={onToggle}
+        className="relative rounded-2xl overflow-hidden flex flex-col"
+        style={{ width: 320, background: bg, border: `1px solid ${border}`, boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}
       >
-        {/* Checkbox */}
-        <div
-          className="w-4 h-4 rounded flex items-center justify-center flex-shrink-0 transition-all"
-          style={{
-            background: sec.checked ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
-            border: `1.5px solid ${sec.checked ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
-          }}
-        >
-          {sec.checked && <CheckCheck className="w-2.5 h-2.5 text-white" />}
+        <div className="flex items-center justify-between px-4 pt-4 pb-3" style={{ borderBottom: `1px solid ${border}` }}>
+          <span className="text-[12px]" style={{ color: text, fontWeight: 600 }}>Choose Format</span>
+          <button
+            className="w-6 h-6 rounded-md flex items-center justify-center transition-all"
+            style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+            onClick={onClose}
+          >
+            <X className="w-3 h-3" />
+          </button>
         </div>
-
-        <span className="flex-shrink-0" style={{ color: muted }}>{sec.icon}</span>
-        <span className="flex-1 text-[12px]" style={{ color: locked ? muted : text, fontWeight: 500 }}>{sec.label}</span>
-
-        {locked ? (
-          <span
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px]"
-            style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6', color: muted, border: `1px solid ${border}`, fontWeight: 600 }}
-          >
-            <Lock className="w-2.5 h-2.5" /> Pro
-          </span>
-        ) : (
-          <span
-            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px]"
-            style={{ background: 'rgba(0,184,178,0.1)', color: '#00b8b2', border: '1px solid rgba(0,184,178,0.2)', fontWeight: 600 }}
-          >
-            Free
-          </span>
-        )}
-      </div>
-
-      {/* Options (only when checked and has options) */}
-      {sec.checked && !locked && sec.options && (
-        <div className="mt-2.5 ml-7 flex flex-wrap gap-2">
-          {sec.options.map(opt => (
-            <div key={opt.key} className="relative">
+        <div className="px-4 py-3 flex flex-col gap-1.5">
+          {formats.map(f => {
+            const isActive = selectedFormat === f;
+            return (
               <button
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10.5px] transition-all"
+                key={f}
+                onClick={() => onSelectFormat(f)}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11.5px] text-left transition-all"
                 style={{
-                  background: isDark ? 'rgba(255,255,255,0.06)' : '#efefef',
-                  color: text,
-                  border: `1px solid ${border}`,
-                  fontWeight: 500,
+                  background: isActive ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)') : 'transparent',
+                  color: isActive ? '#f59e0b' : text,
+                  border: `1px solid ${isActive ? 'rgba(245,158,11,0.25)' : 'transparent'}`,
+                  fontWeight: isActive ? 600 : 400,
                 }}
-                onClick={e => { e.stopPropagation(); setOpenOpts(openOpts === `${sec.id}-${opt.key}` ? null : `${sec.id}-${opt.key}`); }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isActive ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)') : 'transparent'; }}
               >
-                <span style={{ color: muted, fontSize: '0.65rem', fontWeight: 500 }}>{opt.label}:</span>
-                {opt.value}
-                <ChevronDown className={`w-2.5 h-2.5 transition-transform ${openOpts === `${sec.id}-${opt.key}` ? 'rotate-180' : ''}`} style={{ color: muted }} />
+                <div
+                  className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{
+                    border: `2px solid ${isActive ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db')}`,
+                  }}
+                >
+                  {isActive && <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#f59e0b' }} />}
+                </div>
+                {f}
               </button>
-              {openOpts === `${sec.id}-${opt.key}` && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setOpenOpts(null); }} />
-                  <div
-                    className="absolute left-0 top-full mt-1 rounded-xl shadow-xl overflow-hidden z-50 py-1 flex flex-col"
-                    style={{ background: isDark ? '#1a1a1a' : '#ffffff', border: `1px solid ${border}`, minWidth: 140 }}
-                  >
-                    {opt.choices.map(c => (
-                      <button
-                        key={c}
-                        className="text-left px-3 py-1.5 text-[11px] w-full"
-                        style={{ color: opt.value === c ? '#00b8b2' : muted, background: opt.value === c ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: opt.value === c ? 600 : 400 }}
-                        onClick={e => { e.stopPropagation(); onSetOption(opt.key, c); setOpenOpts(null); }}
-                        onMouseEnter={ev => { if (opt.value !== c) (ev.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
-                        onMouseLeave={ev => { if (opt.value !== c) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                      >{c}</button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
-      )}
+        <div className="px-4 py-3 flex justify-end" style={{ borderTop: `1px solid ${border}` }}>
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+            style={{ background: '#f59e0b', color: '#fff', fontWeight: 600 }}
+          >
+            <Download className="w-3 h-3" />
+            Download
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
 // ─── Creator Profile Header ───────────────────────────────────────────────────
 function CreatorHeader({
-  profile, isDark, border, text, muted, compact, onExport,
+  profile, isDark, border, text, muted, hoverBg, compact,
+  scanStatus, scanProgress, scanConfig, downloadStates, videoCount,
+  lastScannedAt, downloadedAt,
+  onScanProfile, onRescan, onDownload,
 }: {
   profile: CreatorProfile;
   isDark: boolean;
   border: string;
   text: string;
   muted: string;
+  hoverBg: string;
   compact: boolean;
-  onExport?: () => void;
+  scanStatus: 'not_scanned' | 'scanning' | 'complete';
+  scanProgress: number;
+  scanConfig: { dateRange: string; types: { videos: boolean; covers: boolean; data: boolean } } | null;
+  downloadStates: Record<string, 'idle' | 'downloading' | 'done'>;
+  videoCount: number;
+  lastScannedAt: Date | null;
+  downloadedAt: Record<string, Date | null>;
+  onScanProfile: () => void;
+  onRescan: () => void;
+  onDownload: (type: 'videos' | 'covers' | 'data') => void;
 }) {
   const cardBg = isDark ? '#141414' : '#ffffff';
 
@@ -959,9 +820,10 @@ function CreatorHeader({
 
       {/* ── Body: avatar left + info right ── */}
       <div
-        className="flex items-start gap-5 px-6 py-5"
+        className="py-5"
         style={{ background: isDark ? '#0d0d0d' : '#ffffff' }}
       >
+      <div className="max-w-[1280px] mx-auto flex items-start gap-5 px-6">
         {/* Avatar */}
         <div
           className="flex-shrink-0 rounded-full overflow-hidden"
@@ -981,44 +843,18 @@ function CreatorHeader({
         {/* Info column */}
         <div className="flex-1 min-w-0">
 
-          {/* Identity + action buttons */}
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 style={{ color: text, fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-                  {profile.displayName}
-                </h1>
-                {profile.verified && (
-                  <BadgeCheck className="w-4 h-4 flex-shrink-0" style={{ color: '#3b82f6' }} />
-                )}
-              </div>
-              <p className="text-[11px] mt-0.5" style={{ color: muted }}>{profile.handle}</p>
-            </div>
-
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              {onExport && (
-                <button
-                  onClick={onExport}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all"
-                  style={{
-                    background: isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)',
-                    color: '#00b8b2',
-                    border: '1px solid rgba(0,184,178,0.25)',
-                    fontWeight: 600,
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(0,184,178,0.2)' : 'rgba(0,184,178,0.14)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)'; }}
-                >
-                  <Download className="w-3 h-3" />
-                  Export Profile
-                </button>
+          {/* Identity */}
+          <div className="mb-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 style={{ color: text, fontWeight: 700, fontSize: '1.15rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                {profile.displayName}
+              </h1>
+              {profile.verified && (
+                <BadgeCheck className="w-4 h-4 flex-shrink-0" style={{ color: '#3b82f6' }} />
               )}
             </div>
+            <p className="text-[11px] mt-0.5" style={{ color: muted }}>{profile.handle}</p>
           </div>
-
-          {/* Platform badges */}
-          
 
           {/* Bio */}
           <p className="text-xs mb-3" style={{ color: muted, lineHeight: 1.65, maxWidth: 520 }}>
@@ -1049,6 +885,149 @@ function CreatorHeader({
           </div>
 
         </div>
+
+        {/* RIGHT SIDE: Download area */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {scanStatus === 'not_scanned' && (
+            <div className="flex flex-col items-center gap-2 px-5 py-4 rounded-xl" style={{
+              background: isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb',
+              border: `1px solid ${border}`,
+              minWidth: 200,
+            }}>
+              <Download className="w-5 h-5" style={{ color: muted }} />
+              <p className="text-[11px] text-center" style={{ color: muted, lineHeight: 1.5 }}>This profile hasn't<br />been scanned yet</p>
+              <button
+                onClick={onScanProfile}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] transition-all mt-1"
+                style={{ background: '#f59e0b', color: '#fff', fontWeight: 600 }}
+              >
+                <Zap className="w-3 h-3" />
+                Scan Profile
+              </button>
+            </div>
+          )}
+
+          {scanStatus === 'scanning' && (
+            <div className="flex flex-col items-center gap-2.5 px-5 py-4 rounded-xl" style={{
+              background: isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)',
+              border: '1px solid rgba(245,158,11,0.2)',
+              minWidth: 220,
+            }}>
+              <p className="text-[11px]" style={{ color: '#f59e0b', fontWeight: 600 }}>
+                Scanning {profile.handle}...
+              </p>
+              <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${scanProgress}%`,
+                    background: '#f59e0b',
+                    transition: 'width 0.4s ease',
+                  }}
+                />
+              </div>
+              <span className="text-[11px]" style={{ color: '#f59e0b', fontWeight: 700 }}>{scanProgress}%</span>
+            </div>
+          )}
+
+          {scanStatus === 'complete' && (
+            <>
+              {/* Download cards */}
+              {[
+                ...(scanConfig?.types.videos !== false ? [{
+                  key: 'videos',
+                  icon: <Film className="w-3.5 h-3.5" />,
+                  label: 'Videos',
+                  count: `${videoCount} files`,
+                  size: '2.3 GB',
+                }] : []),
+                ...(scanConfig?.types.covers !== false ? [{
+                  key: 'covers',
+                  icon: <Image className="w-3.5 h-3.5" />,
+                  label: 'Covers',
+                  count: `${videoCount} files`,
+                  size: '340 MB',
+                }] : []),
+                ...(scanConfig?.types.data !== false ? [{
+                  key: 'data',
+                  icon: <FileText className="w-3.5 h-3.5" />,
+                  label: 'Data',
+                  count: '1 file',
+                  size: '12 MB',
+                }] : []),
+              ].map(card => {
+                const state = downloadStates[card.key] || 'idle';
+                return (
+                  <div
+                    key={card.key}
+                    className="flex flex-col rounded-xl overflow-hidden"
+                    style={{
+                      border: `1px solid ${border}`,
+                      background: 'transparent',
+                      minWidth: 130,
+                    }}
+                  >
+                    {/* Card top */}
+                    <div className="px-3 pt-3 pb-2 flex flex-col gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <span style={{ color: muted }}>{card.icon}</span>
+                        <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{card.label}</span>
+                      </div>
+                      <p className="text-[10.5px]" style={{ color: muted }}>{card.count}</p>
+                      <p className="text-[10.5px]" style={{ color: muted }}>{card.size}</p>
+                    </div>
+                    {/* Download button */}
+                    <button
+                      onClick={() => onDownload(card.key as 'videos' | 'covers' | 'data')}
+                      disabled={state === 'downloading'}
+                      className="flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] transition-all"
+                      style={{
+                        borderTop: `1px solid ${border}`,
+                        background: state === 'done'
+                          ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)')
+                          : state === 'downloading'
+                            ? (isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb')
+                            : 'transparent',
+                        color: state === 'done' ? '#f59e0b' : state === 'downloading' ? muted : '#f59e0b',
+                        fontWeight: 600,
+                        cursor: state === 'downloading' ? 'wait' : 'pointer',
+                      }}
+                      onMouseEnter={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.04)'; }}
+                      onMouseLeave={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                    >
+                      {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                      {state === 'done' && <CheckCheck className="w-3 h-3" />}
+                      {state === 'idle' && <Download className="w-3 h-3" />}
+                      {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
+                    </button>
+                    {downloadedAt[card.key] && (
+                      <div className="px-3 pb-1.5">
+                        <p className="text-[9.5px]" style={{ color: '#f59e0b' }}>Downloaded {formatRelativeTime(downloadedAt[card.key]!)}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {/* Scanned timestamp + rescan link */}
+              {lastScannedAt && (
+                <div className="flex items-center gap-1 text-[10px] mt-1" style={{ color: muted }}>
+                  <span>Scanned {formatRelativeTime(lastScannedAt)}</span>
+                  <span>·</span>
+                  <button
+                    onClick={onRescan}
+                    className="transition-colors"
+                    style={{ color: '#f59e0b', fontWeight: 500 }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'underline'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'none'; }}
+                  >
+                    Rescan
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
       </div>
     </div>
   );
@@ -1065,7 +1044,93 @@ export function CreatorProfilePage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<CreatorVideo | null>(null);
   const [panelVideo, setPanelVideo] = useState<CreatorVideo | null>(null);
-  const [showExportPanel, setShowExportPanel] = useState(false);
+
+  // Scan state
+  const [scanStatus, setScanStatus] = useState<'not_scanned' | 'scanning' | 'complete'>(() => {
+    // Demo defaults
+    const h = creator.startsWith('@') ? creator : `@${creator}`;
+    if (h === '@tokcast' || h === '@fitwithjess') return 'complete';
+    if (location.state?.justScanned) return 'complete';
+    return 'not_scanned';
+  });
+  const [scanProgress, setScanProgress] = useState(0);
+  const [scanConfig, setScanConfig] = useState<{
+    dateRange: string;
+    types: { videos: boolean; covers: boolean; data: boolean };
+  } | null>(() => {
+    if (location.state?.scanConfig) return location.state.scanConfig;
+    const h = creator.startsWith('@') ? creator : `@${creator}`;
+    if (h === '@tokcast' || h === '@fitwithjess') {
+      return { dateRange: 'All content', types: { videos: true, covers: true, data: true } };
+    }
+    return null;
+  });
+  const [downloadStates, setDownloadStates] = useState<Record<string, 'idle' | 'downloading' | 'done'>>({
+    videos: 'idle', covers: 'idle', data: 'idle',
+  });
+  const [lastScannedAt, setLastScannedAt] = useState<Date | null>(() => {
+    if (location.state?.justScanned) return new Date();
+    const h = creator.startsWith('@') ? creator : `@${creator}`;
+    if (h === '@tokcast' || h === '@fitwithjess') return new Date(Date.now() - 2 * 86400000);
+    return null;
+  });
+  const [downloadedAt, setDownloadedAt] = useState<Record<string, Date | null>>({
+    videos: null, covers: null, data: null,
+  });
+  const [showScanWizard, setShowScanWizard] = useState(false);
+  const [showFormatPicker, setShowFormatPicker] = useState(false);
+  const [selectedDataFormat, setSelectedDataFormat] = useState('JSON');
+
+  function startScan(config: { dateRange: string; types: { videos: boolean; covers: boolean; data: boolean } }) {
+    setScanConfig(config);
+    setScanStatus('scanning');
+    setScanProgress(0);
+    setShowScanWizard(false);
+
+    let p = 0;
+    const interval = setInterval(() => {
+      p += Math.random() * 12 + 3;
+      if (p >= 100) {
+        p = 100;
+        clearInterval(interval);
+        setScanProgress(100);
+        setTimeout(() => {
+          setScanStatus('complete');
+          setScanProgress(0);
+          setLastScannedAt(new Date());
+        }, 500);
+      } else {
+        setScanProgress(Math.round(p));
+      }
+    }, 800);
+  }
+
+  function handleDownload(type: 'videos' | 'covers' | 'data') {
+    if (type === 'data') {
+      setShowFormatPicker(true);
+      return;
+    }
+    setDownloadStates(prev => ({ ...prev, [type]: 'downloading' }));
+    setTimeout(() => {
+      setDownloadStates(prev => ({ ...prev, [type]: 'done' }));
+      setDownloadedAt(prev => ({ ...prev, [type]: new Date() }));
+      setTimeout(() => {
+        setDownloadStates(prev => ({ ...prev, [type]: 'idle' }));
+      }, 3000);
+    }, 2000);
+  }
+
+  function handleDataDownload() {
+    setShowFormatPicker(false);
+    setDownloadStates(prev => ({ ...prev, data: 'downloading' }));
+    setTimeout(() => {
+      setDownloadStates(prev => ({ ...prev, data: 'done' }));
+      setDownloadedAt(prev => ({ ...prev, data: new Date() }));
+      setTimeout(() => {
+        setDownloadStates(prev => ({ ...prev, data: 'idle' }));
+      }, 3000);
+    }, 2000);
+  }
 
   // Filter / search state
   const [searchQuery, setSearchQuery]                   = useState('');
@@ -1295,8 +1360,18 @@ export function CreatorProfilePage() {
                   border={border}
                   text={text}
                   muted={muted}
+                  hoverBg={hoverBg}
                   compact
-                  onExport={() => setShowExportPanel(true)}
+                  scanStatus={scanStatus}
+                  scanProgress={scanProgress}
+                  scanConfig={scanConfig}
+                  downloadStates={downloadStates}
+                  videoCount={profile.videoCount}
+                  lastScannedAt={lastScannedAt}
+                  downloadedAt={downloadedAt}
+                  onScanProfile={() => setShowScanWizard(true)}
+                  onRescan={() => setShowScanWizard(true)}
+                  onDownload={handleDownload}
                 />
                 <div className="flex-1 overflow-y-auto p-3">
                   <div className="grid grid-cols-2 gap-2">
@@ -1348,12 +1423,23 @@ export function CreatorProfilePage() {
                 border={border}
                 text={text}
                 muted={muted}
+                hoverBg={hoverBg}
                 compact={false}
-                onExport={() => setShowExportPanel(true)}
+                scanStatus={scanStatus}
+                scanProgress={scanProgress}
+                scanConfig={scanConfig}
+                downloadStates={downloadStates}
+                videoCount={profile.videoCount}
+                lastScannedAt={lastScannedAt}
+                downloadedAt={downloadedAt}
+                onScanProfile={() => setShowScanWizard(true)}
+                onRescan={() => setShowScanWizard(true)}
+                onDownload={handleDownload}
               />
 
               {/* ── Filter Bar ── */}
-              <div className="flex items-center gap-2 px-6 py-3 flex-shrink-0 overflow-x-auto" style={{ borderBottom: `1px solid ${border}` }}>
+              <div className="flex-shrink-0 overflow-x-auto" style={{ borderBottom: `1px solid ${border}` }}>
+              <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
 
                 {/* Search */}
                 <div
@@ -1527,16 +1613,18 @@ export function CreatorProfilePage() {
                 )}
 
               </div>
+              </div>
 
               {/* ── Platform Stats Row — only visible when a specific platform is active ── */}
               {activePlatform !== 'All' && (
                 <div
-                  className="flex items-center gap-4 px-6 py-2.5 flex-shrink-0"
+                  className="flex-shrink-0"
                   style={{
                     borderBottom: `1px solid ${border}`,
                     background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
                   }}
                 >
+                  <div className="max-w-[1280px] mx-auto flex items-center gap-4 px-6 py-2.5">
                   <span className="text-[11px]" style={{ color: muted }}>
                     <strong style={{ color: text }}>{platformStats.count}</strong>{' '}
                     {activePlatform} video{platformStats.count !== 1 ? 's' : ''}
@@ -1568,11 +1656,13 @@ export function CreatorProfilePage() {
                     </strong>{' '}
                     est. read time
                   </span>
+                  </div>
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto px-6 py-5">
-                
+              <div className="flex-1 overflow-y-auto">
+              <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
+
                 {filteredVideos.length > 0 ? (
                   <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                     {paginatedVideos.map(v => (
@@ -1658,25 +1748,38 @@ export function CreatorProfilePage() {
                   );
                 })()}
               </div>
+              </div>
             </div>
           )}
 
         </main>
       </div>
 
-      {/* ── Export Profile Panel ─────────────────────────────────────────────── */}
-      {showExportPanel && (
-        <ExportProfilePanel
-          profile={profile}
-          videos={videos}
-          plan={plan}
+      {/* Scan Wizard Modal */}
+      {showScanWizard && (
+        <ScanWizardModal
           isDark={isDark}
           border={border}
           text={text}
           muted={muted}
           hoverBg={hoverBg}
-          onClose={() => setShowExportPanel(false)}
-          onUpgrade={() => { setShowExportPanel(false); openUpgrade(); }}
+          onClose={() => setShowScanWizard(false)}
+          onStart={startScan}
+        />
+      )}
+
+      {/* Format Picker Modal */}
+      {showFormatPicker && (
+        <FormatPickerModal
+          isDark={isDark}
+          border={border}
+          text={text}
+          muted={muted}
+          hoverBg={hoverBg}
+          selectedFormat={selectedDataFormat}
+          onSelectFormat={setSelectedDataFormat}
+          onDownload={handleDataDownload}
+          onClose={() => setShowFormatPicker(false)}
         />
       )}
 

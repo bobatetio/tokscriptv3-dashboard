@@ -6,7 +6,7 @@
  */
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
-import { Users, BadgeCheck, Search, FolderPlus, Heart, ScanLine, X, Link2, UserPlus, ChevronDown, SlidersHorizontal, CheckCheck, FileText } from 'lucide-react';
+import { Users, BadgeCheck, Search, FolderPlus, Heart, X, UserPlus, ChevronDown, SlidersHorizontal, CheckCheck, FileText } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { AppSidebar } from './AppSidebar';
@@ -14,6 +14,7 @@ import { AppHeader } from './AppHeader';
 import ContainerUserPlus from '../../imports/Container-765-606';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SaveToFolderModal } from './SaveToFolderModal';
+import { useNewTranscript } from '../context/NewTranscriptContext';
 
 // ─── Profile data ─────────────────────────────────────────────────────────────
 const PROFILES_DATA = [
@@ -352,148 +353,12 @@ function ProfileCard({
   );
 }
 
-// ─── Scan New Profile Modal ───────────────────────────────────────────────────
-function ScanNewProfileModal({ isDark, border, text, muted, onClose }: {
-  isDark: boolean;
-  border: string;
-  text: string;
-  muted: string;
-  onClose: () => void;
-}) {
-  const [url, setUrl] = useState('');
-  const [scanning, setScanning] = useState(false);
-  const [done, setDone] = useState(false);
-
-  const bg      = isDark ? '#141414' : '#ffffff';
-  const inputBg = isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb';
-
-  function handleScan() {
-    if (!url.trim()) return;
-    setScanning(true);
-    setTimeout(() => { setScanning(false); setDone(true); }, 1800);
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div
-        className="relative rounded-2xl overflow-hidden flex flex-col"
-        style={{ width: 440, background: bg, border: `1px solid ${border}`, boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4" style={{ borderBottom: `1px solid ${border}` }}>
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(0,184,178,0.12)' }}>
-              <ScanLine className="w-3.5 h-3.5" style={{ color: '#00b8b2' }} />
-            </div>
-            <span className="text-[13px]" style={{ color: text, fontWeight: 600 }}>Scan a new profile</span>
-          </div>
-          <button
-            className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
-            style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
-            onClick={onClose}
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-5 py-5 flex flex-col gap-4">
-          {done ? (
-            <div className="flex flex-col items-center gap-3 py-6">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(0,184,178,0.12)' }}>
-                <BadgeCheck className="w-5 h-5" style={{ color: '#00b8b2' }} />
-              </div>
-              <p className="text-[13px] text-center" style={{ color: text, fontWeight: 600 }}>Profile queued for scanning</p>
-              <p className="text-[11.5px] text-center" style={{ color: muted, lineHeight: 1.6 }}>
-                We'll scan their latest videos and add the profile to your library shortly.
-              </p>
-              <button
-                className="mt-2 px-4 py-2 rounded-xl text-[12px] transition-all"
-                style={{ background: '#00b8b2', color: '#fff', fontWeight: 600 }}
-                onClick={onClose}
-              >
-                Done
-              </button>
-            </div>
-          ) : (
-            <>
-              <div>
-                <label className="block text-[11px] mb-1.5" style={{ color: muted, fontWeight: 500 }}>
-                  Channel URL or handle
-                </label>
-                <div
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
-                  style={{ background: inputBg, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}` }}
-                >
-                  <Link2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: muted }} />
-                  <input
-                    type="text"
-                    placeholder="e.g. @mrbeast or youtube.com/c/MrBeast"
-                    value={url}
-                    onChange={e => setUrl(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleScan(); }}
-                    autoFocus
-                    className="flex-1 bg-transparent outline-none text-[12px] min-w-0"
-                    style={{ color: text, caretColor: '#00b8b2' }}
-                  />
-                </div>
-                <p className="text-[10.5px] mt-1.5" style={{ color: muted }}>
-                  Supports YouTube, TikTok, and Instagram channels.
-                </p>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-1">
-                <button
-                  className="px-3.5 py-2 rounded-xl text-[12px] transition-all"
-                  style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', fontWeight: 500 }}
-                  onClick={onClose}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-4 py-2 rounded-xl text-[12px] flex items-center gap-1.5 transition-all"
-                  style={{
-                    background: url.trim() ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb'),
-                    color: url.trim() ? '#fff' : muted,
-                    fontWeight: 600,
-                    cursor: url.trim() && !scanning ? 'pointer' : 'not-allowed',
-                  }}
-                  onClick={handleScan}
-                  disabled={!url.trim() || scanning}
-                >
-                  {scanning ? (
-                    <>
-                      <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="40 20" />
-                      </svg>
-                      Scanning…
-                    </>
-                  ) : (
-                    <>
-                      <ScanLine className="w-3 h-3" />
-                      Scan Profile
-                    </>
-                  )}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function ProfilesPage() {
   const { isDark } = useContext(ThemeContext);
+  const { open: openNewTranscript } = useNewTranscript();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showScanModal, setShowScanModal] = useState(false);
   const [ctaHovered, setCtaHovered] = useState(false);
   const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
   const [activeFollowers, setActiveFollowers] = useState<string[]>([]);
@@ -826,7 +691,7 @@ export function ProfilesPage() {
                     ? `linear-gradient(180deg, #f59e0b22 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`
                     : `linear-gradient(180deg, #f59e0b14 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`,
                 }}
-                onClick={() => setShowScanModal(true)}
+                onClick={() => openNewTranscript('profiles')}
                 onMouseEnter={() => setCtaHovered(true)}
                 onMouseLeave={() => setCtaHovered(false)}
               >
@@ -868,16 +733,6 @@ export function ProfilesPage() {
         </main>
       </div>
 
-      {/* Scan modal */}
-      {showScanModal && (
-        <ScanNewProfileModal
-          isDark={isDark}
-          border={border}
-          text={text}
-          muted={muted}
-          onClose={() => setShowScanModal(false)}
-        />
-      )}
     </div>
   );
 }
