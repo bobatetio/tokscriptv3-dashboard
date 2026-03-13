@@ -4,6 +4,7 @@ import {
   Search, Clock, CheckCheck, Play, Download, ImageDown,
   SlidersHorizontal, ChevronDown, Calendar, LayoutGrid, List, X,
   FileText, MoreHorizontal, Columns2, Video, CheckSquare, Square, Layers,
+  Heart, FolderPlus,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
@@ -19,6 +20,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { HistoryEntry } from './DiscoverPage';
 import { useNewTranscript } from '../context/NewTranscriptContext';
 import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
+import { SaveToFolderModal } from './SaveToFolderModal';
 import { MOCK_SESSIONS } from './videos/mockData';
 import { VideoSession } from './videos/types';
 import { SessionTile } from './videos/SessionTile';
@@ -171,6 +173,8 @@ function VideoCard({
 }) {
   const [hovered, setHovered] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const [favourited, setFavourited] = useState(false);
+  const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
 
   const cardBg = isDark ? '#141414' : '#ffffff';
 
@@ -233,6 +237,43 @@ function VideoCard({
             </div>
           </div>
         )}
+
+        {/* ── Action overlays ── */}
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+          <button
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: favourited ? 'rgba(239,68,68,0.25)' : 'rgba(0,0,0,0.45)',
+              color: favourited ? '#ef4444' : '#ffffff',
+              border: `1px solid ${favourited ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'}`,
+              backdropFilter: 'blur(8px)',
+            }}
+            onClick={e => {
+              e.stopPropagation();
+              setFavourited(v => !v);
+            }}
+            title={favourited ? 'Remove from favourites' : 'Add to favourites'}
+          >
+            <Heart className="w-3.5 h-3.5" style={{ fill: favourited ? '#ef4444' : 'none' }} />
+          </button>
+          <button
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: 'rgba(0,0,0,0.45)',
+              color: '#ffffff',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+            }}
+            onClick={e => {
+              e.stopPropagation();
+              const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
+              setFolderModalFor({ id: entry.id, rect, title: entry.title });
+            }}
+            title="Save to folder"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
         {/* Bottom row: platform badge + duration */}
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
@@ -330,6 +371,15 @@ function VideoCard({
           </div>
         </div>
       </div>
+      {folderModalFor && (
+        <SaveToFolderModal
+          type="transcript"
+          refId={folderModalFor.id}
+          name={folderModalFor.title}
+          triggerRect={folderModalFor.rect}
+          onClose={() => setFolderModalFor(null)}
+        />
+      )}
     </div>
   );
 }

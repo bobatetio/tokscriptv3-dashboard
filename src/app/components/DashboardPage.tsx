@@ -33,6 +33,7 @@ import { UserContext, FREE_LIMITS } from '../context/UserContext';
 import { PROMPTS } from './PromptBasePage';
 import { formatDuration, parseDuration as _parseDuration } from '../utils/formatDuration';
 import { useNewTranscript } from '../context/NewTranscriptContext';
+import { SaveToFolderModal } from './SaveToFolderModal';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 interface Transcript {
@@ -44,6 +45,7 @@ interface Transcript {
   thumbnail: string;
   source: string;
   views: string;
+  platform?: string;
 }
 
 interface VideoItem {
@@ -54,6 +56,7 @@ interface VideoItem {
   thumbnail?: string;
   source?: string;
   views?: string;
+  platform?: string;
 }
 
 interface GroupItem {
@@ -66,26 +69,26 @@ interface GroupItem {
 
 
 const SINGLES: Transcript[] = [
-  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M' },
-  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K' },
-  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K' },
-  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M' },
-  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K' },
-  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M' },
-  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M' },
-  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',    date: 'Feb 17', words: 9150, thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80', source: '@strategy',   views: '445K' },
-  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M' },
-  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K' },
-  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M' },
-  { id: 12, title: 'All-Hands February',             duration: '1:48',    date: 'Feb 13', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80', source: '@company',    views: '912K' },
-  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K' },
-  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M' },
-  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K' },
-  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9',  words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K' },
-  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8',  words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M' },
-  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7',  words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K' },
-  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',    date: 'Feb 6', words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80', source: '@demos',      views: '1.8M' },
-  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5',  words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K' },
+  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M', platform: 'YouTube' },
+  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K', platform: 'TikTok' },
+  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K', platform: 'Instagram' },
+  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M', platform: 'YouTube' },
+  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K', platform: 'TikTok' },
+  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M', platform: 'YouTube' },
+  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M', platform: 'YouTube' },
+  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',    date: 'Feb 17', words: 9150, thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80', source: '@strategy',   views: '445K', platform: 'Instagram' },
+  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M', platform: 'TikTok' },
+  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K', platform: 'YouTube' },
+  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M', platform: 'Instagram' },
+  { id: 12, title: 'All-Hands February',             duration: '1:48',    date: 'Feb 13', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80', source: '@company',    views: '912K', platform: 'YouTube' },
+  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K', platform: 'TikTok' },
+  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M', platform: 'YouTube' },
+  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K', platform: 'Instagram' },
+  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9',  words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K', platform: 'YouTube' },
+  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8',  words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M', platform: 'TikTok' },
+  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7',  words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K', platform: 'Instagram' },
+  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',    date: 'Feb 6', words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80', source: '@demos',      views: '1.8M', platform: 'YouTube' },
+  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5',  words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K', platform: 'TikTok' },
 ];
 
 const SNIPPETS: Record<number, string> = {
@@ -138,28 +141,28 @@ const COLLECTIONS: GroupItem[] = [
   {
     id: 101, name: 'Q1 Product Reviews', count: 4,
     videos: [
-      { id: 201, title: 'Jan product demo', duration: '1:03',  date: 'Jan 15, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@productteam', views: '1.2M' },
-      { id: 202, title: 'Feb deep-dive session', duration: '0:51',  date: 'Feb 3, 2026', thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@productteam', views: '678K' },
-      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@productteam', views: '341K' },
-      { id: 204, title: 'Feature comparison talk', duration: '0:37',  date: 'Feb 18, 2026', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@productteam', views: '892K' },
+      { id: 201, title: 'Jan product demo', duration: '1:03',  date: 'Jan 15, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@productteam', views: '1.2M', platform: 'YouTube' },
+      { id: 202, title: 'Feb deep-dive session', duration: '0:51',  date: 'Feb 3, 2026', thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@productteam', views: '678K', platform: 'TikTok' },
+      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@productteam', views: '341K', platform: 'YouTube' },
+      { id: 204, title: 'Feature comparison talk', duration: '0:37',  date: 'Feb 18, 2026', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@productteam', views: '892K', platform: 'Instagram' },
     ],
   },
   {
     id: 102, name: 'User Research Series', count: 3,
     videos: [
-      { id: 205, title: 'Interview – Alex M.', duration: '1:45',  date: 'Feb 5, 2026', thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@research', views: '2.1M' },
-      { id: 206, title: 'Interview – Priya S.', duration: '1:17',  date: 'Feb 7, 2026', thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@research', views: '445K' },
-      { id: 207, title: 'Focus group session', duration: '0:43',  date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@research', views: '987K' },
+      { id: 205, title: 'Interview – Alex M.', duration: '1:45',  date: 'Feb 5, 2026', thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@research', views: '2.1M', platform: 'TikTok' },
+      { id: 206, title: 'Interview – Priya S.', duration: '1:17',  date: 'Feb 7, 2026', thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@research', views: '445K', platform: 'Instagram' },
+      { id: 207, title: 'Focus group session', duration: '0:43',  date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@research', views: '987K', platform: 'YouTube' },
     ],
   },
   {
     id: 103, name: 'Marketing Campaigns', count: 5,
     videos: [
-      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@marketing', views: '3.2M' },
-      { id: 209, title: 'Ad script review', duration: '1:06', date: 'Feb 1, 2026', thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@marketing', views: '512K' },
-      { id: 210, title: 'Influencer briefing', duration: '1:38',  date: 'Feb 8, 2026', thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@marketing', views: '1.9M' },
-      { id: 211, title: 'Launch event recap', duration: '0:52',  date: 'Feb 14, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@marketing', views: '732K' },
-      { id: 212, title: 'Post-launch debrief', duration: '1:23',  date: 'Feb 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@marketing', views: '289K' },
+      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@marketing', views: '3.2M', platform: 'Instagram' },
+      { id: 209, title: 'Ad script review', duration: '1:06', date: 'Feb 1, 2026', thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@marketing', views: '512K', platform: 'YouTube' },
+      { id: 210, title: 'Influencer briefing', duration: '1:38',  date: 'Feb 8, 2026', thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@marketing', views: '1.9M', platform: 'TikTok' },
+      { id: 211, title: 'Launch event recap', duration: '0:52',  date: 'Feb 14, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@marketing', views: '732K', platform: 'YouTube' },
+      { id: 212, title: 'Post-launch debrief', duration: '1:23',  date: 'Feb 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@marketing', views: '289K', platform: 'TikTok' },
     ],
   },
 ];
@@ -168,20 +171,20 @@ const BULK: GroupItem[] = [
   {
     id: 301, name: 'Conference 2026 Batch', count: 6,
     videos: [
-      { id: 401, title: 'Opening keynote', duration: '1:56',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@conference', views: '1.7M' },
-      { id: 402, title: 'Panel: Future of AI', duration: '1:31',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@conference', views: '4.2M' },
-      { id: 403, title: 'Workshop – UX trends', duration: '0:46',    date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@conference', views: '891K' },
-      { id: 404, title: 'Startup pitch session', duration: '1:14',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@conference', views: '2.3M' },
-      { id: 405, title: 'Closing remarks', duration: '0:33',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@conference', views: '556K' },
-      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@conference', views: '1.1M' },
+      { id: 401, title: 'Opening keynote', duration: '1:56',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@conference', views: '1.7M', platform: 'YouTube' },
+      { id: 402, title: 'Panel: Future of AI', duration: '1:31',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@conference', views: '4.2M', platform: 'TikTok' },
+      { id: 403, title: 'Workshop – UX trends', duration: '0:46',    date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@conference', views: '891K', platform: 'Instagram' },
+      { id: 404, title: 'Startup pitch session', duration: '1:14',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@conference', views: '2.3M', platform: 'YouTube' },
+      { id: 405, title: 'Closing remarks', duration: '0:33',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@conference', views: '556K', platform: 'YouTube' },
+      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@conference', views: '1.1M', platform: 'TikTok' },
     ],
   },
   {
     id: 302, name: 'Onboarding Videos', count: 3,
     videos: [
-      { id: 407, title: 'Welcome & orientation', duration: '0:57',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@onboarding', views: '445K' },
-      { id: 408, title: 'Platform walkthrough', duration: '1:22',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@onboarding', views: '338K' },
-      { id: 409, title: 'Team intro session', duration: '0:41',  date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@onboarding', views: '201K' },
+      { id: 407, title: 'Welcome & orientation', duration: '0:57',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@onboarding', views: '445K', platform: 'YouTube' },
+      { id: 408, title: 'Platform walkthrough', duration: '1:22',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@onboarding', views: '338K', platform: 'Instagram' },
+      { id: 409, title: 'Team intro session', duration: '0:41',  date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@onboarding', views: '201K', platform: 'YouTube' },
     ],
   },
 ];
@@ -464,6 +467,70 @@ const DISCOVER_PLATFORM_META: Record<string, { color: string; bg: string }> = {
   'Twitter/X': { color: '#ffffff', bg: '#14171a' },
   LinkedIn:    { color: '#ffffff', bg: '#0a66c2' },
 };
+
+function PlatformIconSVG({ platform }: { platform: string }) {
+  if (platform === 'YouTube') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
+    </svg>
+  );
+  if (platform === 'TikTok') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
+    </svg>
+  );
+  if (platform === 'Instagram') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+  if (platform === 'LinkedIn') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+  if (platform === 'Twitter/X') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L2.252 2.25H8.08l4.226 5.593 5.938-5.593z" />
+    </svg>
+  );
+  return null;
+}
+
+function VideoPlatformBadge({ platform, isDark }: { platform?: string; isDark: boolean }) {
+  if (!platform) return null;
+  const meta = DISCOVER_PLATFORM_META[platform] ?? { color: '#fff', bg: '#6b7280' };
+  if (isDark) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]"
+        style={{
+          background: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.13)',
+          color: '#ffffff',
+          fontWeight: 600,
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+        }}
+      >
+        <PlatformIconSVG platform={platform} />
+        {platform}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
+      style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}
+    >
+      <PlatformIconSVG platform={platform} />
+      {platform}
+    </span>
+  );
+}
 
 interface DiscoverEntry {
   id: number; title: string; creator: string; platform: string;
@@ -1355,6 +1422,7 @@ export function DashboardPage() {
   const [groupSlideId, setGroupSlideId] = useState<number | null>(null);
   const [copiedCardId, setCopiedCardId] = useState<number | null>(null);
   const [singlesSlideId, setSinglesSlideId] = useState<number | null>(null);
+  const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
   // Unified filter bar state — multi-select
   const [singlesActiveDurations, setSinglesActiveDurations] = useState<string[]>([]);
   const [singlesActiveWords, setSinglesActiveWords] = useState<string[]>([]);
@@ -2020,7 +2088,49 @@ export function DashboardPage() {
                       <div className="absolute inset-0 flex items-center justify-center">
                         <Play className="w-5 h-5 text-white fill-white opacity-80" />
                       </div>
-                      <span className="absolute bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
+                      <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
+                        <VideoPlatformBadge platform={(item as Transcript).platform} isDark={isDark} />
+                        <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
+                      </div>
+                      {/* ── Action overlays ── */}
+                      <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+                        <button
+                          className="w-7 h-7 rounded-lg flex items-center justify-center"
+                          style={{
+                            background: favouritedIds.has(item.id) ? 'rgba(239,68,68,0.25)' : 'rgba(0,0,0,0.45)',
+                            color: favouritedIds.has(item.id) ? '#ef4444' : '#ffffff',
+                            border: `1px solid ${favouritedIds.has(item.id) ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                            backdropFilter: 'blur(8px)',
+                          }}
+                          onClick={e => {
+                            e.stopPropagation();
+                            setFavouritedIds(prev => {
+                              const next = new Set(prev);
+                              next.has(item.id) ? next.delete(item.id) : next.add(item.id);
+                              return next;
+                            });
+                          }}
+                          title={favouritedIds.has(item.id) ? 'Remove from favourites' : 'Add to favourites'}
+                        >
+                          <Heart className="w-3.5 h-3.5" style={{ fill: favouritedIds.has(item.id) ? '#ef4444' : 'none' }} />
+                        </button>
+                        <button
+                          className="w-7 h-7 rounded-lg flex items-center justify-center"
+                          style={{
+                            background: 'rgba(0,0,0,0.45)',
+                            color: '#ffffff',
+                            border: '1px solid rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(8px)',
+                          }}
+                          onClick={e => {
+                            e.stopPropagation();
+                            setFolderModalFor({ id: item.id, rect: e.currentTarget.getBoundingClientRect(), title: item.title });
+                          }}
+                          title="Save to folder"
+                        >
+                          <FolderPlus className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <div className="p-3 flex flex-col gap-1.5 flex-1">
                       <span className="text-[10px]" style={{ color: muted }}>{(item as Transcript).source}</span>
@@ -2031,26 +2141,6 @@ export function DashboardPage() {
                       <div className="flex items-center justify-between mt-auto pt-1">
                         <span className="text-[10px]" style={{ color: muted }}>{item.date}</span>
                         <div className="flex items-center gap-1">
-                          {/* Favourite */}
-                          <button
-                            className="p-1 rounded-md transition-colors"
-                            style={{
-                              color: favouritedIds.has(item.id) ? '#ef4444' : muted,
-                              background: favouritedIds.has(item.id) ? (isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.07)') : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'),
-                              border: `1px solid ${favouritedIds.has(item.id) ? 'rgba(239,68,68,0.28)' : border}`,
-                            }}
-                            onClick={e => {
-                              e.stopPropagation();
-                              setFavouritedIds(prev => {
-                                const next = new Set(prev);
-                                next.has(item.id) ? next.delete(item.id) : next.add(item.id);
-                                return next;
-                              });
-                            }}
-                            title={favouritedIds.has(item.id) ? 'Remove from favourites' : 'Add to favourites'}
-                          >
-                            <Heart className="w-2.5 h-2.5" style={{ fill: favouritedIds.has(item.id) ? '#ef4444' : 'none' }} />
-                          </button>
                           {/* Copy */}
                           <button
                             className="p-1 rounded-md transition-colors"
@@ -2137,6 +2227,17 @@ export function DashboardPage() {
           </div>
           </div>
           )} {/* end hybrid / list / grid conditional */}
+
+          {/* Save to Folder modal for singles grid */}
+          {folderModalFor && (
+            <SaveToFolderModal
+              type="transcript"
+              refId={folderModalFor.id}
+              name={folderModalFor.title}
+              triggerRect={folderModalFor.rect}
+              onClose={() => setFolderModalFor(null)}
+            />
+          )}
 
           {/* Slide-over panel — only in grid / list mode */}
           {singlesSlideId !== null && singlesViewMode !== 'hybrid' && (() => {
@@ -2844,7 +2945,49 @@ export function DashboardPage() {
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Play className="w-5 h-5 text-white fill-white opacity-80" />
                           </div>
-                          <span className="absolute bottom-2 right-2 text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
+                          <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
+                            <VideoPlatformBadge platform={item.platform} isDark={isDark} />
+                            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(item.duration)}</span>
+                          </div>
+                          {/* ── Action overlays ── */}
+                          <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+                            <button
+                              className="w-7 h-7 rounded-lg flex items-center justify-center"
+                              style={{
+                                background: favouritedIds.has(item.id) ? 'rgba(239,68,68,0.25)' : 'rgba(0,0,0,0.45)',
+                                color: favouritedIds.has(item.id) ? '#ef4444' : '#ffffff',
+                                border: `1px solid ${favouritedIds.has(item.id) ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'}`,
+                                backdropFilter: 'blur(8px)',
+                              }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                setFavouritedIds(prev => {
+                                  const next = new Set(prev);
+                                  next.has(item.id) ? next.delete(item.id) : next.add(item.id);
+                                  return next;
+                                });
+                              }}
+                              title={favouritedIds.has(item.id) ? 'Remove from favourites' : 'Add to favourites'}
+                            >
+                              <Heart className="w-3.5 h-3.5" style={{ fill: favouritedIds.has(item.id) ? '#ef4444' : 'none' }} />
+                            </button>
+                            <button
+                              className="w-7 h-7 rounded-lg flex items-center justify-center"
+                              style={{
+                                background: 'rgba(0,0,0,0.45)',
+                                color: '#ffffff',
+                                border: '1px solid rgba(255,255,255,0.15)',
+                                backdropFilter: 'blur(8px)',
+                              }}
+                              onClick={e => {
+                                e.stopPropagation();
+                                setFolderModalFor({ id: item.id, rect: e.currentTarget.getBoundingClientRect(), title: item.title });
+                              }}
+                              title="Save to folder"
+                            >
+                              <FolderPlus className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                         <div className="p-3 flex flex-col gap-1.5 flex-1">
                           <span className="text-[10px]" style={{ color: muted }}>{item.source ?? ''}</span>
@@ -2855,22 +2998,6 @@ export function DashboardPage() {
                           <div className="flex items-center justify-between mt-auto pt-1">
                             <span className="text-[10px]" style={{ color: muted }}>{item.date}</span>
                             <div className="flex items-center gap-1">
-                              {/* Favourite */}
-                              <button
-                                className="p-1 rounded-md transition-colors"
-                                style={{
-                                  color: favouritedIds.has(item.id) ? '#ef4444' : muted,
-                                  background: favouritedIds.has(item.id) ? (isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.07)') : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'),
-                                  border: `1px solid ${favouritedIds.has(item.id) ? 'rgba(239,68,68,0.28)' : border}`,
-                                }}
-                                onClick={e => {
-                                  e.stopPropagation();
-                                  setFavouritedIds(prev => { const n = new Set(prev); n.has(item.id) ? n.delete(item.id) : n.add(item.id); return n; });
-                                }}
-                                title={favouritedIds.has(item.id) ? 'Remove from favourites' : 'Add to favourites'}
-                              >
-                                <Heart className="w-2.5 h-2.5" style={{ fill: favouritedIds.has(item.id) ? '#ef4444' : 'none' }} />
-                              </button>
                               {/* Copy */}
                               <button
                                 className="p-1 rounded-md transition-colors"

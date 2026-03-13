@@ -10,7 +10,7 @@ import {
   ChevronRight, Play, Calendar, Copy, CheckCheck,
   Users, Video, FileText, ExternalLink, BadgeCheck,
   Search, SlidersHorizontal, ChevronDown, Clock, X,
-  Heart, MoreHorizontal, Download, Lock, Film, Image,
+  Heart, MoreHorizontal, Download, Lock, Film, Image, FolderPlus,
   Zap, ArrowRight, Loader2, RefreshCw,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
@@ -19,6 +19,7 @@ import { AppSidebar } from './AppSidebar';
 import { AppLogo } from './AppLogo';
 import { AppHeader } from './AppHeader';
 import { ImageWithFallback } from './figma/ImageWithFallback';
+import { SaveToFolderModal } from './SaveToFolderModal';
 import {
   TranscriptDetailPanel,
   TranscriptDetailVideo,
@@ -356,6 +357,7 @@ function VideoCard({
   const [copied, setCopied]       = useState(false);
   const [favourited, setFavourited] = useState(false);
   const [showMenu, setShowMenu]   = useState(false);
+  const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
 
   const restBg = isDark ? '#141414' : '#ffffff';
 
@@ -378,6 +380,41 @@ function VideoCard({
           <VideoPlatformBadge platform={video.platform} isDark={isDark} />
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(video.duration)}</span>
         </div>
+        {/* ── Action overlays ── */}
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+          <button
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: favourited ? 'rgba(239,68,68,0.25)' : 'rgba(0,0,0,0.45)',
+              color: favourited ? '#ef4444' : '#ffffff',
+              border: `1px solid ${favourited ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.15)'}`,
+              backdropFilter: 'blur(8px)',
+            }}
+            onClick={e => {
+              e.stopPropagation();
+              setFavourited(v => !v);
+            }}
+            title={favourited ? 'Remove from favourites' : 'Add to favourites'}
+          >
+            <Heart className="w-3.5 h-3.5" style={{ fill: favourited ? '#ef4444' : 'none' }} />
+          </button>
+          <button
+            className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{
+              background: 'rgba(0,0,0,0.45)',
+              color: '#ffffff',
+              border: '1px solid rgba(255,255,255,0.15)',
+              backdropFilter: 'blur(8px)',
+            }}
+            onClick={e => {
+              e.stopPropagation();
+              setFolderModalFor({ id: video.id, rect: e.currentTarget.getBoundingClientRect(), title: video.title });
+            }}
+            title="Save to folder"
+          >
+            <FolderPlus className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Info */}
@@ -390,22 +427,6 @@ function VideoCard({
         <div className="flex items-center justify-between mt-auto pt-1">
           <span className="text-[10px]" style={{ color: muted }}>{video.date}</span>
           <div className="flex items-center gap-1">
-
-            {/* Favourite */}
-            <button
-              className="p-1 rounded-md transition-colors"
-              style={{
-                color: favourited ? '#ef4444' : muted,
-                background: favourited ? (isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.07)') : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'),
-                border: `1px solid ${favourited ? 'rgba(239,68,68,0.28)' : border}`,
-              }}
-              onClick={e => { e.stopPropagation(); setFavourited(v => !v); }}
-              title={favourited ? 'Remove from favourites' : 'Add to favourites'}
-              onMouseEnter={ev => { if (!favourited) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-              onMouseLeave={ev => { if (!favourited) (ev.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'; }}
-            >
-              <Heart className="w-2.5 h-2.5" style={{ fill: favourited ? '#ef4444' : 'none' }} />
-            </button>
 
             {/* Copy */}
             <button
@@ -470,6 +491,10 @@ function VideoCard({
           </div>
         </div>
       </div>
+      {folderModalFor && (
+        <SaveToFolderModal type="transcript" refId={folderModalFor.id} name={folderModalFor.title}
+          triggerRect={folderModalFor.rect} onClose={() => setFolderModalFor(null)} />
+      )}
     </div>
   );
 }
