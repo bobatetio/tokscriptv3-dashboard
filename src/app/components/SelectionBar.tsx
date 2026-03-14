@@ -27,35 +27,32 @@ export function SelectionBar({
     opacity: hasSelection ? 1 : 0.5,
     fontWeight: 500,
   };
-  const divider = <div style={{ width: 1, height: 20, background: isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)' }} />;
+  const divider = <div style={{ width: 1, height: 18, background: isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)' }} />;
+
+  /* CSS vars for hover — scoped to .sb-v1 */
+  const hoverFill = isDark ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)';
+  const borderHover = isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.22)';
+  const textBright = isDark ? '#333' : '#fff';
+  const closeHover = isDark ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)';
 
   return (
     <div style={{ position: 'sticky', top: 0, zIndex: 20, marginBottom: 12, animation: 'slideUp 0.2s ease-out' }}>
       <style>{`
         @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        .sel-bar-btn {
-          transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+        .sb-btn {
+          transition: background 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .sel-bar-dark .sel-bar-btn:hover:not([disabled]) {
-          background: rgba(0,0,0,0.06) !important;
-          border-color: rgba(0,0,0,0.18) !important;
-          color: #333 !important;
+        .sb-v1 .sb-btn:hover:not([disabled]) {
+          background: var(--sb-hover-fill) !important;
+          border-color: var(--sb-border-hover) !important;
+          color: var(--sb-text-bright) !important;
         }
-        .sel-bar-light .sel-bar-btn:hover:not([disabled]) {
-          background: rgba(255,255,255,0.08) !important;
-          border-color: rgba(255,255,255,0.22) !important;
-          color: #fff !important;
+        .sb-close {
+          transition: background 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .sel-bar-close {
-          transition: background 0.2s ease, color 0.2s ease;
-        }
-        .sel-bar-dark .sel-bar-close:hover {
-          background: rgba(0,0,0,0.06) !important;
-          color: #333 !important;
-        }
-        .sel-bar-light .sel-bar-close:hover {
-          background: rgba(255,255,255,0.08) !important;
-          color: #fff !important;
+        .sb-v1 .sb-close:hover {
+          background: var(--sb-close-hover) !important;
+          color: var(--sb-text-bright) !important;
         }
         .sel-bar-tip {
           position: relative;
@@ -83,66 +80,74 @@ export function SelectionBar({
           transform: translateX(-50%) translateY(0);
         }
       `}</style>
-      <div className={isDark ? 'sel-bar-dark' : 'sel-bar-light'} style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-        padding: '15px 20px',
-        borderRadius: 12,
-        background: isDark ? '#ffffff' : '#1a1a1a',
-      }}>
+      <div
+        className="sb-v1"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          padding: '11px 20px',
+          borderRadius: 12,
+          background: isDark ? '#ffffff' : '#1a1a1a',
+          boxShadow: `0 4px 20px -6px ${accentColor}25`,
+          '--sb-hover-fill': hoverFill,
+          '--sb-border-hover': borderHover,
+          '--sb-text-bright': textBright,
+          '--sb-close-hover': closeHover,
+        } as React.CSSProperties}
+      >
         {hasSelection ? (
-          <span style={{ color: accentColor, fontWeight: 500, fontSize: 11 }}>{selectedCount} selected</span>
+          <span style={{ color: accentColor, fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{selectedCount} selected</span>
         ) : (
           <span style={{ color: isDark ? '#666' : '#aaa', fontWeight: 400, fontSize: 11 }}>0 selected — click items to select</span>
         )}
         {divider}
         <button
-          className="sel-bar-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
           data-tip="Download all selected videos"
           onClick={() => { if (hasSelection) onDownloadVideos(); }}
         >
-          <Download size={14} /> Videos
+          <Download size={13} /> Videos
         </button>
         <button
-          className="sel-bar-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
           data-tip="Download all selected cover images"
           onClick={() => { if (hasSelection) onDownloadCovers(); }}
         >
-          <ImageDown size={14} /> Covers
+          <ImageDown size={13} /> Covers
         </button>
         <button
-          className="sel-bar-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
           data-tip="Download all video transcripts"
           onClick={() => { if (hasSelection) onDownloadTranscripts(); }}
         >
-          <FileText size={14} /> Transcripts
+          <FileText size={13} /> Transcripts
         </button>
         <button
-          className="sel-bar-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
           data-tip="Download all video data"
           onClick={() => { if (hasSelection) onDownloadData(); }}
         >
-          <Database size={14} /> Data
+          <Database size={13} /> Data
         </button>
         <button
-          className="sel-bar-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
           data-tip="Download all content"
           onClick={() => { if (hasSelection) onDownloadAll(); }}
         >
-          <Archive size={14} /> Download All
+          <Archive size={13} /> Download All
         </button>
         {divider}
         <button
-          className="sel-bar-close sel-bar-tip flex items-center justify-center p-1.5 rounded-lg"
+          className="sb-close sel-bar-tip flex items-center justify-center p-1.5 rounded-lg"
           style={{ background: 'transparent', color: isDark ? '#666' : '#aaa', border: 'none', cursor: 'pointer' }}
           data-tip="Deselect all"
           onClick={onDeselect}
         >
-          <X size={14} />
+          <X size={13} />
         </button>
       </div>
     </div>

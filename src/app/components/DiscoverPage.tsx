@@ -20,6 +20,8 @@ import { AppLogo } from './AppLogo';
 import { AppHeader } from './AppHeader';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { SaveToFolderModal } from './SaveToFolderModal';
+import { SelectionBar } from './SelectionBar';
+import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
 import Rd from '../../imports/Rd';
 
@@ -408,21 +410,26 @@ function HistoryRow({ entry, isDark, border, text, muted, hoverBg, onSelect }: {
 }
 
 // ─── History Card (grid view) ─────────────────────────────────────────────────
-function HistoryCard({ entry, isDark, border, text, muted, hoverBg, onSelect }: {
+function HistoryCard({ entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect }: {
   entry: HistoryEntry; isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
   onSelect: (entry: HistoryEntry) => void;
+  isSelected?: boolean; onToggleSelect?: (id: number) => void;
 }) {
   const [copied, setCopied] = useState(false);
   const [favourited, setFavourited] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
 
+  const cardBg = isDark ? '#141414' : '#ffffff';
+  const selectedBorder = isSelected ? '2px solid #00b8b2' : `1px solid ${border}`;
+  const selectedBg = isSelected ? (isDark ? 'rgba(0,184,178,0.06)' : 'rgba(0,184,178,0.04)') : cardBg;
+
   return (
     <div
-      className="rounded-2xl overflow-hidden flex flex-col transition-all cursor-pointer"
-      style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
-      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+      className="rounded-2xl overflow-hidden flex flex-col cursor-pointer"
+      style={{ border: selectedBorder, background: selectedBg, transition: 'border-color 0.2s ease, background 0.2s ease' }}
+      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isSelected ? selectedBg : cardBg; }}
       onClick={() => onSelect(entry)}
     >
       <div className="relative aspect-[9/16] w-full overflow-hidden flex-shrink-0">
@@ -467,6 +474,25 @@ function HistoryCard({ entry, isDark, border, text, muted, hoverBg, onSelect }: 
           )}
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(entry.duration)}</span>
         </div>
+        {/* ── Checkbox overlay ── */}
+        {onToggleSelect && (
+          <button
+            className="absolute top-2 left-2 z-10 w-5 h-5 rounded-full flex items-center justify-center"
+            style={{
+              background: isSelected ? '#00b8b2' : 'rgba(0,0,0,0.45)',
+              border: `1.5px solid ${isSelected ? '#00b8b2' : 'rgba(255,255,255,0.3)'}`,
+              backdropFilter: 'blur(8px)',
+              transition: 'background 0.2s ease, border-color 0.2s ease',
+            }}
+            onClick={e => { e.stopPropagation(); onToggleSelect(entry.id); }}
+          >
+            {isSelected && (
+              <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </button>
+        )}
         {/* ── Action overlays ── */}
         <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
           <button
@@ -622,6 +648,7 @@ export function DiscoverPage() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedEntry, setSelectedEntry] = useState<HistoryEntry | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [freeViewsUsed, setFreeViewsUsed] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(30);
   const [ppDropdownPos, setPpDropdownPos] = useState<{ top: number; right: number } | null>(null);
@@ -635,6 +662,16 @@ export function DiscoverPage() {
     if (plan === 'free') setFreeViewsUsed(v => v + 1);
     setSelectedEntry(entry);
   };
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectedEntries = MY_HISTORY.filter(e => selectedIds.has(e.id));
 
   const bg      = isDark ? '#0d0d0d' : '#ffffff';
   const border  = isDark ? '#262626' : '#e5e7eb';
@@ -1092,6 +1129,19 @@ export function DiscoverPage() {
           ) : (
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
+            {selectedIds.size > 0 && (
+              <SelectionBar
+                selectedCount={selectedIds.size}
+                isDark={isDark}
+                accentColor="#00b8b2"
+                onDownloadVideos={() => selectedEntries.forEach(e => simulateVideoDownload(e.title))}
+                onDownloadCovers={() => selectedEntries.forEach(e => simulateCoverDownload(e.title))}
+                onDownloadTranscripts={() => selectedEntries.forEach(e => simulateVideoDownload(e.title + ' - Transcript'))}
+                onDownloadData={() => selectedEntries.forEach(e => simulateVideoDownload(e.title + ' - Data'))}
+                onDownloadAll={() => simulateZipDownload(selectedEntries.map(e => e.title))}
+                onDeselect={() => setSelectedIds(new Set())}
+              />
+            )}
             {filteredHistory.length > 0 ? (
               viewMode === 'list' ? (
                 <div className="flex flex-col gap-2">
@@ -1102,7 +1152,7 @@ export function DiscoverPage() {
               ) : (
                 <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                   {paginatedHistory.map(e => (
-                    <HistoryCard key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg} onSelect={handleSelect} />
+                    <HistoryCard key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg} onSelect={handleSelect} isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect} />
                   ))}
                 </div>
               )
