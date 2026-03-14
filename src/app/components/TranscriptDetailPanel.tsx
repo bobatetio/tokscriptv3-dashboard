@@ -729,32 +729,25 @@ export function TranscriptDetailPanel({
                 )}
 
                 {activeTab === 'caption' && (
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-5">
                     {/* Single caption block */}
-                    <div
-                      className="relative rounded-xl p-4"
-                      style={{
-                        background: isDark ? 'rgba(255,255,255,0.04)' : '#f9f9f9',
-                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : '#ebebeb'}`,
-                      }}
-                    >
-                      <p className="text-sm leading-relaxed pr-7" style={{ color: text }}>
+                    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${border}` }}>
+                      <div className="flex items-center px-3.5 py-2" style={{ borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
+                        <span className="text-[11px]" style={{ color: muted, fontWeight: 500 }}>Caption</span>
+                      </div>
+                      <p className="px-3.5 py-3 text-[11px] leading-relaxed" style={{
+                        color: isDark ? 'rgba(255,255,255,0.75)' : '#374151',
+                        background: isDark ? '#0d0d0d' : '#f9fafb',
+                      }}>
                         Wait for the end... this one actually changed how I think about it 🤯 Drop a comment if you felt the same 👇
                       </p>
-                      <button
-                        className="absolute top-3 right-3"
-                        onClick={() => navigator.clipboard.writeText("Wait for the end... this one actually changed how I think about it 🤯 Drop a comment if you felt the same 👇")}
-                        title="Copy caption"
-                      >
-                        <Copy className="w-3.5 h-3.5" style={{ color: muted }} />
-                      </button>
                     </div>
 
                     {/* Divider */}
                     <div style={{ height: 1, background: isDark ? 'rgba(255,255,255,0.06)' : '#f0f0f0' }} />
 
                     {/* Caption details grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-4">
                       {[
                         { label: 'Characters', value: '107' },
                         { label: 'Words', value: '22' },
@@ -763,9 +756,9 @@ export function TranscriptDetailPanel({
                         { label: 'CTA type', value: 'Comment prompt' },
                         { label: 'Emojis', value: '2' },
                       ].map(d => (
-                        <div key={d.label} className="flex flex-col gap-0.5">
-                          <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>{d.label}</p>
-                          <p className="text-xs" style={{ color: text }}>{d.value}</p>
+                        <div key={d.label} className="flex flex-col gap-1">
+                          <p className="text-[11px]" style={{ color: muted, fontWeight: 500 }}>{d.label}</p>
+                          <p className="text-[13px]" style={{ color: text, fontWeight: 600 }}>{d.value}</p>
                         </div>
                       ))}
                     </div>
@@ -775,7 +768,7 @@ export function TranscriptDetailPanel({
 
                     {/* Suggested hashtags */}
                     <div className="flex flex-col gap-2">
-                      <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Suggested hashtags</p>
+                      <p className="text-[11px]" style={{ color: muted, fontWeight: 500 }}>Suggested hashtags</p>
                       <div className="flex flex-wrap gap-1.5">
                         {['#viral', '#foryou', '#fyp', '#trending', '#reels', '#explore'].map(tag => (
                           <span
@@ -819,7 +812,7 @@ export function TranscriptDetailPanel({
 
                     {/* ── Transcript Statistics ── */}
                     <div className="flex flex-col gap-2">
-                      <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Transcript Statistics</p>
+                      <p className="text-xs" style={{ color: muted, fontWeight: 600 }}>Transcript Statistics</p>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { label: 'Total Words',      value: String(video.wordCount)   },
@@ -831,7 +824,7 @@ export function TranscriptDetailPanel({
                         ].map(m => (
                           <div key={m.label} className="p-3 rounded-xl flex flex-col gap-1" style={{ background: cardBg, border: `1px solid ${border}` }}>
                             <p className="text-base" style={{ color: text, fontWeight: 700, lineHeight: 1.2 }}>{m.value}</p>
-                            <p className="text-[10px]" style={{ color: muted }}>{m.label}</p>
+                            <p className="text-[10px]" style={{ color: muted, fontWeight: 500 }}>{m.label}</p>
                           </div>
                         ))}
                       </div>
@@ -839,7 +832,7 @@ export function TranscriptDetailPanel({
 
                     {/* ── Most Common Words ── */}
                     <div className="flex flex-col gap-2.5">
-                      <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Most Common Words</p>
+                      <p className="text-xs" style={{ color: muted, fontWeight: 600 }}>Most Common Words</p>
                       {(() => {
                         const WORD_CONTEXTS: Record<string, string[]> = {
                           read:        ['"…you can **read** faster than you think once you train your brain…"', '"…I started to **read** at 2x speed and never looked back…"', '"…every book you want to **read** is now within reach…"'],
@@ -925,7 +918,7 @@ export function TranscriptDetailPanel({
                                   style={{ borderBottom: `1px solid ${border}` }}
                                 >
                                   <div className="flex items-center gap-2">
-                                    <span className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Uses of</span>
+                                    <span className="text-[11px]" style={{ color: muted, fontWeight: 500 }}>Uses of</span>
                                     <span
                                       className="text-[11px] px-2 py-0.5 rounded-md"
                                       style={{ color: text, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)', border: `1px solid ${border}` }}
@@ -984,7 +977,7 @@ export function TranscriptDetailPanel({
 
                     {/* ── Common Phrases ── */}
                     <div className="flex flex-col gap-2">
-                      <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Common Phrases</p>
+                      <p className="text-xs" style={{ color: muted, fontWeight: 600 }}>Common Phrases</p>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { phrase: 'the speed',      count: 3 },
@@ -1003,7 +996,7 @@ export function TranscriptDetailPanel({
 
                     {/* ── Word Cloud ── */}
                     <div className="flex flex-col gap-2">
-                      <p className="text-[10px] uppercase tracking-widest" style={{ color: muted }}>Word Cloud</p>
+                      <p className="text-xs" style={{ color: muted, fontWeight: 600 }}>Word Cloud</p>
                       <div className="rounded-xl p-4 flex flex-wrap gap-x-3 gap-y-2 items-center" style={{ background: cardBg, border: `1px solid ${border}` }}>
                         {[
                           { word: 'read',        size: 22 },
