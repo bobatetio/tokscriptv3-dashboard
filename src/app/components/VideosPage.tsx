@@ -20,6 +20,7 @@ import { ImageWithFallback } from './figma/ImageWithFallback';
 import { HistoryEntry } from './DiscoverPage';
 import { useNewTranscript } from '../context/NewTranscriptContext';
 import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
+import { SelectionBar } from './SelectionBar';
 import { SaveToFolderModal } from './SaveToFolderModal';
 import { MOCK_SESSIONS } from './videos/mockData';
 import { VideoSession } from './videos/types';
@@ -473,62 +474,6 @@ function VideoRow({
 }
 
 // ─── Bulk Selection Bar ───────────────────────────────────────────────────────
-function BulkSelectionBar({
-  selectedIds, isDark, border, onDeselect, allVideos,
-}: {
-  selectedIds: Set<number>; isDark: boolean; border: string; onDeselect: () => void; allVideos: HistoryEntry[];
-}) {
-  const hasSelection = selectedIds.size > 0;
-  return ReactDOM.createPortal(
-    <div style={{
-      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-      zIndex: 60,
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 20px',
-      borderRadius: 9999,
-      background: isDark ? '#1a1a1a' : '#ffffff',
-      border: `1px solid ${border}`,
-      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.15)',
-    }}>
-      {hasSelection ? (
-        <span style={{ color: '#00b8b2', fontWeight: 600, fontSize: 13 }}>{selectedIds.size} selected</span>
-      ) : (
-        <span style={{ color: '#888', fontWeight: 400, fontSize: 13 }}>0 selected — click videos to select</span>
-      )}
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: hasSelection ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'), color: hasSelection ? '#ffffff' : '#888', fontWeight: 500, border: 'none', cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => {
-          if (!hasSelection) return;
-          simulateZipDownload(allVideos.filter(v => selectedIds.has(v.id)).map(v => v.title), 'selected-videos');
-        }}
-      >
-        <Download size={14} /> Download all
-      </button>
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: 'transparent', color: '#888', border: `1px solid ${border}`, cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => {
-          if (!hasSelection) return;
-          allVideos.filter(v => selectedIds.has(v.id)).forEach(v => simulateCoverDownload(v.title, v.thumbnail));
-        }}
-      >
-        <ImageDown size={14} /> Covers
-      </button>
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center justify-center p-1.5 rounded-lg"
-        style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer' }}
-        onClick={onDeselect}
-        title="Exit selection mode"
-      >
-        <X size={14} />
-      </button>
-    </div>,
-    document.body
-  );
-}
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function VideosPage() {
@@ -1048,6 +993,35 @@ export function VideosPage() {
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
 
+              {/* Selection bar */}
+              {selectedIds.size > 0 && (
+                <SelectionBar
+                  selectedCount={selectedIds.size}
+                  isDark={isDark}
+                  accentColor="#00b8b2"
+                  onDeselect={() => { setSelectedIds(new Set()); }}
+                  onDownloadVideos={() => {
+                    const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
+                    simulateZipDownload(selected.map(v => v.title), 'selected-videos');
+                  }}
+                  onDownloadCovers={() => {
+                    VIDEOS_DATA.filter(v => selectedIds.has(v.id)).forEach(v => simulateCoverDownload(v.title, v.thumbnail));
+                  }}
+                  onDownloadTranscripts={() => {
+                    const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
+                    simulateZipDownload(selected.map(v => v.title), 'selected-transcripts');
+                  }}
+                  onDownloadData={() => {
+                    const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
+                    simulateZipDownload(selected.map(v => v.title), 'selected-data');
+                  }}
+                  onDownloadAll={() => {
+                    const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
+                    simulateZipDownload(selected.map(v => v.title), 'selected-all');
+                  }}
+                />
+              )}
+
               {filteredVideos.length > 0 ? (
                 viewMode === 'list' ? (
                   <div className="flex flex-col gap-2">
@@ -1346,17 +1320,6 @@ export function VideosPage() {
 
         </main>
       </div>
-
-      {/* Bulk selection bar */}
-      {videosTab === 'all' && selectedIds.size > 0 && (
-        <BulkSelectionBar
-          selectedIds={selectedIds}
-          isDark={isDark}
-          border={border}
-          onDeselect={() => { setSelectedIds(new Set()); }}
-          allVideos={VIDEOS_DATA}
-        />
-      )}
     </div>
   );
 }

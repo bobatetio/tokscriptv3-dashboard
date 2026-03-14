@@ -1,33 +1,18 @@
-# Handoff: Always-On Checkbox Selection (Remove Toggle Mode)
+# Handoff — Unify Selection Bars with 5 Download Options
 
 ## Status: DONE
 
 ## Changes Made
-All 3 files modified in parallel by agents:
 
-### 1. `src/app/components/VideosPage.tsx`
-- Removed `selectionMode` state + `setSelectionMode` calls
-- Removed Select pill + Select All from filter bar
-- VideoCard: checkbox always visible, play icon always visible on hover, card click always opens detail
-- VideoCardList: same pattern
-- Floating bar gate: `selectedIds.size > 0`
-- Removed `Square`/`CheckSquare` imports
+### New file
+- `src/app/components/SelectionBar.tsx` — Shared selection bar with 5 hollow buttons (Videos, Covers, Transcripts, Data, Download All), accent-colored count label, sticky positioning
 
-### 2. `src/app/components/DashboardPage.tsx`
-- Removed `singlesSelectionMode` + `groupSelectionMode` states
-- Removed Select pill + Select All from both Singles and Collections/Bulks filter bars
-- Singles grid: checkbox always visible, play icon always visible, card click always opens slide
-- Collections/Bulks grid: same pattern
-- Floating bar gates: `singlesSelectedIds.size > 0` / `groupSelectedIds.size > 0`
-- Removed `Square`/`CheckSquare` imports
-
-### 3. `src/app/components/CreatorProfilePage.tsx`
-- Removed `selectionMode` state + `setSelectionMode` calls
-- Removed Select pill + Select All from filter bar
-- VideoCard: checkbox always visible, play icon always visible, card click always opens detail
-- Floating bar gate: `selectedIds.size > 0`
-- Removed `Square`/`CheckSquare` imports
+### Modified files
+1. **DashboardPage.tsx** — Removed `DashboardBulkBar`, imported `SelectionBar` + download utils, updated 2 render sites (singles + collections/bulk) with `accentColor="#00b8b2"`
+2. **VideosPage.tsx** — Removed `BulkSelectionBar`, imported `SelectionBar`, updated 1 render site with `accentColor="#00b8b2"`, wired real download handlers using VIDEOS_DATA
+3. **CreatorProfilePage.tsx** — Removed `ProfileBulkBar`, imported `SelectionBar` + download utils, updated 1 render site with `accentColor="#f59e0b"`, wired real download handlers using filteredVideos
 
 ## Verification
-- `vite build` — clean, 0 errors
-- Screenshots verified: Singles, Collection detail, Profile detail, Videos — all show always-on checkboxes, no Select pill
+- `vite build` — clean compile
+- Dev server running, pages load correctly
+- All 5 buttons appear in all bars, all hollow by default

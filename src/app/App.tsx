@@ -20,6 +20,7 @@ import { VideosPage } from './components/VideosPage';
 import { VideoResultsPage } from './components/videos/VideoResultsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { FolderPage } from './components/FolderPage';
+import { SelectionBarPreview } from './components/SelectionBarPreview';
 import { UpgradeModal } from './components/UpgradeModal';
 import { PlanDevToggle } from './components/PlanDevToggle';
 import { NewTranscriptProvider } from './context/NewTranscriptContext';
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
       { path: '/profile/:creator', Component: CreatorProfilePage },
       { path: '/settings', Component: SettingsPage },
       { path: '/folder/:id', Component: FolderPage },
+      { path: '/selection-bar-preview', Component: SelectionBarPreview },
     ],
   },
 ]);

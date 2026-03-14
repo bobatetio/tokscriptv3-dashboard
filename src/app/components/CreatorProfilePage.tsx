@@ -5,7 +5,6 @@
  * Clicking a video opens the TranscriptDetailPanel in a right-side split panel.
  */
 import React, { useState, useContext, useMemo, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router';
 import {
   ChevronRight, Play, Calendar, Copy, CheckCheck,
@@ -29,6 +28,8 @@ import {
 } from './TranscriptDetailPanel';
 import { UserContext } from '../context/UserContext';
 import Rd from '../../imports/Rd';
+import { SelectionBar } from './SelectionBar';
+import { simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatRelativeTime(date: Date): string {
@@ -1090,65 +1091,6 @@ function CreatorHeader({
   );
 }
 
-// ─── Profile Bulk Selection Bar ───────────────────────────────────────────────
-function ProfileBulkBar({
-  selectedCount, isDark, border, onDeselect, onDownloadVideos, onDownloadCovers, onDownloadTranscripts,
-}: {
-  selectedCount: number; isDark: boolean; border: string; onDeselect: () => void;
-  onDownloadVideos: () => void; onDownloadCovers: () => void; onDownloadTranscripts: () => void;
-}) {
-  const hasSelection = selectedCount > 0;
-  return ReactDOM.createPortal(
-    <div style={{
-      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-      zIndex: 60,
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 20px',
-      borderRadius: 9999,
-      background: isDark ? '#1a1a1a' : '#ffffff',
-      border: `1px solid ${border}`,
-      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.15)',
-    }}>
-      {hasSelection ? (
-        <span style={{ color: '#f59e0b', fontWeight: 600, fontSize: 13 }}>{selectedCount} selected</span>
-      ) : (
-        <span style={{ color: '#888', fontWeight: 400, fontSize: 13 }}>0 selected — click videos to select</span>
-      )}
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: hasSelection ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'), color: hasSelection ? '#ffffff' : '#888', fontWeight: 500, border: 'none', cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => { if (hasSelection) onDownloadVideos(); }}
-      >
-        <Download size={14} /> Download Videos
-      </button>
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: 'transparent', color: '#888', border: `1px solid ${border}`, cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => { if (hasSelection) onDownloadCovers(); }}
-      >
-        <Image size={14} /> Covers
-      </button>
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: 'transparent', color: '#888', border: `1px solid ${border}`, cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => { if (hasSelection) onDownloadTranscripts(); }}
-      >
-        <FileText size={14} /> Transcripts
-      </button>
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center justify-center p-1.5 rounded-lg"
-        style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer' }}
-        onClick={onDeselect}
-        title="Exit selection mode"
-      >
-        <X size={14} />
-      </button>
-    </div>,
-    document.body
-  );
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export function CreatorProfilePage() {
@@ -1795,6 +1737,35 @@ export function CreatorProfilePage() {
               <div className="flex-1 overflow-y-auto">
               <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
 
+                {/* Selection bar */}
+                {selectedIds.size > 0 && (
+                  <SelectionBar
+                    selectedCount={selectedIds.size}
+                    isDark={isDark}
+                    accentColor="#f59e0b"
+                    onDeselect={() => { setSelectedIds(new Set()); }}
+                    onDownloadVideos={() => {
+                      const selected = filteredVideos.filter(v => selectedIds.has(v.id));
+                      simulateZipDownload(selected.map(v => v.title), 'selected-videos');
+                    }}
+                    onDownloadCovers={() => {
+                      filteredVideos.filter(v => selectedIds.has(v.id)).forEach(v => simulateCoverDownload(v.title, v.thumbnail));
+                    }}
+                    onDownloadTranscripts={() => {
+                      const selected = filteredVideos.filter(v => selectedIds.has(v.id));
+                      simulateZipDownload(selected.map(v => v.title), 'selected-transcripts');
+                    }}
+                    onDownloadData={() => {
+                      const selected = filteredVideos.filter(v => selectedIds.has(v.id));
+                      simulateZipDownload(selected.map(v => v.title), 'selected-data');
+                    }}
+                    onDownloadAll={() => {
+                      const selected = filteredVideos.filter(v => selectedIds.has(v.id));
+                      simulateZipDownload(selected.map(v => v.title), 'selected-all');
+                    }}
+                  />
+                )}
+
                 {filteredVideos.length > 0 ? (
                   <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
                     {paginatedVideos.map(v => (
@@ -1968,18 +1939,6 @@ export function CreatorProfilePage() {
         </>
       )}
 
-      {/* Profile bulk selection bar */}
-      {selectedIds.size > 0 && (
-        <ProfileBulkBar
-          selectedCount={selectedIds.size}
-          isDark={isDark}
-          border={border}
-          onDeselect={() => { setSelectedIds(new Set()); }}
-          onDownloadVideos={() => { /* placeholder */ }}
-          onDownloadCovers={() => { /* placeholder */ }}
-          onDownloadTranscripts={() => { /* placeholder */ }}
-        />
-      )}
     </div>
   );
 }

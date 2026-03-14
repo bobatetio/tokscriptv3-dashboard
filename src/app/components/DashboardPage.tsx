@@ -1,5 +1,4 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
 import imgBannerBg from "../../assets/b3a148853965f0eea6c20b8748026b122bc3fc9c.png";
 import imgBannerBgLight from "../../assets/ad9c0482dcac9cb102e3083cdd68a90c0bd9c4dc.png";
 import imgBannerRocket from "../../assets/9bf39e8d7f131ea242d7146ac4fd23d28eccaa3e.png";
@@ -17,7 +16,6 @@ import {
   Users, Folder, FolderPlus, MoreHorizontal,
   Copy, Link2, ExternalLink, FolderInput, Pencil, RefreshCw, Trash2, Eye, BookOpen,
   Video, User,
-  ImageDown,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { ImageWithFallback } from './figma/ImageWithFallback';
@@ -36,6 +34,8 @@ import { PROMPTS } from './PromptBasePage';
 import { formatDuration, parseDuration as _parseDuration } from '../utils/formatDuration';
 import { useNewTranscript } from '../context/NewTranscriptContext';
 import { SaveToFolderModal } from './SaveToFolderModal';
+import { SelectionBar } from './SelectionBar';
+import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 interface Transcript {
@@ -174,19 +174,19 @@ const BULK: GroupItem[] = [
     id: 301, name: 'Conference 2026 Batch', count: 6,
     videos: [
       { id: 401, title: 'Opening keynote', duration: '1:56',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@conference', views: '1.7M', platform: 'YouTube' },
-      { id: 402, title: 'Panel: Future of AI', duration: '1:31',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@conference', views: '4.2M', platform: 'TikTok' },
-      { id: 403, title: 'Workshop – UX trends', duration: '0:46',    date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@conference', views: '891K', platform: 'Instagram' },
+      { id: 402, title: 'Panel: Future of AI', duration: '1:31',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@conference', views: '4.2M', platform: 'YouTube' },
+      { id: 403, title: 'Workshop – UX trends', duration: '0:46',    date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@conference', views: '891K', platform: 'YouTube' },
       { id: 404, title: 'Startup pitch session', duration: '1:14',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@conference', views: '2.3M', platform: 'YouTube' },
       { id: 405, title: 'Closing remarks', duration: '0:33',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@conference', views: '556K', platform: 'YouTube' },
-      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@conference', views: '1.1M', platform: 'TikTok' },
+      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@conference', views: '1.1M', platform: 'YouTube' },
     ],
   },
   {
     id: 302, name: 'Onboarding Videos', count: 3,
     videos: [
-      { id: 407, title: 'Welcome & orientation', duration: '0:57',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@onboarding', views: '445K', platform: 'YouTube' },
+      { id: 407, title: 'Welcome & orientation', duration: '0:57',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@onboarding', views: '445K', platform: 'Instagram' },
       { id: 408, title: 'Platform walkthrough', duration: '1:22',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@onboarding', views: '338K', platform: 'Instagram' },
-      { id: 409, title: 'Team intro session', duration: '0:41',  date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@onboarding', views: '201K', platform: 'YouTube' },
+      { id: 409, title: 'Team intro session', duration: '0:41',  date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@onboarding', views: '201K', platform: 'Instagram' },
     ],
   },
 ];
@@ -1363,51 +1363,6 @@ function InlineDashboardOverview({
   );
 }
 
-// ─── Bulk Bar ─────────────────────────────────────────────────────────────────
-function DashboardBulkBar({
-  selectedCount, isDark, border, onDeselect, label, onDownload,
-}: {
-  selectedCount: number; isDark: boolean; border: string; onDeselect: () => void; label: string; onDownload: () => void;
-}) {
-  const hasSelection = selectedCount > 0;
-  return ReactDOM.createPortal(
-    <div style={{
-      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-      zIndex: 60,
-      display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 20px',
-      borderRadius: 9999,
-      background: isDark ? '#1a1a1a' : '#ffffff',
-      border: `1px solid ${border}`,
-      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.6)' : '0 8px 32px rgba(0,0,0,0.15)',
-    }}>
-      {hasSelection ? (
-        <span style={{ color: '#00b8b2', fontWeight: 600, fontSize: 13 }}>{selectedCount} selected</span>
-      ) : (
-        <span style={{ color: '#888', fontWeight: 400, fontSize: 13 }}>0 selected — click cards to select</span>
-      )}
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-        style={{ background: hasSelection ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6'), color: hasSelection ? '#ffffff' : '#888', fontWeight: 500, border: 'none', cursor: hasSelection ? 'pointer' : 'default', opacity: hasSelection ? 1 : 0.5 }}
-        onClick={() => { if (hasSelection) onDownload(); }}
-      >
-        <Download size={14} /> {label}
-      </button>
-      <div style={{ width: 1, height: 20, background: border }} />
-      <button
-        className="flex items-center justify-center p-1.5 rounded-lg"
-        style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer' }}
-        onClick={onDeselect}
-        title="Exit selection mode"
-      >
-        <X size={14} />
-      </button>
-    </div>,
-    document.body
-  );
-}
-
 // ─── Dashboard Page ───────────────────────────────────────────────────────────
 export function DashboardPage() {
   const _nav = useNavigate();
@@ -1480,6 +1435,7 @@ export function DashboardPage() {
   const [openColDropdown, setOpenColDropdown] = useState<string | null>(null);
   const [colSortBy, setColSortBy] = useState('date-desc');
   const [colActiveDateRanges, setColActiveDateRanges] = useState<string[]>([]);
+  const [colActivePlatforms, setColActivePlatforms] = useState<string[]>([]);
   const [groupActiveDurations, setGroupActiveDurations] = useState<string[]>([]);
   const [groupActiveWords, setGroupActiveWords] = useState<string[]>([]);
   const [groupActiveDateRanges, setGroupActiveDateRanges] = useState<string[]>([]);
@@ -1667,6 +1623,9 @@ export function DashboardPage() {
     if (collectionSearchQuery) {
       const cq = collectionSearchQuery.toLowerCase();
       groups = groups.filter(g => g.name.toLowerCase().includes(cq));
+    }
+    if (colActivePlatforms.length > 0) {
+      groups = groups.filter(g => g.videos.some(v => colActivePlatforms.includes(v.platform ?? '')));
     }
     if (colSortBy === 'title-asc') groups.sort((a, b) => a.name.localeCompare(b.name));
     else if (colSortBy === 'title-desc') groups.sort((a, b) => b.name.localeCompare(a.name));
@@ -2111,6 +2070,20 @@ export function DashboardPage() {
           ) : (
           <div className="flex-1 overflow-y-auto">
           <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
+            {/* Selection bar */}
+            {view.category === 'singles' && singlesSelectedIds.size > 0 && (
+              <SelectionBar
+                selectedCount={singlesSelectedIds.size}
+                isDark={isDark}
+                accentColor="#00b8b2"
+                onDeselect={() => { setSinglesSelectedIds(new Set()); }}
+                onDownloadVideos={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-videos'); }}
+                onDownloadCovers={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-covers'); }}
+                onDownloadTranscripts={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-transcripts'); }}
+                onDownloadData={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-data'); }}
+                onDownloadAll={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-all'); }}
+              />
+            )}
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 gap-3">
                 <Film className="w-8 h-8" style={{ color: isDark ? 'rgba(255,255,255,0.12)' : '#d1d5db' }} />
@@ -2590,6 +2563,51 @@ export function DashboardPage() {
               </>
             )}
 
+            {/* Platform chip — only on collections list */}
+            {isGroups && (
+              <div className="relative flex-shrink-0">
+                <button
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
+                  style={{
+                    background: colActivePlatforms.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                    color: colActivePlatforms.length > 0 ? '#00b8b2' : muted,
+                    border: `1px solid ${colActivePlatforms.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
+                    fontWeight: colActivePlatforms.length > 0 ? 500 : 400,
+                  }}
+                  onClick={() => setOpenColDropdown(openColDropdown === 'platform' ? null : 'platform')}
+                >
+                  <Globe className="w-3 h-3" />
+                  {colActivePlatforms.length === 0 ? 'Platform' : colActivePlatforms.length === 1 ? colActivePlatforms[0] : `${colActivePlatforms.length} selected`}
+                  <ChevronDown className={`w-3 h-3 transition-transform ${openColDropdown === 'platform' ? 'rotate-180' : ''}`} />
+                </button>
+                {openColDropdown === 'platform' && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setOpenColDropdown(null)} />
+                    <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 140 }}>
+                      {['TikTok', 'Instagram', 'YouTube'].map(opt => {
+                        const sel = colActivePlatforms.includes(opt);
+                        return (
+                          <button key={opt}
+                            onClick={e => { e.stopPropagation(); setColActivePlatforms(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
+                            className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
+                            style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
+                            onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                            onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                          >
+                            <span className="flex items-center gap-1.5">
+                              <PlatformIconSVG platform={opt} />
+                              {opt}
+                            </span>
+                            {sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Sort */}
             <div className="relative flex-shrink-0">
               <button
@@ -2622,11 +2640,11 @@ export function DashboardPage() {
               )}
             </div>
 
-            {(collectionSearchQuery || colSortBy !== 'date-desc' || colActiveDateRanges.length > 0 || groupActiveDurations.length > 0 || groupActiveWords.length > 0 || groupActiveDateRanges.length > 0) && (
+            {(collectionSearchQuery || colSortBy !== 'date-desc' || colActiveDateRanges.length > 0 || colActivePlatforms.length > 0 || groupActiveDurations.length > 0 || groupActiveWords.length > 0 || groupActiveDateRanges.length > 0) && (
               <>
                 <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
                 <button className="flex items-center gap-1 text-xs hover:opacity-70 flex-shrink-0" style={{ color: '#00b8b2', fontWeight: 500 }}
-                  onClick={() => { setCollectionSearchQuery(''); setColSortBy('date-desc'); setColActiveDateRanges([]); setGroupActiveDurations([]); setGroupActiveWords([]); setGroupActiveDateRanges([]); }}>
+                  onClick={() => { setCollectionSearchQuery(''); setColSortBy('date-desc'); setColActiveDateRanges([]); setColActivePlatforms([]); setGroupActiveDurations([]); setGroupActiveWords([]); setGroupActiveDateRanges([]); }}>
                   <X className="w-3 h-3" /> Clear
                 </button>
               </>
@@ -2817,9 +2835,26 @@ export function DashboardPage() {
                 muted={muted}
               />
             )}
+            {isGroups && (
+              <div className="my-4" style={{ borderTop: `1px solid ${border}`, opacity: 0.5 }} />
+            )}
+            {/* Selection bar */}
+            {(view.category === 'collections' || view.category === 'bulk') && view.groupId != null && groupSelectedIds.size > 0 && (
+              <SelectionBar
+                selectedCount={groupSelectedIds.size}
+                isDark={isDark}
+                accentColor="#00b8b2"
+                onDeselect={() => { setGroupSelectedIds(new Set()); }}
+                onDownloadVideos={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-videos'); }}
+                onDownloadCovers={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-covers'); }}
+                onDownloadTranscripts={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-transcripts'); }}
+                onDownloadData={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-data'); }}
+                onDownloadAll={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-all'); }}
+              />
+            )}
             {isGroups ? (
               /* Group folder tiles */
-              <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
+              <div className="grid gap-2" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
                 {/* CTA card — first item */}
                 <div
                   className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
@@ -2921,11 +2956,11 @@ export function DashboardPage() {
                   {/* Text */}
                   <div className="px-3.5 pt-3 pb-3.5">
                     <p className="text-xs" style={{ color: text, fontWeight: 600 }}>
-                      {view.category === 'collections' ? 'Start a new collection' : 'Start a new bulk'}
+                      {view.category === 'collections' ? 'Add New Collection' : 'Start a new bulk'}
                     </p>
                     <p className="text-[10px] mt-1 leading-snug" style={{ color: muted }}>
                       {view.category === 'collections'
-                        ? 'Group related transcripts into an organised collection.'
+                        ? 'Download TikTok Collections in 1 click'
                         : 'Process multiple videos together in one batch.'}
                     </p>
                   </div>
@@ -2984,16 +3019,20 @@ export function DashboardPage() {
                       </div>
 
                       {/* Info row */}
-                      <div className="px-3.5 pt-2 pb-3.5 flex items-start justify-between gap-2">
+                      <div className="px-3.5 pt-2 pb-2.5 flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="text-xs truncate" style={{ color: text, fontWeight: 600 }}>{g.name}</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: muted }}>{g.count} transcript{g.count !== 1 ? 's' : ''}</p>
+                          <p className="text-[10px] mt-0.5" style={{ color: muted }}>{g.count} video{g.count !== 1 ? 's' : ''}</p>
                         </div>
                         <span
-                          className="text-[10px] px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
-                          style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#ebebeb', color: muted, border: `1px solid ${border}` }}
+                          className="inline-flex items-center justify-center rounded-md flex-shrink-0 mt-0.5"
+                          style={{
+                            width: 22, height: 22,
+                            background: (DISCOVER_PLATFORM_META[g.videos[0]?.platform ?? ''] ?? { bg: '#6b7280' }).bg,
+                            color: '#fff',
+                          }}
                         >
-                          {g.count}
+                          <PlatformIconSVG platform={g.videos[0]?.platform ?? ''} />
                         </span>
                       </div>
                     </div>
@@ -3965,27 +4004,6 @@ export function DashboardPage() {
         </div>
       )}
 
-      {/* Bulk selection bars */}
-      {view.category === 'singles' && singlesSelectedIds.size > 0 && (
-        <DashboardBulkBar
-          selectedCount={singlesSelectedIds.size}
-          isDark={isDark}
-          border={border}
-          onDeselect={() => { setSinglesSelectedIds(new Set()); }}
-          label="Download Transcripts"
-          onDownload={() => { /* placeholder */ }}
-        />
-      )}
-      {(view.category === 'collections' || view.category === 'bulk') && view.groupId != null && groupSelectedIds.size > 0 && (
-        <DashboardBulkBar
-          selectedCount={groupSelectedIds.size}
-          isDark={isDark}
-          border={border}
-          onDeselect={() => { setGroupSelectedIds(new Set()); }}
-          label="Download Transcripts"
-          onDownload={() => { /* placeholder */ }}
-        />
-      )}
     </div>
   );
 }
