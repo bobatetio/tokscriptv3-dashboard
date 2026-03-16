@@ -11,7 +11,7 @@ import {
   Users, Video, FileText, ExternalLink, BadgeCheck,
   Search, SlidersHorizontal, ChevronDown, Clock, X,
   Heart, MoreHorizontal, Download, Lock, Film, Image, FolderPlus,
-  Zap, ArrowRight, Loader2, RefreshCw,
+  Zap, ArrowRight, Loader2, RefreshCw, LayoutGrid, List, Columns2,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
@@ -43,7 +43,7 @@ function formatRelativeTime(date: Date): string {
 }
 
 // ─── Filter constants ─────────────────────────────────────────────────────────
-const PLATFORMS = ['All', 'TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter/X', 'Spotify'];
+const PLATFORMS = ['All', 'TikTok', 'Instagram', 'YouTube'];
 const SORT_OPTIONS = [
   { value: 'date-desc',  label: 'Newest first' },
   { value: 'date-asc',   label: 'Oldest first' },
@@ -73,6 +73,8 @@ interface CreatorVideo {
   words: number;
   thumbnail: string;
   transcriptSnippet: string;
+  status?: 'complete' | 'failed' | 'processing';
+  url?: string;
 }
 
 // ─── Mock creator database ────────────────────────────────────────────────────
@@ -81,7 +83,7 @@ const CREATOR_DB: Record<string, CreatorProfile> = {
     displayName: 'TokCast',
     handle: '@tokcast',
     bio: 'Weekly deep-dives with builders, founders, and operators. 200+ episodes on growth, product, and craft.',
-    platforms: ['YouTube', 'Spotify'],
+    platforms: ['YouTube'],
     followers: '284K',
     videoCount: 214,
     totalWords: '2.4M',
@@ -136,7 +138,7 @@ const CREATOR_DB: Record<string, CreatorProfile> = {
     displayName: 'Design Systems',
     handle: '@designsystem',
     bio: 'Everything you need to build and maintain scalable design systems. Figma, tokens, and component architecture.',
-    platforms: ['YouTube', 'LinkedIn'],
+    platforms: ['YouTube'],
     followers: '167K',
     videoCount: 94,
     totalWords: '740K',
@@ -177,41 +179,41 @@ function getCreatorProfile(handle: string, stateAvatar?: string): CreatorProfile
 // ─── Mock videos per creator ──────────────────────────────────────────────────
 const ALL_CREATOR_VIDEOS: Record<string, CreatorVideo[]> = {
   '@tokcast': [
-    { id: 1,  platform: 'YouTube', duration: '1:33', date: 'Feb 18, 2026', words: 6890,  title: 'Podcast Episode 12 — From 0 to acquisition',       thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  transcriptSnippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." },
-    { id: 2,  platform: 'YouTube', duration: '1:28', date: 'Feb 11, 2026', words: 7650,  title: 'Podcast Episode 13 — $0 to $2M ARR in 18 months',   thumbnail: 'https://images.unsplash.com/photo-1589652717521-10c0d092dea9?w=400&q=80',  transcriptSnippet: "Today I'm talking with someone who went from $0 to $2M ARR in 18 months without a single paid ad. The secret? They never stopped talking to customers..." },
-    { id: 3,  platform: 'YouTube', duration: '1:42', date: 'Feb 4, 2026',  words: 8120,  title: 'Podcast Episode 14 — Hiring your first 10 engineers',  thumbnail: 'https://images.unsplash.com/photo-1558403194-611308249627?w=400&q=80',  transcriptSnippet: "The first engineering hire is the most important hire you'll ever make. Get it wrong and you're paying for it for years. Here's how to get it right..." },
-    { id: 4,  platform: 'YouTube', duration: '2:05', date: 'Jan 28, 2026', words: 9340,  title: 'Podcast Episode 15 — Navigating a down round',        thumbnail: 'https://images.unsplash.com/photo-1553484771-047a44eee27b?w=400&q=80',  transcriptSnippet: "Nobody wants to talk about down rounds publicly. My guest did it and came out stronger. Here's the unfiltered story of what actually happened..." },
-    { id: 5,  platform: 'YouTube', duration: '1:15', date: 'Jan 21, 2026', words: 5210,  title: 'Podcast Episode 16 — Building in public',            thumbnail: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=400&q=80',  transcriptSnippet: "Building in public changed everything for this founder. More customers, better investors, and a team that actually believed in the mission..." },
-    { id: 6,  platform: 'YouTube', duration: '1:57', date: 'Jan 14, 2026', words: 8870,  title: 'Podcast Episode 17 — The product-led growth playbook', thumbnail: 'https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=400&q=80',  transcriptSnippet: "Product-led growth isn't just a strategy — it's a complete rethink of how you build, sell, and retain. My guest has implemented it three times..." },
-    { id: 7,  platform: 'YouTube', duration: '1:21', date: 'Jan 7, 2026',  words: 6100,  title: 'Podcast Episode 18 — Remote-first from day one',      thumbnail: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=400&q=80',  transcriptSnippet: "They've never had an office. 80 employees across 23 countries. Here's the exact operating system they use to stay aligned and move fast..." },
-    { id: 8,  platform: 'YouTube', duration: '2:12', date: 'Dec 31, 2025', words: 10400, title: 'Podcast Episode 19 — The exit nobody saw coming',     thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',  transcriptSnippet: "The acquisition offer came in while they were in the middle of a Series B. Here's the decision matrix they used to decide whether to sell or keep going..." },
-    { id: 9,  platform: 'YouTube', duration: '1:44', date: 'Dec 24, 2025', words: 7780,  title: 'Podcast Episode 20 — Community as a growth engine',   thumbnail: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&q=80',  transcriptSnippet: "100,000 community members. Zero ad spend. Here's how they built a passionate audience that sells the product better than any sales team could..." },
+    { id: 1,  platform: 'YouTube', duration: '1:33', date: 'Feb 18, 2026', words: 6890,  title: 'Podcast Episode 12 — From 0 to acquisition',       thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  transcriptSnippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCtokc1' },
+    { id: 2,  platform: 'YouTube', duration: '1:28', date: 'Feb 11, 2026', words: 7650,  title: 'Podcast Episode 13 — $0 to $2M ARR in 18 months',   thumbnail: 'https://images.unsplash.com/photo-1589652717521-10c0d092dea9?w=400&q=80',  transcriptSnippet: "Today I'm talking with someone who went from $0 to $2M ARR in 18 months without a single paid ad. The secret? They never stopped talking to customers..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCtokc2' },
+    { id: 3,  platform: 'YouTube', duration: '1:42', date: 'Feb 4, 2026',  words: 8120,  title: 'Podcast Episode 14 — Hiring your first 10 engineers',  thumbnail: 'https://images.unsplash.com/photo-1558403194-611308249627?w=400&q=80',  transcriptSnippet: "The first engineering hire is the most important hire you'll ever make. Get it wrong and you're paying for it for years. Here's how to get it right..." , status: 'failed', url: 'https://www.youtube.com/watch?v=mockCtokc3' },
+    { id: 4,  platform: 'YouTube', duration: '2:05', date: 'Jan 28, 2026', words: 9340,  title: 'Podcast Episode 15 — Navigating a down round',        thumbnail: 'https://images.unsplash.com/photo-1553484771-047a44eee27b?w=400&q=80',  transcriptSnippet: "Nobody wants to talk about down rounds publicly. My guest did it and came out stronger. Here's the unfiltered story of what actually happened..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCtokc4' },
+    { id: 5,  platform: 'YouTube', duration: '1:15', date: 'Jan 21, 2026', words: 5210,  title: 'Podcast Episode 16 — Building in public',            thumbnail: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=400&q=80',  transcriptSnippet: "Building in public changed everything for this founder. More customers, better investors, and a team that actually believed in the mission..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCtokc5' },
+    { id: 6,  platform: 'YouTube', duration: '1:57', date: 'Jan 14, 2026', words: 8870,  title: 'Podcast Episode 17 — The product-led growth playbook', thumbnail: 'https://images.unsplash.com/photo-1551836022-4c4c79ecde51?w=400&q=80',  transcriptSnippet: "Product-led growth isn't just a strategy — it's a complete rethink of how you build, sell, and retain. My guest has implemented it three times..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCtokc6' },
+    { id: 7,  platform: 'YouTube', duration: '1:21', date: 'Jan 7, 2026',  words: 6100,  title: 'Podcast Episode 18 — Remote-first from day one',      thumbnail: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=400&q=80',  transcriptSnippet: "They've never had an office. 80 employees across 23 countries. Here's the exact operating system they use to stay aligned and move fast..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCtokc7' },
+    { id: 8,  platform: 'YouTube', duration: '2:12', date: 'Dec 31, 2025', words: 10400, title: 'Podcast Episode 19 — The exit nobody saw coming',     thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&q=80',  transcriptSnippet: "The acquisition offer came in while they were in the middle of a Series B. Here's the decision matrix they used to decide whether to sell or keep going..." , status: 'failed', url: 'https://www.youtube.com/watch?v=mockCtokc8' },
+    { id: 9,  platform: 'YouTube', duration: '1:44', date: 'Dec 24, 2025', words: 7780,  title: 'Podcast Episode 20 — Community as a growth engine',   thumbnail: 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400&q=80',  transcriptSnippet: "100,000 community members. Zero ad spend. Here's how they built a passionate audience that sells the product better than any sales team could..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCtokc9' },
   ],
   '@fitwithjess': [
-    { id: 1,  platform: 'YouTube', duration: '3:05', date: 'Feb 24, 2026', words: 11200, title: 'Full-body HIIT — 30 min no equipment',               thumbnail: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=80',  transcriptSnippet: "No equipment, no excuses. This 30-minute session will hit every major muscle group and keep your heart rate elevated the entire time. Let's get into it..." },
-    { id: 2,  platform: 'YouTube', duration: '2:47', date: 'Feb 17, 2026', words: 9800,  title: '20 min core crusher — beginner to advanced',           thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80',  transcriptSnippet: "Your core is more than just abs. Today we're training the entire core — front, sides, and back — in 20 minutes flat with zero equipment..." },
-    { id: 3,  platform: 'YouTube', duration: '2:22', date: 'Feb 10, 2026', words: 8400,  title: 'Upper body burnout — shoulders arms chest',            thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&q=80',  transcriptSnippet: "Welcome to the upper body burnout. We're hitting shoulders, arms, and chest in one devastating circuit. You'll need a pair of dumbbells and a lot of willpower..." },
-    { id: 4,  platform: 'TikTok',  duration: '0:58', date: 'Feb 7, 2026',  words: 3200,  title: 'Why you\'re not losing fat — the honest truth',        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',  transcriptSnippet: "I'm going to say what nobody else is saying. The reason most people aren't losing fat has nothing to do with their workout program..." },
-    { id: 5,  platform: 'YouTube', duration: '2:58', date: 'Feb 3, 2026',  words: 10600, title: '30-day challenge results — before and after deep dive', thumbnail: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&q=80',  transcriptSnippet: "Thirty days ago I started the challenge with 50,000 of you. Here are the results — the good, the surprising, and the things I'd change if I did it again..." },
-    { id: 6,  platform: 'TikTok',  duration: '0:45', date: 'Jan 28, 2026', words: 2900,  title: '5 minute morning mobility routine',                   thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',  transcriptSnippet: "Do this every single morning. Five minutes, nine movements, and your body will feel completely different by the end of the week..." },
-    { id: 7,  platform: 'YouTube', duration: '3:18', date: 'Jan 20, 2026', words: 12100, title: 'Leg day — complete lower body programme',              thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=80',  transcriptSnippet: "Full lower body. Quads, hamstrings, glutes, calves. This is the only leg workout you'll need this week and it doesn't require a single machine..." },
-    { id: 8,  platform: 'TikTok',  duration: '0:37', date: 'Jan 13, 2026', words: 1800,  title: 'The one exercise you\'re probably skipping',           thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80',  transcriptSnippet: "If I could only do one exercise for the rest of my life it would be this. Most people skip it because it looks simple. It is not simple..." },
+    { id: 1,  platform: 'YouTube', duration: '3:05', date: 'Feb 24, 2026', words: 11200, title: 'Full-body HIIT — 30 min no equipment',               thumbnail: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=80',  transcriptSnippet: "No equipment, no excuses. This 30-minute session will hit every major muscle group and keep your heart rate elevated the entire time. Let's get into it..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCfitw1' },
+    { id: 2,  platform: 'YouTube', duration: '2:47', date: 'Feb 17, 2026', words: 9800,  title: '20 min core crusher — beginner to advanced',           thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80',  transcriptSnippet: "Your core is more than just abs. Today we're training the entire core — front, sides, and back — in 20 minutes flat with zero equipment..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCfitw2' },
+    { id: 3,  platform: 'YouTube', duration: '2:22', date: 'Feb 10, 2026', words: 8400,  title: 'Upper body burnout — shoulders arms chest',            thumbnail: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?w=400&q=80',  transcriptSnippet: "Welcome to the upper body burnout. We're hitting shoulders, arms, and chest in one devastating circuit. You'll need a pair of dumbbells and a lot of willpower..." , status: 'failed', url: 'https://www.youtube.com/watch?v=mockCfitw3' },
+    { id: 4,  platform: 'TikTok',  duration: '0:58', date: 'Feb 7, 2026',  words: 3200,  title: 'Why you\'re not losing fat — the honest truth',        thumbnail: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&q=80',  transcriptSnippet: "I'm going to say what nobody else is saying. The reason most people aren't losing fat has nothing to do with their workout program..." , status: 'complete', url: 'https://www.tiktok.com/@fitwithjess/video/10000004' },
+    { id: 5,  platform: 'YouTube', duration: '2:58', date: 'Feb 3, 2026',  words: 10600, title: '30-day challenge results — before and after deep dive', thumbnail: 'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&q=80',  transcriptSnippet: "Thirty days ago I started the challenge with 50,000 of you. Here are the results — the good, the surprising, and the things I'd change if I did it again..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCfitw5' },
+    { id: 6,  platform: 'TikTok',  duration: '0:45', date: 'Jan 28, 2026', words: 2900,  title: '5 minute morning mobility routine',                   thumbnail: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80',  transcriptSnippet: "Do this every single morning. Five minutes, nine movements, and your body will feel completely different by the end of the week..." , status: 'complete', url: 'https://www.tiktok.com/@fitwithjess/video/10000006' },
+    { id: 7,  platform: 'YouTube', duration: '3:18', date: 'Jan 20, 2026', words: 12100, title: 'Leg day — complete lower body programme',              thumbnail: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=400&q=80',  transcriptSnippet: "Full lower body. Quads, hamstrings, glutes, calves. This is the only leg workout you'll need this week and it doesn't require a single machine..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCfitw7' },
+    { id: 8,  platform: 'TikTok',  duration: '0:37', date: 'Jan 13, 2026', words: 1800,  title: 'The one exercise you\'re probably skipping',           thumbnail: 'https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=400&q=80',  transcriptSnippet: "If I could only do one exercise for the rest of my life it would be this. Most people skip it because it looks simple. It is not simple..." , status: 'failed', url: 'https://www.tiktok.com/@fitwithjess/video/10000008' },
   ],
   '@roamingalex': [
-    { id: 1,  platform: 'YouTube', duration: '2:30', date: 'Feb 1, 2026',  words: 10800, title: 'Japan vlog — Tokyo day 3',                            thumbnail: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80',  transcriptSnippet: "Day three in Tokyo and I finally figured out how to order from the vending machines. But seriously — the food scene here has completely blown my expectations..." },
-    { id: 2,  platform: 'YouTube', duration: '2:15', date: 'Jan 25, 2026', words: 9700,  title: 'Japan vlog — Kyoto temples and unexpected kindness',   thumbnail: 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=400&q=80',  transcriptSnippet: "I got completely lost in Arashiyama and it led to the best afternoon of the entire trip. Here's what happened when I put the phone down..." },
-    { id: 3,  platform: 'YouTube', duration: '1:48', date: 'Jan 18, 2026', words: 7900,  title: 'Budget breakdown — one month in Japan on €1,800',    thumbnail: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=80',  transcriptSnippet: "Everyone says Japan is expensive. I spent one full month there — including a bullet train pass and one fancy dinner — for under €1,800. Here's exactly how..." },
-    { id: 4,  platform: 'Instagram',duration: '1:05', date: 'Jan 11, 2026', words: 4100,  title: 'Packing light — everything in a 20L backpack',        thumbnail: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80',  transcriptSnippet: "Three months on the road and everything I own fits in a bag smaller than most people's gym kit. Here's what I actually use every single day..." },
-    { id: 5,  platform: 'YouTube', duration: '2:02', date: 'Jan 4, 2026',  words: 9100,  title: 'Vietnam — the north is different from the south',      thumbnail: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80',  transcriptSnippet: "I spent three weeks going from Hanoi to Ho Chi Minh City and I was wrong about almost everything I expected. Vietnam is genuinely the most surprising country I've visited..." },
-    { id: 6,  platform: 'YouTube', duration: '1:55', date: 'Dec 28, 2025', words: 8600,  title: 'Solo travel — is it actually lonely?',               thumbnail: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80',  transcriptSnippet: "The question I get asked more than any other. The honest answer is more complicated than yes or no, and it depends completely on where you are in your life..." },
+    { id: 1,  platform: 'YouTube', duration: '2:30', date: 'Feb 1, 2026',  words: 10800, title: 'Japan vlog — Tokyo day 3',                            thumbnail: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=400&q=80',  transcriptSnippet: "Day three in Tokyo and I finally figured out how to order from the vending machines. But seriously — the food scene here has completely blown my expectations..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCroam1' },
+    { id: 2,  platform: 'YouTube', duration: '2:15', date: 'Jan 25, 2026', words: 9700,  title: 'Japan vlog — Kyoto temples and unexpected kindness',   thumbnail: 'https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?w=400&q=80',  transcriptSnippet: "I got completely lost in Arashiyama and it led to the best afternoon of the entire trip. Here's what happened when I put the phone down..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCroam2' },
+    { id: 3,  platform: 'YouTube', duration: '1:48', date: 'Jan 18, 2026', words: 7900,  title: 'Budget breakdown — one month in Japan on €1,800',    thumbnail: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=80',  transcriptSnippet: "Everyone says Japan is expensive. I spent one full month there — including a bullet train pass and one fancy dinner — for under €1,800. Here's exactly how..." , status: 'failed', url: 'https://www.youtube.com/watch?v=mockCroam3' },
+    { id: 4,  platform: 'Instagram',duration: '1:05', date: 'Jan 11, 2026', words: 4100,  title: 'Packing light — everything in a 20L backpack',        thumbnail: 'https://images.unsplash.com/photo-1553361371-9b22f78e8b1d?w=400&q=80',  transcriptSnippet: "Three months on the road and everything I own fits in a bag smaller than most people's gym kit. Here's what I actually use every single day..." , status: 'complete', url: 'https://www.instagram.com/reel/mockCroam4/' },
+    { id: 5,  platform: 'YouTube', duration: '2:02', date: 'Jan 4, 2026',  words: 9100,  title: 'Vietnam — the north is different from the south',      thumbnail: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=80',  transcriptSnippet: "I spent three weeks going from Hanoi to Ho Chi Minh City and I was wrong about almost everything I expected. Vietnam is genuinely the most surprising country I've visited..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCroam5' },
+    { id: 6,  platform: 'YouTube', duration: '1:55', date: 'Dec 28, 2025', words: 8600,  title: 'Solo travel — is it actually lonely?',               thumbnail: 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400&q=80',  transcriptSnippet: "The question I get asked more than any other. The honest answer is more complicated than yes or no, and it depends completely on where you are in your life..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCroam6' },
   ],
   '@webdevdaily': [
-    { id: 1,  platform: 'Instagram',duration: '1:10', date: 'Feb 3, 2026',  words: 4560,  title: 'React hooks masterclass — useEffect done right',     thumbnail: 'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?w=400&q=80',  transcriptSnippet: "If you're still writing class components in 2026 this video is for you. I'm going to show you how to rewrite them with hooks in a fraction of the code..." },
-    { id: 2,  platform: 'YouTube', duration: '2:38', date: 'Jan 27, 2026', words: 11400, title: 'TypeScript generics — the complete guide',            thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80',  transcriptSnippet: "Generics are the feature that separates TypeScript beginners from intermediate developers. Once you understand them, you'll wonder how you ever coded without them..." },
-    { id: 3,  platform: 'YouTube', duration: '1:55', date: 'Jan 20, 2026', words: 8700,  title: 'CSS Grid vs Flexbox — when to use which',           thumbnail: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=400&q=80',  transcriptSnippet: "This is the question I see in every Discord server and every YouTube comment. The answer is not 'use whichever you prefer' — they genuinely serve different purposes..." },
-    { id: 4,  platform: 'Instagram',duration: '0:52', date: 'Jan 13, 2026', words: 3100,  title: 'Stop overcomplicating your state management',       thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80',  transcriptSnippet: "You don't need Redux. You probably don't need Zustand. Here's how to decide what state management solution your app actually needs..." },
-    { id: 5,  platform: 'YouTube', duration: '2:22', date: 'Jan 6, 2026',  words: 10200, title: 'Build a design system in React from scratch',       thumbnail: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80',  transcriptSnippet: "We're building a complete design system: tokens, components, documentation, and a Storybook setup — all from scratch in a single video..." },
-    { id: 6,  platform: 'YouTube', duration: '1:40', date: 'Dec 30, 2025', words: 7500,  title: 'Next.js App Router — the patterns that matter',    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',  transcriptSnippet: "After six months building production apps with App Router, here are the patterns and pitfalls you won't find in the official docs..." },
+    { id: 1,  platform: 'Instagram',duration: '1:10', date: 'Feb 3, 2026',  words: 4560,  title: 'React hooks masterclass — useEffect done right',     thumbnail: 'https://images.unsplash.com/photo-1593720219276-0b1eacd0aef4?w=400&q=80',  transcriptSnippet: "If you're still writing class components in 2026 this video is for you. I'm going to show you how to rewrite them with hooks in a fraction of the code..." , status: 'complete', url: 'https://www.instagram.com/reel/mockCwebd1/' },
+    { id: 2,  platform: 'YouTube', duration: '2:38', date: 'Jan 27, 2026', words: 11400, title: 'TypeScript generics — the complete guide',            thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80',  transcriptSnippet: "Generics are the feature that separates TypeScript beginners from intermediate developers. Once you understand them, you'll wonder how you ever coded without them..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCwebd2' },
+    { id: 3,  platform: 'YouTube', duration: '1:55', date: 'Jan 20, 2026', words: 8700,  title: 'CSS Grid vs Flexbox — when to use which',           thumbnail: 'https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?w=400&q=80',  transcriptSnippet: "This is the question I see in every Discord server and every YouTube comment. The answer is not 'use whichever you prefer' — they genuinely serve different purposes..." , status: 'failed', url: 'https://www.youtube.com/watch?v=mockCwebd3' },
+    { id: 4,  platform: 'Instagram',duration: '0:52', date: 'Jan 13, 2026', words: 3100,  title: 'Stop overcomplicating your state management',       thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80',  transcriptSnippet: "You don't need Redux. You probably don't need Zustand. Here's how to decide what state management solution your app actually needs..." , status: 'complete', url: 'https://www.instagram.com/reel/mockCwebd4/' },
+    { id: 5,  platform: 'YouTube', duration: '2:22', date: 'Jan 6, 2026',  words: 10200, title: 'Build a design system in React from scratch',       thumbnail: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&q=80',  transcriptSnippet: "We're building a complete design system: tokens, components, documentation, and a Storybook setup — all from scratch in a single video..." , status: 'processing', url: 'https://www.youtube.com/watch?v=mockCwebd5' },
+    { id: 6,  platform: 'YouTube', duration: '1:40', date: 'Dec 30, 2025', words: 7500,  title: 'Next.js App Router — the patterns that matter',    thumbnail: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&q=80',  transcriptSnippet: "After six months building production apps with App Router, here are the patterns and pitfalls you won't find in the official docs..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mockCwebd6' },
   ],
 };
 
@@ -225,9 +227,6 @@ const PLATFORM_META: Record<string, { color: string; brandColor: string }> = {
   TikTok:      { color: '#ffffff', brandColor: '#010101' },
   Instagram:   { color: '#ffffff', brandColor: '#e1306c' },
   YouTube:     { color: '#ffffff', brandColor: '#ff0000' },
-  LinkedIn:    { color: '#ffffff', brandColor: '#0a66c2' },
-  Spotify:     { color: '#ffffff', brandColor: '#1db954' },
-  'Twitter/X': { color: '#ffffff', brandColor: '#14171a' },
 };
 
 function PlatformIcon({ platform }: { platform: string }) {
@@ -246,22 +245,6 @@ function PlatformIcon({ platform }: { platform: string }) {
       <rect x="2" y="2" width="20" height="20" rx="5" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-    </svg>
-  );
-  if (platform === 'LinkedIn') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-  if (platform === 'Spotify') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 14.36a.75.75 0 0 1-1.03.27c-2.83-1.73-6.39-2.12-10.58-1.16a.75.75 0 0 1-.34-1.46c4.59-1.05 8.52-.6 11.69 1.32a.75.75 0 0 1 .26 1.03zm1.24-2.76a.94.94 0 0 1-1.29.31c-3.24-1.99-8.17-2.57-12-1.4a.94.94 0 0 1-.57-1.79c4.35-1.32 9.77-.68 13.48 1.59a.94.94 0 0 1 .38 1.29zm.11-2.88C14.26 8.6 8.25 8.4 4.89 9.4a1.12 1.12 0 1 1-.65-2.15C8.22 6.1 14.9 6.34 19.1 8.72a1.12 1.12 0 0 1-1.11 1.95v.05z" />
-    </svg>
-  );
-  if (platform === 'Twitter/X') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L2.252 2.25H8.08l4.226 5.593 5.938-5.593z" />
     </svg>
   );
   return null;
@@ -302,40 +285,17 @@ const FILLER_PARAGRAPHS = [
   "Before we wrap up, I want to give you one actionable takeaway you can implement right now. Take fifteen minutes today to audit what you're spending your time on.",
 ];
 
-// ─── Platform badge (matches Discover exactly) ────────────────────────────────
-const VIDEO_PLATFORM_META: Record<string, { color: string; bg: string }> = {
-  TikTok:     { color: '#ffffff', bg: '#010101' },
-  Instagram:  { color: '#ffffff', bg: '#e1306c' },
-  YouTube:    { color: '#ffffff', bg: '#ff0000' },
-  'Twitter/X':{ color: '#ffffff', bg: '#14171a' },
-  LinkedIn:   { color: '#ffffff', bg: '#0a66c2' },
-  Spotify:    { color: '#ffffff', bg: '#1db954' },
-};
-
+// ─── Platform badge ────────────────────────────────────────────────────────────
 function VideoPlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
-  if (isDark) {
-    return (
-      <span
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]"
-        style={{
-          background: 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(255,255,255,0.13)',
-          color: '#ffffff',
-          fontWeight: 600,
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-        }}
-      >
-        <PlatformIcon platform={platform} />
-        {platform}
-      </span>
-    );
-  }
-  const meta = VIDEO_PLATFORM_META[platform] ?? { color: '#fff', bg: '#6b7280' };
   return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
-      style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
+        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        fontWeight: 500,
+      }}
     >
       <PlatformIcon platform={platform} />
       {platform}
@@ -345,11 +305,12 @@ function VideoPlatformBadge({ platform, isDark }: { platform: string; isDark: bo
 
 // ─── Video Card (1-for-1 match with Discover HistoryCard) ─────────────────────
 function VideoCard({
-  video, creator, isDark, border, text, muted, hoverBg, onSelect,
-  isSelected = false, onToggleSelect,
+  video, creator, avatar, isDark, border, text, muted, hoverBg, onSelect,
+  isSelected = false, onToggleSelect, verified = false,
 }: {
   video: CreatorVideo;
   creator: string;
+  avatar: string;
   isDark: boolean;
   border: string;
   text: string;
@@ -358,6 +319,7 @@ function VideoCard({
   onSelect: (v: CreatorVideo) => void;
   isSelected?: boolean;
   onToggleSelect?: (id: number) => void;
+  verified?: boolean;
 }) {
   const [copied, setCopied]       = useState(false);
   const [favourited, setFavourited] = useState(false);
@@ -452,7 +414,20 @@ function VideoCard({
 
       {/* Info */}
       <div className="p-3 flex flex-col gap-1.5 flex-1">
-        <span className="text-[10px]" style={{ color: muted }}>{creator}</span>
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex-shrink-0">
+            <img src={avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+            {verified && (
+              <span className="absolute flex items-center justify-center rounded-full"
+                style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                </svg>
+              </span>
+            )}
+          </div>
+          <span className="text-[10px]" style={{ color: muted }}>{creator}</span>
+        </div>
         <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{video.title}</p>
         <p className="text-[10px]" style={{ color: muted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
           {video.transcriptSnippet}
@@ -528,6 +503,168 @@ function VideoCard({
         <SaveToFolderModal type="transcript" refId={folderModalFor.id} name={folderModalFor.title}
           triggerRect={folderModalFor.rect} onClose={() => setFolderModalFor(null)} />
       )}
+    </div>
+  );
+}
+
+// ─── Video Row (list view) ────────────────────────────────────────────────────
+function VideoRow({
+  video, creator, avatar, verified, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect,
+}: {
+  video: CreatorVideo; creator: string; avatar?: string; verified?: boolean;
+  isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
+  onSelect: (v: CreatorVideo) => void;
+  isSelected: boolean; onToggleSelect: (id: number) => void;
+}) {
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
+
+  const videoStatus: string = (video as CreatorVideo & { status?: string }).status || 'complete';
+  const statusColors = {
+    complete:      { bg: isDark ? 'rgba(34,197,94,0.12)'  : 'rgba(34,197,94,0.10)',  color: isDark ? '#4ade80' : '#16a34a' },
+    failed:        { bg: isDark ? 'rgba(239,68,68,0.12)'  : 'rgba(239,68,68,0.10)',  color: isDark ? '#f87171' : '#dc2626' },
+    'in-progress': { bg: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.10)', color: isDark ? '#fbbf24' : '#d97706' },
+  };
+  const sc = statusColors[videoStatus as keyof typeof statusColors] ?? statusColors.complete;
+  const statusLabel = videoStatus === 'in-progress' ? 'In Progress' : videoStatus.charAt(0).toUpperCase() + videoStatus.slice(1);
+
+  return (
+    <div
+      className="flex items-center px-4 cursor-pointer transition-colors relative"
+      style={{
+        borderBottom: isSelected ? `1px solid #f59e0b` : `1px solid ${border}`,
+        borderLeft: isSelected ? '3px solid #f59e0b' : '3px solid transparent',
+        background: isSelected ? (isDark ? 'rgba(245,158,11,0.04)' : 'rgba(245,158,11,0.03)') : (isDark ? '#141414' : '#ffffff'),
+        minHeight: 52,
+        transition: 'background 0.12s ease',
+      }}
+      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+      onClick={() => onSelect(video)}
+    >
+      {/* Checkbox */}
+      <div
+        className="flex items-center justify-center flex-shrink-0 mr-3"
+        style={{ width: 32 }}
+        onClick={e => { e.stopPropagation(); onToggleSelect(video.id); }}
+      >
+        <div
+          style={{
+            width: 20, height: 20, borderRadius: '50%',
+            background: isSelected ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
+            border: isSelected ? 'none' : `1.5px solid ${border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          {isSelected && (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2 5l2.5 2.5 3.5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          )}
+        </div>
+      </div>
+
+      {/* Thumbnail */}
+      <div className="w-12 aspect-[9/16] rounded-lg overflow-hidden flex-shrink-0 relative mr-3" style={{ minHeight: 40 }}>
+        <ImageWithFallback src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
+          <Play className="w-3 h-3 text-white fill-white" />
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-shrink-0 py-2.5" style={{ width: 280 }}>
+        <div className="flex items-center gap-1.5 mb-0.5">
+          <VideoPlatformBadge platform={video.platform} isDark={isDark} />
+          {avatar && (
+            <div className="relative flex-shrink-0">
+              <img src={avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+              {verified && (
+                <span className="absolute flex items-center justify-center rounded-full"
+                  style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                  <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                    <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                  </svg>
+                </span>
+              )}
+            </div>
+          )}
+          <span className="text-[10px] truncate" style={{ color: muted }}>{creator}</span>
+        </div>
+        <p className="truncate text-[12px]" style={{ color: text, fontWeight: 500 }}>{video.title}</p>
+      </div>
+
+      {/* Transcript snippet */}
+      <div className="flex-1 min-w-0 mr-4 py-2.5">
+        {videoStatus === 'failed' ? (
+          <span className="text-[11px]" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Failed to process</span>
+        ) : (
+          <p className="text-[11px] leading-relaxed" style={{ color: muted, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
+            {video.transcriptSnippet || '—'}
+          </p>
+        )}
+      </div>
+
+      {/* Date */}
+      <div style={{ width: 80 }} className="flex-shrink-0 text-right mr-4 py-2.5">
+        <p className="text-[11px]" style={{ color: text }}>{video.date}</p>
+      </div>
+
+      {/* Duration */}
+      <div style={{ width: 60 }} className="flex-shrink-0 text-center mr-4 py-2.5">
+        <span className="text-[11px]" style={{ color: muted }}>{formatDuration(video.duration)}</span>
+      </div>
+
+      {/* Status pill */}
+      <div style={{ width: 80 }} className="flex-shrink-0 text-center mr-2 py-2.5">
+        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-medium"
+          style={{ background: sc.bg, color: sc.color }}>
+          {statusLabel}
+        </span>
+      </div>
+
+      {/* Three-dot menu */}
+      <div style={{ width: 32 }} className="flex-shrink-0 flex items-center justify-center py-2.5">
+        <button
+          className="p-1 rounded-lg transition-colors"
+          style={{ color: openMenuId === video.id ? text : muted, background: openMenuId === video.id ? (isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb') : 'transparent' }}
+          onClick={e => {
+            e.stopPropagation();
+            if (openMenuId === video.id) { setOpenMenuId(null); setMenuPos(null); }
+            else { const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect(); setOpenMenuId(video.id); setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right }); }
+          }}
+          title="More options"
+          onMouseEnter={ev => { if (openMenuId !== video.id) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+          onMouseLeave={ev => { if (openMenuId !== video.id) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+        >
+          <MoreHorizontal className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      {/* Backdrop */}
+      {openMenuId === video.id && (
+        <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setOpenMenuId(null); setMenuPos(null); }} />
+      )}
+      {/* Dropdown portal */}
+      {openMenuId === video.id && menuPos && (() => {
+        const videoUrl = (video as CreatorVideo & { url?: string }).url;
+        const rowMenuItems: { icon: React.ReactNode; label: string; destructive?: boolean; separator?: boolean; action: () => void }[] = [
+          { icon: <Copy className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Copy Transcript', action: () => { navigator.clipboard.writeText(`[Transcript: ${video.title}]\n\n${video.transcriptSnippet}`).catch(() => {}); setOpenMenuId(null); setMenuPos(null); } },
+          { icon: <Download className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Download', action: () => { simulateZipDownload([video.title], 'video-download'); setOpenMenuId(null); setMenuPos(null); } },
+          { icon: <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />, label: 'View Original', action: () => { if (videoUrl) window.open(videoUrl, '_blank'); setOpenMenuId(null); setMenuPos(null); } },
+          { icon: <Heart className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Favourite', action: () => { setOpenMenuId(null); setMenuPos(null); } },
+        ];
+        return (
+          <div key="creator-row-ctx" className="fixed z-50 rounded-xl shadow-xl py-1" style={{ background: isDark ? '#141414' : '#ffffff', border: `1px solid ${border}`, minWidth: 180, top: menuPos.top, right: menuPos.right }} onClick={e => e.stopPropagation()}>
+            {rowMenuItems.flatMap(opt => [
+              opt.separator ? <div key={`sep-${opt.label}`} style={{ height: 1, background: border, margin: '4px 0' }} /> : null,
+              <button key={opt.label} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left" style={{ color: opt.destructive ? '#d95656' : text, background: 'transparent' }} onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = hoverBg)} onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')} onClick={e => { e.stopPropagation(); opt.action(); }}>
+                {opt.icon}{opt.label}
+              </button>,
+            ])}
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -1202,6 +1339,7 @@ export function CreatorProfilePage() {
   const [currentPage, setCurrentPage]                   = useState(1);
   const ITEMS_PER_PAGE = 12;
   const [selectedIds, setSelectedIds]                   = useState<Set<number>>(new Set());
+  const [viewMode, setViewMode]                         = useState<'grid' | 'list' | 'hybrid'>('grid');
 
   // Theme tokens
   const bg      = isDark ? '#0d0d0d' : '#ffffff';
@@ -1262,6 +1400,11 @@ export function CreatorProfilePage() {
   useEffect(() => {
     setSelectedIds(new Set());
   }, [searchQuery, activePlatform, activeDuration, activeWords, sortBy]);
+
+  // Clear selection when switching to hybrid view
+  useEffect(() => {
+    if (viewMode === 'hybrid') setSelectedIds(new Set());
+  }, [viewMode]);
 
   const toggleSelect = (id: number) => {
     setSelectedIds(prev => {
@@ -1453,12 +1596,14 @@ export function CreatorProfilePage() {
                         key={v.id}
                         video={v}
                         creator={profile.handle}
+                        avatar={profile.avatar}
                         isDark={isDark}
                         border={border}
                         text={text}
                         muted={muted}
                         hoverBg={hoverBg}
                         onSelect={setSelectedVideo}
+                        verified={profile.verified}
                       />
                     ))}
                   </div>
@@ -1572,6 +1717,7 @@ export function CreatorProfilePage() {
 
                 <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
 
+                <div className="flex items-center gap-2 ml-auto flex-shrink-0">
                 {/* Duration */}
                 <div className="relative flex-shrink-0">
                   <button
@@ -1685,6 +1831,30 @@ export function CreatorProfilePage() {
                   </>
                 )}
 
+                {/* View toggle */}
+                <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+                <div className="flex items-center p-0.5 rounded-lg flex-shrink-0"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6', border: `1px solid ${border}` }}>
+                  {([
+                    { mode: 'grid'   as const, icon: <LayoutGrid className="w-3.5 h-3.5" />, title: 'Grid view'   },
+                    { mode: 'list'   as const, icon: <List       className="w-3.5 h-3.5" />, title: 'List view'   },
+                    { mode: 'hybrid' as const, icon: <Columns2   className="w-3.5 h-3.5" />, title: 'Hybrid view' },
+                  ] as const).map(({ mode, icon, title }) => (
+                    <button
+                      key={mode}
+                      title={title}
+                      onClick={() => setViewMode(mode)}
+                      className="p-1.5 rounded-md transition-all"
+                      style={{
+                        background: viewMode === mode ? (isDark ? '#2a2a2a' : '#ffffff') : 'transparent',
+                        color: viewMode === mode ? text : muted,
+                        boxShadow: viewMode === mode ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+                      }}
+                    >{icon}</button>
+                  ))}
+                </div>
+                </div>
+
 
               </div>
               </div>
@@ -1734,6 +1904,110 @@ export function CreatorProfilePage() {
                 </div>
               )}
 
+              {viewMode === 'hybrid' ? (
+                /* Hybrid: left compact list + right inline detail panel */
+                <div className="flex-1 overflow-hidden">
+                <div className="flex max-w-[1280px] mx-auto w-full h-full min-h-0 overflow-hidden px-6 py-5">
+                  {/* Left pane */}
+                  <div className="flex-shrink-0 flex flex-col" style={{ width: 224, borderRight: `1px solid ${border}` }}>
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden">
+                      {filteredVideos.length > 0 ? (
+                        <div className="flex flex-col gap-1 py-3 px-3">
+                          {paginatedVideos.map(v => (
+                            <div
+                              key={v.id}
+                              className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer"
+                              style={{
+                                background: panelVideo?.id === v.id ? (isDark ? 'rgba(255,255,255,0.07)' : '#f0eeeb') : 'transparent',
+                                border: `1px solid ${panelVideo?.id === v.id ? border : 'transparent'}`,
+                                transition: 'background 0.1s',
+                              }}
+                              onClick={() => setPanelVideo(v)}
+                              onMouseEnter={ev => { if (panelVideo?.id !== v.id) (ev.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+                              onMouseLeave={ev => { if (panelVideo?.id !== v.id) (ev.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                            >
+                              <div className="relative flex-shrink-0 rounded-lg overflow-hidden" style={{ width: 30, aspectRatio: '9/16' }}>
+                                <ImageWithFallback src={v.thumbnail} alt={v.title} className="w-full h-full object-cover" />
+                              </div>
+                              <div className="flex-1 min-w-0 flex flex-col gap-0.5">
+                                <p className="text-[11px] leading-snug"
+                                  style={{ color: text, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', display: 'block' }}>
+                                  {v.title.length > 30 ? v.title.slice(0, 30) + '…' : v.title}
+                                </p>
+                                <p className="text-[10px] truncate" style={{ color: muted }}>{profile.handle}</p>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[9px]" style={{ color: muted }}>{v.platform}</span>
+                                  <span className="text-[9px]" style={{ color: muted }}>·</span>
+                                  <Clock className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
+                                  <span className="text-[9px]" style={{ color: muted }}>{formatDuration(v.duration)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center py-16 gap-2 px-4">
+                          <Video className="w-6 h-6" style={{ color: muted }} />
+                          <p className="text-xs text-center" style={{ color: muted }}>No videos match your filters</p>
+                        </div>
+                      )}
+
+                      {/* Compact pagination */}
+                      {filteredVideos.length > ITEMS_PER_PAGE && (() => {
+                        const totalPages = Math.ceil(filteredVideos.length / ITEMS_PER_PAGE);
+                        return (
+                          <div className="flex items-center justify-center gap-1 px-3 pb-4">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                              <button
+                                key={p}
+                                onClick={() => setCurrentPage(p)}
+                                className="w-6 h-6 rounded-md text-[10px]"
+                                style={{
+                                  background: p === currentPage ? (isDark ? 'rgba(255,255,255,0.12)' : '#e5e7eb') : 'transparent',
+                                  color: p === currentPage ? text : muted,
+                                }}
+                              >{p}</button>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+
+                  {/* Right: detail panel */}
+                  <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                    {panelVideo && panelDetailVideo ? (
+                      <TranscriptDetailPanel
+                        video={panelDetailVideo}
+                        transcript={panelTranscript}
+                        related={panelRelated}
+                        downloadFormats={DOWNLOAD_FORMATS}
+                        isDark={isDark}
+                        bg={isDark ? '#141414' : '#ffffff'}
+                        border={border}
+                        text={text}
+                        muted={muted}
+                        hoverBg={isDark ? 'rgba(255,255,255,0.04)' : '#efefed'}
+                        cardBg={isDark ? '#1a1a1a' : '#f3f4f6'}
+                        onBack={() => setPanelVideo(null)}
+                        onViewCreator={(c) => {
+                          navigate(`/profile/${encodeURIComponent(c)}`, {
+                            state: { from: 'transcript', videoTitle: panelVideo?.title ?? '', fromPath: location.pathname },
+                          });
+                        }}
+                      />
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f3f4f6', border: `1px solid ${border}` }}>
+                          <FileText className="w-5 h-5" style={{ color: muted }} />
+                        </div>
+                        <p className="text-sm" style={{ color: muted }}>Select a video to view</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                </div>
+              ) : (
               <div className="flex-1 overflow-y-auto">
               <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
 
@@ -1744,6 +2018,11 @@ export function CreatorProfilePage() {
                     isDark={isDark}
                     accentColor="#f59e0b"
                     onDeselect={() => { setSelectedIds(new Set()); }}
+                    onSelectPage={() => {
+                      const allIds = new Set(filteredVideos.map(v => v.id));
+                      setSelectedIds(allIds);
+                    }}
+                    totalPageCount={filteredVideos.length}
                     onDownloadVideos={() => {
                       const selected = filteredVideos.filter(v => selectedIds.has(v.id));
                       simulateZipDownload(selected.map(v => v.title), 'selected-videos');
@@ -1767,23 +2046,58 @@ export function CreatorProfilePage() {
                 )}
 
                 {filteredVideos.length > 0 ? (
-                  <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
-                    {paginatedVideos.map(v => (
-                      <VideoCard
-                        key={v.id}
-                        video={v}
-                        creator={profile.handle}
-                        isDark={isDark}
-                        border={border}
-                        text={text}
-                        muted={muted}
-                        hoverBg={hoverBg}
-                        onSelect={setPanelVideo}
-                        isSelected={selectedIds.has(v.id)}
-                        onToggleSelect={toggleSelect}
-                      />
-                    ))}
-                  </div>
+                  viewMode === 'list' ? (
+                    <div className="flex flex-col" style={{ borderRadius: 12, border: `1px solid ${border}`, overflow: 'hidden' }}>
+                      {/* Table header */}
+                      <div className="flex items-center px-4 py-2 text-[10px] uppercase tracking-wider flex-shrink-0" style={{ color: muted, borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                        <div style={{ width: 32 }} className="mr-3 flex-shrink-0" /> {/* checkbox spacer */}
+                        <div style={{ width: 48 }} className="mr-3 flex-shrink-0" /> {/* thumbnail spacer */}
+                        <div style={{ width: 280 }} className="flex-shrink-0">Content</div>
+                        <div className="flex-1 min-w-0 mr-4">Transcript</div>
+                        <div style={{ width: 80 }} className="text-right mr-4 flex-shrink-0">Date</div>
+                        <div style={{ width: 60 }} className="text-center mr-4 flex-shrink-0">Duration</div>
+                        <div style={{ width: 80 }} className="text-center mr-2 flex-shrink-0">Status</div>
+                        <div style={{ width: 32 }} className="flex-shrink-0" />
+                      </div>
+                      {paginatedVideos.map(v => (
+                        <VideoRow
+                          key={v.id}
+                          video={v}
+                          creator={profile.handle}
+                          avatar={profile.avatar}
+                          verified={profile.verified}
+                          isDark={isDark}
+                          border={border}
+                          text={text}
+                          muted={muted}
+                          hoverBg={hoverBg}
+                          onSelect={setPanelVideo}
+                          isSelected={selectedIds.has(v.id)}
+                          onToggleSelect={toggleSelect}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+                      {paginatedVideos.map(v => (
+                        <VideoCard
+                          key={v.id}
+                          video={v}
+                          creator={profile.handle}
+                          avatar={profile.avatar}
+                          isDark={isDark}
+                          border={border}
+                          text={text}
+                          muted={muted}
+                          hoverBg={hoverBg}
+                          onSelect={setPanelVideo}
+                          isSelected={selectedIds.has(v.id)}
+                          onToggleSelect={toggleSelect}
+                          verified={profile.verified}
+                        />
+                      ))}
+                    </div>
+                  )
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 gap-3">
                     <Search className="w-8 h-8" style={{ color: isDark ? 'rgba(255,255,255,0.12)' : '#d1d5db' }} />
@@ -1854,6 +2168,7 @@ export function CreatorProfilePage() {
                 })()}
               </div>
               </div>
+              )}
             </div>
           )}
 
@@ -1888,8 +2203,8 @@ export function CreatorProfilePage() {
         />
       )}
 
-      {/* ── Discover-style transcript overlay panel ── */}
-      {panelVideo && panelDetailVideo && (
+      {/* ── Discover-style transcript overlay panel (not in hybrid mode) ── */}
+      {panelVideo && panelDetailVideo && viewMode !== 'hybrid' && (
         <>
           {/* Backdrop */}
           <div

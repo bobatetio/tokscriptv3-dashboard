@@ -24,6 +24,9 @@
 - CreatorProfilePage has `max-w-[1280px] mx-auto` wrappers on 4 areas: header body, filter bar, platform stats row, and grid scroll area. Outer divs keep backgrounds/borders/overflow, inner divs constrain content width.
 - `SessionDetailView.tsx` also has a video grid that must stay in sync with the same `minmax(195px, 1fr)` pattern.
 
+## JSX / esbuild
+- Multi-line JSX ternary chains using `? (` and `) : (` in deeply nested JSX can cause esbuild parse errors. Pre-compute values into variables before the JSX, then reference them inline.
+
 ## Patterns
 - Filter bars use mutual-exclusion dropdown pattern: `openDropdown === 'name'` to close others when one opens.
 - Retranslate dropdown in the old code had hardcoded `bg-white border-gray-200` — must use theme-aware colors (`isDark` conditional).

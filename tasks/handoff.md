@@ -1,18 +1,20 @@
-# Handoff — Unify Selection Bars with 5 Download Options
+# Handoff — Videos List View Social Metrics Redesign
 
 ## Status: DONE
 
-## Changes Made
+## What was done
+Redesigned Videos page list view from 5-column basic table to 16-column analytics dashboard with social metrics.
 
-### New file
-- `src/app/components/SelectionBar.tsx` — Shared selection bar with 5 hollow buttons (Videos, Covers, Transcripts, Data, Download All), accent-colored count label, sticky positioning
+## Files modified
+1. `src/app/components/DiscoverPage.tsx` — Added 6 optional fields to `HistoryEntry`: `views?`, `likes?`, `comments?`, `shares?`, `bookmarks?`, `lastRefresh?`
+2. `src/app/components/videos/videoData.ts` — All 13 entries updated with social metrics, date+time format, and `lastRefresh` ISO timestamps
+3. `src/app/components/VideosPage.tsx` — Full list view redesign:
+   - Added `formatCount()`, `formatRelativeRefresh()` helpers
+   - Added `medianViews` useMemo + virality computation
+   - Redesigned `VideoListHeader` with 16 columns (icon headers for metrics)
+   - Redesigned `VideoRow` with all metrics, virality pills, engagement %, last refresh
+   - Removed `max-w-[1280px]` for list view only
+   - Cleaned up `(entry as any)` casts to use proper typed access
 
-### Modified files
-1. **DashboardPage.tsx** — Removed `DashboardBulkBar`, imported `SelectionBar` + download utils, updated 2 render sites (singles + collections/bulk) with `accentColor="#00b8b2"`
-2. **VideosPage.tsx** — Removed `BulkSelectionBar`, imported `SelectionBar`, updated 1 render site with `accentColor="#00b8b2"`, wired real download handlers using VIDEOS_DATA
-3. **CreatorProfilePage.tsx** — Removed `ProfileBulkBar`, imported `SelectionBar` + download utils, updated 1 render site with `accentColor="#f59e0b"`, wired real download handlers using filteredVideos
-
-## Verification
-- `vite build` — clean compile
-- Dev server running, pages load correctly
-- All 5 buttons appear in all bars, all hollow by default
+## Build: clean (1.25s)
+## Verification: Screenshot taken — all 16 columns visible, virality pills colored correctly, engagement % calculated, relative refresh times showing

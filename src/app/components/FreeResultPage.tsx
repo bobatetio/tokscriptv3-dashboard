@@ -76,11 +76,6 @@ const FREE_CAPTIONS = 3;
 // ── Prompts mock data ─────────────────────────────────────────────────────────
 const PROMPTS_DATA = [
   {
-    label: 'Twitter / X Thread',
-    icon: '🧵',
-    preview: "Turn this transcript into an engaging 7-tweet thread. Start with a bold hook that stops the scroll, then deliver one key insight per tweet. End with a strong call-to-action that drives saves and shares.",
-  },
-  {
     label: 'Blog Post',
     icon: '✍️',
     preview: "Write a structured, SEO-friendly blog post based on this transcript. Include a compelling title, intro hook, 5 clearly defined sections with subheadings, and a conclusion with a CTA.",
@@ -94,11 +89,6 @@ const PROMPTS_DATA = [
     label: 'YouTube Script',
     icon: '🎬',
     preview: "Rewrite this transcript as a polished YouTube script with a strong hook (first 5 seconds), clear mid-section structure, and a compelling end-screen CTA.",
-  },
-  {
-    label: 'LinkedIn Post',
-    icon: '💼',
-    preview: "Turn this into a professional LinkedIn post that teaches one concrete lesson from the transcript and positions the creator as a credible, relatable expert.",
   },
 ];
 const FREE_PROMPTS = 1;
@@ -800,7 +790,7 @@ export function FreeResultPage() {
                             {PROMPTS_DATA.length - 2} more formats waiting
                           </p>
                           <p className="text-[11px] leading-relaxed" style={{ color: muted }}>
-                            Sign up to unlock all {PROMPTS_DATA.length} content formats — newsletters, scripts, LinkedIn posts, and more.
+                            Sign up to unlock all {PROMPTS_DATA.length} content formats — newsletters, scripts, and more.
                           </p>
                         </div>
                         <div className="flex gap-2 w-full">

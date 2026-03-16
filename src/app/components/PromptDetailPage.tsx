@@ -27,8 +27,6 @@ const PLATFORM_META: Record<string, { color: string; bg: string }> = {
   TikTok:      { color: '#ffffff', bg: '#010101' },
   Instagram:   { color: '#ffffff', bg: '#e1306c' },
   YouTube:     { color: '#ffffff', bg: '#ff0000' },
-  'Twitter/X': { color: '#ffffff', bg: '#14171a' },
-  LinkedIn:    { color: '#ffffff', bg: '#0a66c2' },
 };
 
 // ─── Sidebar transcript card ───────────────────────────────────────────────────
@@ -86,12 +84,6 @@ function SidebarTranscriptCard({
               )}
               {entry.platform === 'Instagram' && (
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
-              )}
-              {entry.platform === 'LinkedIn' && (
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
-              )}
-              {entry.platform === 'Twitter/X' && (
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
               )}
               {entry.platform}
             </span>

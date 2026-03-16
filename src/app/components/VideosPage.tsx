@@ -1,10 +1,11 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import {
   Search, Clock, CheckCheck, Play, Download, ImageDown,
   SlidersHorizontal, ChevronDown, Calendar, LayoutGrid, List, X,
   FileText, MoreHorizontal, Columns2, Video, Layers,
-  Heart, FolderPlus,
+  Heart, FolderPlus, Copy, ExternalLink, FolderInput, Trash2,
+  Eye, MessageCircle, Share2, TrendingUp, MoreVertical, Bookmark,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
@@ -29,6 +30,13 @@ import { SessionDetailView } from './videos/SessionDetailView';
 import { VIDEOS_DATA } from './videos/videoData';
 
 export { VIDEOS_DATA };
+
+// ─── Verified creators ────────────────────────────────────────────────────────
+const VERIFIED_CREATORS = new Set([
+  '@tokcast', '@founders', '@engineering', '@productteam',
+  '@fitwithjess', '@techbrosam', '@kitchenlabs', '@gamervault',
+  '@keynoteking', '@aifuturist', '@productivityhacks', '@chefmike',
+]);
 
 // ─── Sort options ─────────────────────────────────────────────────────────────
 const VIDEO_SORT_OPTIONS = [
@@ -65,20 +73,63 @@ function _readabilityFromWords(w: number): string {
   return 'Grade 2';
 }
 
-// ─── Platform badge ───────────────────────────────────────────────────────────
-const PLATFORM_META: Record<string, { color: string; bg: string }> = {
-  TikTok:     { color: '#ffffff', bg: '#010101' },
-  Instagram:  { color: '#ffffff', bg: '#e1306c' },
-  YouTube:    { color: '#ffffff', bg: '#ff0000' },
-  'Twitter/X':{ color: '#ffffff', bg: '#14171a' },
-  LinkedIn:   { color: '#ffffff', bg: '#0a66c2' },
-};
+// ─── Analytics helper functions ───────────────────────────────────────────────
+function formatCount(n: number | undefined): string {
+  if (n == null || n === 0) return '0';
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return n.toString();
+}
 
-function PlatformBadge({ platform }: { platform: string }) {
-  const meta = PLATFORM_META[platform] ?? { color: '#fff', bg: '#6b7280' };
+function formatRelativeRefresh(isoDate: string | undefined): string {
+  if (!isoDate) return '—';
+  const now = new Date();
+  const then = new Date(isoDate);
+  const diffMs = now.getTime() - then.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `about ${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return 'yesterday';
+  return `${diffDay}d ago`;
+}
+
+// ─── Platform badge ───────────────────────────────────────────────────────────
+function PlatformIconSVG({ platform }: { platform: string }) {
+  if (platform === 'YouTube') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
+    </svg>
+  );
+  if (platform === 'TikTok') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
+    </svg>
+  );
+  if (platform === 'Instagram') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+  return null;
+}
+
+function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
   return (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-      style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}>
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
+        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        fontWeight: 500,
+      }}
+    >
+      <PlatformIconSVG platform={platform} />
       {platform}
     </span>
   );
@@ -274,7 +325,7 @@ function VideoCard({
 
         {/* Bottom row: platform badge + duration */}
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-          <PlatformBadge platform={entry.platform} />
+          <PlatformBadge platform={entry.platform} isDark={isDark} />
           <span className="text-[10px] px-1.5 py-0.5 rounded"
             style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>
             {formatDuration(entry.duration)}
@@ -284,7 +335,20 @@ function VideoCard({
 
       {/* Card body */}
       <div className="p-3 flex flex-col gap-1.5 flex-1">
-        <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex-shrink-0">
+            <img src={entry.avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+            {VERIFIED_CREATORS.has(entry.creator) && (
+              <span className="absolute flex items-center justify-center rounded-full"
+                style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                </svg>
+              </span>
+            )}
+          </div>
+          <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+        </div>
         <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{entry.title}</p>
         <p className="text-[10px]"
           style={{ color: muted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
@@ -381,95 +445,376 @@ function VideoCard({
   );
 }
 
+// ─── Table Header (list view) ─────────────────────────────────────────────────
+function VideoListHeader({ muted, border }: { muted: string; border: string }) {
+  const th = (content: React.ReactNode, width: number | string, align: 'left' | 'center' | 'right' = 'left', mr = 0) => (
+    <div
+      className="flex-shrink-0 flex items-center"
+      style={{
+        width: typeof width === 'number' ? width : undefined,
+        flex: width === 'flex' ? 1 : undefined,
+        minWidth: width === 'flex' ? 0 : undefined,
+        justifyContent: align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start',
+        marginRight: mr,
+      }}
+    >
+      <span
+        className="text-[10px] uppercase tracking-wider"
+        style={{ color: muted }}
+      >
+        {content}
+      </span>
+    </div>
+  );
+
+  return (
+    <div
+      className="flex items-center px-3 py-2"
+      style={{ borderBottom: `1px solid ${border}` }}
+    >
+      {/* 1. Checkbox */}
+      <div style={{ width: 28, flexShrink: 0, marginRight: 4 }} />
+      {/* 2. Video content */}
+      {th('Video', 190, 'left', 8)}
+      {/* 3. Platform */}
+      {th('Platform', 80, 'left', 8)}
+      {/* 4. Posted at */}
+      {th('Posted at', 140, 'left', 8)}
+      {/* 5. Duration - clock icon */}
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+        <Clock style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 6. Views - eye icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 8 }}>
+        <Eye style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 7. Virality - trending up icon */}
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+        <TrendingUp style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 8. Likes - heart icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+        <Heart style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 9. Comments - message icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+        <MessageCircle style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 10. Shares - share icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+        <Share2 style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 11. Bookmarks - bookmark icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 50, marginRight: 8 }}>
+        <Bookmark style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 12. Engagement */}
+      {th('Eng.', 55, 'right', 8)}
+      {/* 13. Transcript */}
+      {th('Transcript', 'flex', 'left', 8)}
+      {/* 14. Status */}
+      {th('Status', 68, 'center', 8)}
+      {/* 15. Last refresh */}
+      {th('Refreshed', 100, 'right', 8)}
+      {/* 16. Menu */}
+      <div style={{ width: 28, flexShrink: 0 }} />
+    </div>
+  );
+}
+
 // ─── Video Row (list view) ────────────────────────────────────────────────────
 function VideoRow({
-  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect,
+  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect, openMenuId, setOpenMenuId, medianViews,
 }: {
   entry: HistoryEntry; isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
   onSelect: (e: HistoryEntry) => void;
   isSelected: boolean; onToggleSelect: (id: number) => void;
+  openMenuId: number | null; setOpenMenuId: (id: number | null) => void;
+  medianViews: number;
 }) {
+  const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
+  const status = entry.status || 'complete';
+
+  const statusPill = (() => {
+    if (status === 'failed') return {
+      label: 'Failed',
+      bg: 'rgba(239,68,68,0.12)',
+      color: isDark ? '#f87171' : '#dc2626',
+    };
+    if (status === 'processing') return {
+      label: 'Processing',
+      bg: 'rgba(245,158,11,0.12)',
+      color: isDark ? '#fbbf24' : '#d97706',
+    };
+    return {
+      label: 'Complete',
+      bg: 'rgba(34,197,94,0.12)',
+      color: isDark ? '#4ade80' : '#16a34a',
+    };
+  })();
+
+  const menuOpen = openMenuId === entry.id;
+
+  // Social metrics (optional fields)
+  const views = entry.views;
+  const likes = entry.likes;
+  const comments = entry.comments;
+  const shares = entry.shares;
+  const bookmarks = entry.bookmarks;
+  const lastRefresh = entry.lastRefresh;
+
+  const viralityInfo = (() => {
+    if (views == null || views === 0) return null;
+    const factor = views / (medianViews || 1);
+    const label = factor.toFixed(1) + 'x';
+    if (factor < 0.5) return { label, color: isDark ? '#f87171' : '#dc2626', bg: 'rgba(239,68,68,0.15)' };
+    if (factor < 1.0) return { label, color: isDark ? '#fbbf24' : '#d97706', bg: 'rgba(245,158,11,0.15)' };
+    return { label, color: isDark ? '#4ade80' : '#16a34a', bg: 'rgba(34,197,94,0.15)' };
+  })();
+
+  const engagementStr = (() => {
+    if (!views || views === 0) return '—';
+    const total = (likes ?? 0) + (comments ?? 0) + (shares ?? 0) + (bookmarks ?? 0);
+    return ((total / views) * 100).toFixed(1) + '%';
+  })();
+
+  const postedAt = (() => {
+    try {
+      return new Date(entry.date).toLocaleString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      });
+    } catch {
+      return entry.date;
+    }
+  })();
+
   return (
-    <div
-      className="flex items-center gap-4 px-4 py-3 rounded-2xl cursor-pointer"
-      style={{
-        border: isSelected ? '1px solid #00b8b2' : `1px solid ${border}`,
-        borderLeft: isSelected ? '3px solid #00b8b2' : undefined,
-        background: isSelected ? (isDark ? 'rgba(0,184,178,0.04)' : 'rgba(0,184,178,0.03)') : (isDark ? '#141414' : '#ffffff'),
-        transition: 'background 0.12s ease',
-      }}
-      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
-      onClick={() => {
-        onSelect(entry);
-      }}
-    >
-      {/* Checkbox gutter — always visible */}
-      {(
+    <>
+      <div
+        className="flex items-center px-3 py-2 cursor-pointer"
+        style={{
+          borderBottom: `1px solid ${border}`,
+          background: isSelected ? (isDark ? 'rgba(0,184,178,0.04)' : 'rgba(0,184,178,0.03)') : 'transparent',
+          transition: 'background 0.1s ease',
+        }}
+        onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+        onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+        onClick={() => onSelect(entry)}
+      >
+        {/* 1. Checkbox */}
         <div
           className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 32 }}
+          style={{ width: 28, marginRight: 4 }}
           onClick={e => { e.stopPropagation(); onToggleSelect(entry.id); }}
         >
-          <div
-            style={{
-              width: 20, height: 20, borderRadius: '50%',
-              background: isSelected ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
-              border: isSelected ? 'none' : `1.5px solid ${border}`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
+          <div style={{
+            width: 16, height: 16, borderRadius: '50%',
+            background: isSelected ? '#00b8b2' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
+            border: isSelected ? 'none' : `1.5px solid ${border}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
             {isSelected && (
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
                 <path d="M2 5l2.5 2.5 3.5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             )}
           </div>
         </div>
+
+        {/* 2. Content: thumbnail + text block */}
+        <div className="flex-shrink-0 flex items-center gap-2" style={{ width: 190, marginRight: 8 }}>
+          <div className="flex-shrink-0 relative rounded-md overflow-hidden" style={{ width: 36, aspectRatio: '9/16' }}>
+            <ImageWithFallback src={entry.thumbnail} alt={entry.title} className="w-full h-full object-cover" />
+            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)' }} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Play style={{ width: 10, height: 10, color: '#fff', fill: '#fff', opacity: 0.85 }} />
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+            <p
+              style={{
+                fontSize: 11, fontWeight: 500, color: text, lineHeight: 1.3,
+                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              } as React.CSSProperties}
+            >
+              {entry.title}
+            </p>
+            <div className="flex items-center gap-1">
+              <div className="relative flex-shrink-0">
+                <img src={entry.avatar} alt="" style={{ width: 14, height: 14, borderRadius: '50%', objectFit: 'cover' }} />
+                {VERIFIED_CREATORS.has(entry.creator) && (
+                  <span className="absolute flex items-center justify-center rounded-full"
+                    style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                    <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                    </svg>
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 10, color: muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.creator}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Platform */}
+        <div className="flex-shrink-0 flex items-center" style={{ width: 80, marginRight: 8 }}>
+          <PlatformBadge platform={entry.platform} isDark={isDark} />
+        </div>
+
+        {/* 4. Posted at */}
+        <div className="flex-shrink-0" style={{ width: 140, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{postedAt}</span>
+        </div>
+
+        {/* 5. Duration */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{formatDuration(entry.duration)}</span>
+        </div>
+
+        {/* 6. Views */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: text, fontWeight: 500 }}>{formatCount(views)}</span>
+        </div>
+
+        {/* 7. Virality */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+          {viralityInfo ? (
+            <span style={{
+              fontSize: 10, fontWeight: 600, color: viralityInfo.color, background: viralityInfo.bg,
+              padding: '1px 5px', borderRadius: 4,
+            }}>
+              {viralityInfo.label}
+            </span>
+          ) : (
+            <span style={{ fontSize: 11, color: muted }}>—</span>
+          )}
+        </div>
+
+        {/* 8. Likes */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{formatCount(likes)}</span>
+        </div>
+
+        {/* 9. Comments */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{formatCount(comments)}</span>
+        </div>
+
+        {/* 10. Shares */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{formatCount(shares)}</span>
+        </div>
+
+        {/* 11. Bookmarks */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 50, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>
+            {bookmarks != null && bookmarks > 0 ? formatCount(bookmarks) : '—'}
+          </span>
+        </div>
+
+        {/* 12. Engagement */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 55, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{engagementStr}</span>
+        </div>
+
+        {/* 13. Transcript */}
+        <div className="flex-1 min-w-0" style={{ marginRight: 8 }}>
+          {status === 'failed' ? (
+            <span style={{ fontSize: 11, color: isDark ? '#f87171' : '#dc2626' }}>Failed to process</span>
+          ) : (
+            <p style={{
+              fontSize: 11, color: muted, lineHeight: 1.4,
+              display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            } as React.CSSProperties}>
+              {entry.transcriptSnippet}
+            </p>
+          )}
+        </div>
+
+        {/* 14. Status */}
+        <div className="flex-shrink-0 flex justify-center" style={{ width: 68, marginRight: 8 }}>
+          <span style={{
+            fontSize: 10, padding: '2px 8px', borderRadius: 999,
+            background: statusPill.bg,
+            color: statusPill.color,
+            fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}>
+            {statusPill.label}
+          </span>
+        </div>
+
+        {/* 15. Last refresh */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 100, marginRight: 8 }}>
+          <span style={{ fontSize: 11, color: muted }}>{formatRelativeRefresh(lastRefresh)}</span>
+        </div>
+
+        {/* 16. Menu */}
+        <div className="flex-shrink-0 relative flex items-center justify-center" style={{ width: 28 }}>
+          <button
+            className="flex items-center justify-center w-6 h-6 rounded-md"
+            style={{
+              color: menuOpen ? text : muted,
+              background: menuOpen ? (isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb') : 'transparent',
+            }}
+            onClick={e => { e.stopPropagation(); setOpenMenuId(menuOpen ? null : entry.id); }}
+            onMouseEnter={ev => { if (!menuOpen) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={ev => { if (!menuOpen) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            <MoreVertical style={{ width: 14, height: 14 }} />
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setOpenMenuId(null); }} />
+              <div
+                className="absolute right-0 bottom-full mb-1 rounded-xl overflow-hidden z-50 py-1 flex flex-col"
+                style={{ background: isDark ? '#1a1a1a' : '#ffffff', border: `1px solid ${border}`, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', minWidth: 180 }}
+              >
+                {[
+                  { label: 'Copy transcript', icon: <Copy className="w-3 h-3" />, action: () => { navigator.clipboard?.writeText(entry.transcriptSnippet); setOpenMenuId(null); } },
+                  { label: 'Download video', icon: <Download className="w-3 h-3" />, action: () => { simulateVideoDownload(entry.title); setOpenMenuId(null); } },
+                  { label: 'View original', icon: <ExternalLink className="w-3 h-3" />, action: () => { window.open(entry.url ?? `https://example.com/video/${entry.id}`, '_blank'); setOpenMenuId(null); } },
+                  { label: 'Move to folder', icon: <FolderInput className="w-3 h-3" />, action: () => { const rect = document.getElementById(`row-menu-${entry.id}`)?.getBoundingClientRect() ?? new DOMRect(); setFolderModalFor({ id: entry.id, rect, title: entry.title }); setOpenMenuId(null); } },
+                ].map(item => (
+                  <button
+                    key={item.label}
+                    className="flex items-center gap-2 px-3 py-1.5 text-[11px] w-full text-left"
+                    style={{ color: muted, background: 'transparent' }}
+                    onClick={e => { e.stopPropagation(); item.action(); }}
+                    onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                    onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                  >
+                    {item.icon}
+                    {item.label}
+                  </button>
+                ))}
+                <div style={{ height: 1, background: border, margin: '2px 12px' }} />
+                <button
+                  className="flex items-center gap-2 px-3 py-1.5 text-[11px] w-full text-left"
+                  style={{ color: isDark ? '#f87171' : '#dc2626', background: 'transparent' }}
+                  onClick={e => { e.stopPropagation(); setOpenMenuId(null); }}
+                  onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.08)'; }}
+                  onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+      {folderModalFor && (
+        <SaveToFolderModal
+          type="transcript"
+          refId={folderModalFor.id}
+          name={folderModalFor.title}
+          triggerRect={folderModalFor.rect}
+          onClose={() => setFolderModalFor(null)}
+        />
       )}
-
-      {/* Thumbnail */}
-      <div className="w-12 aspect-[9/16] rounded-xl overflow-hidden flex-shrink-0 relative">
-        <ImageWithFallback src={entry.thumbnail} alt={entry.title} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
-          <Play className="w-4 h-4 text-white fill-white" />
-        </div>
-        <span className="absolute bottom-1 right-1 text-[9px] px-1 py-0.5 rounded"
-          style={{ background: 'rgba(0,0,0,0.7)', color: '#fff' }}>{formatDuration(entry.duration)}</span>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <PlatformBadge platform={entry.platform} />
-          <span className="text-[11px]" style={{ color: muted }}>{entry.creator}</span>
-        </div>
-        <p className="truncate text-sm mb-1" style={{ color: text, fontWeight: 500 }}>{entry.title}</p>
-        <p className="text-xs truncate" style={{ color: muted, lineHeight: 1.5 }}>{entry.transcriptSnippet}</p>
-      </div>
-
-      {/* Meta */}
-      <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
-        <div className="flex items-center gap-1" style={{ color: muted }}>
-          <Calendar className="w-3 h-3" />
-          <span className="text-[11px]">{entry.date}</span>
-        </div>
-        <span className="text-[11px]" style={{ color: muted }}>{entry.words.toLocaleString()} words</span>
-      </div>
-
-      {/* Download button */}
-      <button
-        className="flex-shrink-0 p-2 rounded-lg"
-        style={{ color: muted }}
-        onClick={e => { e.stopPropagation(); simulateVideoDownload(entry.title); }}
-        title="Download video"
-        onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-        onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-      >
-        <Download className="w-3.5 h-3.5" />
-      </button>
-    </div>
+    </>
   );
 }
 
@@ -483,7 +828,7 @@ export function VideosPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'hybrid'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activePlatforms, setActivePlatforms] = useState<string[]>([]);
+  const [activePlatform, setActivePlatform] = useState('All');
   const [sortBy, setSortBy] = useState('date-desc');
   const [activeDurations, setActiveDurations] = useState<string[]>([]);
   const [activeWords, setActiveWords] = useState<string[]>([]);
@@ -498,6 +843,7 @@ export function VideosPage() {
   const [ctaHovered, setCtaHovered] = useState(false);
   const [videosTab, setVideosTab] = useState<'all' | 'sessions'>('all');
   const [activeSession, setActiveSession] = useState<VideoSession | null>(null);
+  const [listOpenMenuId, setListOpenMenuId] = useState<number | null>(null);
 
   const allSessions = [...videoSessions, ...MOCK_SESSIONS];
 
@@ -516,9 +862,22 @@ export function VideosPage() {
 
   const sortLabel = VIDEO_SORT_OPTIONS.find(o => o.value === sortBy)?.label ?? 'Newest first';
 
+  // ─── Median views for virality computation ──────────────────────────────
+  const medianViews = useMemo(() => {
+    const validViews = VIDEOS_DATA
+      .filter(v => (v as any).status !== 'failed' && ((v as any).views ?? 0) > 0)
+      .map(v => (v as any).views as number)
+      .sort((a, b) => a - b);
+    if (validViews.length === 0) return 1;
+    const mid = Math.floor(validViews.length / 2);
+    return validViews.length % 2 === 0
+      ? (validViews[mid - 1] + validViews[mid]) / 2
+      : validViews[mid];
+  }, []);
+
   // ─── Filter logic ────────────────────────────────────────────────────────
   const filteredVideos = VIDEOS_DATA.filter(e => {
-    const matchP = activePlatforms.length === 0 || activePlatforms.includes(e.platform);
+    const matchP = activePlatform === 'All' || activePlatform === e.platform;
     const q = searchQuery.toLowerCase();
     const matchQ = !q || e.title.toLowerCase().includes(q) || e.creator.toLowerCase().includes(q) || e.transcriptSnippet.toLowerCase().includes(q);
     const [m, s] = e.duration.split(':').map(Number);
@@ -554,7 +913,7 @@ export function VideosPage() {
     });
   };
 
-  const hasActiveFilter = activePlatforms.length > 0 || activeDurations.length > 0 || activeWords.length > 0 || activeDateRanges.length > 0 || sortBy !== 'date-desc' || !!searchQuery;
+  const hasActiveFilter = activePlatform !== 'All' || activeDurations.length > 0 || activeWords.length > 0 || activeDateRanges.length > 0 || sortBy !== 'date-desc' || !!searchQuery;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
@@ -643,41 +1002,37 @@ export function VideosPage() {
 
             <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
 
-            {/* Platform */}
-            <div className="relative flex-shrink-0">
-              <button
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                style={{
-                  background: activePlatforms.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                  color: activePlatforms.length > 0 ? '#00b8b2' : muted,
-                  border: `1px solid ${activePlatforms.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
-                  fontWeight: activePlatforms.length > 0 ? 500 : 400,
-                }}
-                onClick={() => setOpenDropdown(openDropdown === 'platform' ? null : 'platform')}
-              >
-                {activePlatforms.length === 0 ? 'Platform' : activePlatforms.length === 1 ? activePlatforms[0] : `${activePlatforms.length} platforms`}
-                <ChevronDown className={`w-3 h-3 transition-transform ${openDropdown === 'platform' ? 'rotate-180' : ''}`} />
-              </button>
-              {openDropdown === 'platform' && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)} />
-                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 148 }}>
-                    {['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter/X'].map(opt => {
-                      const sel = activePlatforms.includes(opt);
-                      return (
-                        <button key={opt}
-                          onClick={e => { e.stopPropagation(); setActivePlatforms(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); setCurrentPage(1); }}
-                          className="w-full flex items-center justify-between px-3 py-2 text-xs"
-                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
-                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
+            {/* Platform tabs */}
+            {(['All', 'TikTok', 'Instagram', 'YouTube'] as const).map(tab => {
+              const isActive = activePlatform === tab;
+              const tabIcons: Record<string, JSX.Element | null> = {
+                All: null,
+                TikTok: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" /></svg>,
+                Instagram: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>,
+                YouTube: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>,
+              };
+              return (
+                <button
+                  key={tab}
+                  onClick={() => { setActivePlatform(tab); setCurrentPage(1); }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] flex-shrink-0 transition-all"
+                  style={{
+                    background: isActive
+                      ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)')
+                      : 'transparent',
+                    color: isActive ? text : muted,
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  {tabIcons[tab]}
+                  {tab}
+                </button>
+              );
+            })}
+
+            <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+
+            <div className="flex-1" />
 
             {/* Duration */}
             <div className="relative flex-shrink-0">
@@ -830,15 +1185,12 @@ export function VideosPage() {
                 <button
                   className="flex items-center gap-1 text-xs hover:opacity-70 flex-shrink-0"
                   style={{ color: '#00b8b2', fontWeight: 500 }}
-                  onClick={() => { setActivePlatforms([]); setActiveDurations([]); setActiveWords([]); setActiveDateRanges([]); setSortBy('date-desc'); setSearchQuery(''); setCurrentPage(1); }}
+                  onClick={() => { setActivePlatform('All'); setActiveDurations([]); setActiveWords([]); setActiveDateRanges([]); setSortBy('date-desc'); setSearchQuery(''); setCurrentPage(1); }}
                 >
                   <X className="w-3 h-3" /> Clear
                 </button>
               </>
             )}
-
-
-            <div className="flex-1" />
 
             {/* Per-page button — only in filter row as spacer, actual portal used in pagination */}
             <div className="relative flex-shrink-0">
@@ -889,7 +1241,8 @@ export function VideosPage() {
           {/* ── Content ── */}
           {viewMode === 'hybrid' ? (
             /* Hybrid: left compact list + right detail */
-            <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-hidden">
+            <div className="flex max-w-[1280px] mx-auto w-full h-full min-h-0 overflow-hidden px-6 py-5">
               {/* Left pane */}
               <div className="flex-shrink-0 flex flex-col" style={{ width: 224, borderRight: `1px solid ${border}` }}>
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
@@ -916,7 +1269,20 @@ export function VideosPage() {
                               style={{ color: text, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', display: 'block' }}>
                               {e.title.length > 30 ? e.title.slice(0, 30) + '…' : e.title}
                             </p>
-                            <p className="text-[10px] truncate" style={{ color: muted }}>{e.creator}</p>
+                            <div className="flex items-center gap-1">
+                              <div className="relative flex-shrink-0">
+                                <img src={e.avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                {VERIFIED_CREATORS.has(e.creator) && (
+                                  <span className="absolute flex items-center justify-center rounded-full"
+                                    style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                    <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                    </svg>
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] truncate" style={{ color: muted }}>{e.creator}</span>
+                            </div>
                             <div className="flex items-center gap-1">
                               <span className="text-[9px]" style={{ color: muted }}>{e.platform}</span>
                               <span className="text-[9px]" style={{ color: muted }}>·</span>
@@ -989,16 +1355,17 @@ export function VideosPage() {
                 )}
               </div>
             </div>
+            </div>
           ) : (
           <div className="flex-1 overflow-y-auto">
-            <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
+            <div className={viewMode === 'list' ? 'w-full px-6 py-5' : 'max-w-[1280px] mx-auto w-full px-6 py-5'}>
 
               {/* Selection bar */}
               {selectedIds.size > 0 && (
                 <SelectionBar
                   selectedCount={selectedIds.size}
                   isDark={isDark}
-                  accentColor="#00b8b2"
+                  accentColor="#3b82f6"
                   onDeselect={() => { setSelectedIds(new Set()); }}
                   onDownloadVideos={() => {
                     const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
@@ -1019,17 +1386,28 @@ export function VideosPage() {
                     const selected = VIDEOS_DATA.filter(v => selectedIds.has(v.id));
                     simulateZipDownload(selected.map(v => v.title), 'selected-all');
                   }}
+                  onSelectPage={() => {
+                    const allIds = new Set(filteredVideos.map(v => v.id));
+                    setSelectedIds(allIds);
+                  }}
+                  totalPageCount={filteredVideos.length}
                 />
               )}
 
               {filteredVideos.length > 0 ? (
                 viewMode === 'list' ? (
-                  <div className="flex flex-col gap-2">
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                  >
+                    <VideoListHeader muted={muted} border={border} />
                     {paginatedVideos.map(e => (
                       <VideoRow
                         key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
                         onSelect={entry => setSelectedEntry(entry)}
                         isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
+                        openMenuId={listOpenMenuId} setOpenMenuId={setListOpenMenuId}
+                        medianViews={medianViews}
                       />
                     ))}
                   </div>
@@ -1081,7 +1459,7 @@ export function VideosPage() {
                   <button
                     className="text-xs"
                     style={{ color: '#00b8b2' }}
-                    onClick={() => { setSearchQuery(''); setActivePlatforms([]); setActiveDurations([]); setActiveWords([]); setActiveDateRanges([]); setSortBy('date-desc'); setCurrentPage(1); }}
+                    onClick={() => { setSearchQuery(''); setActivePlatform('All'); setActiveDurations([]); setActiveWords([]); setActiveDateRanges([]); setSortBy('date-desc'); setCurrentPage(1); }}
                   >Clear all filters</button>
                 </div>
               )}

@@ -165,11 +165,6 @@ const INITIAL_FOLDERS: Folder[] = [
         addedAt: '2026-02-22T09:15:00Z',
       },
       {
-        uid: 'f500-pr02', type: 'prompt', refId: 2,
-        name: 'LinkedIn Thread Converter', meta: 'Repurpose',
-        addedAt: '2026-02-21T11:00:00Z',
-      },
-      {
         uid: 'f500-pr03', type: 'prompt', refId: 3,
         name: 'Executive Summary', meta: 'Summary',
         addedAt: '2026-02-20T10:30:00Z',

@@ -6,7 +6,7 @@
  */
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router';
-import { Users, BadgeCheck, Search, FolderPlus, Heart, X, UserPlus, ChevronDown, SlidersHorizontal, CheckCheck, FileText } from 'lucide-react';
+import { Users, BadgeCheck, Search, FolderPlus, Heart, X, UserPlus, ChevronDown, SlidersHorizontal, CheckCheck, FileText, Film, Globe, Eye } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { AppSidebar } from './AppSidebar';
@@ -139,6 +139,23 @@ function parseCount(s: string): number {
   return n;
 }
 
+function fmtLargeNum(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
+}
+
+// ─── Computed profile stats ──────────────────────────────────────────────────
+const TOTAL_PROFILES = PROFILES_DATA.length;
+const TOTAL_VIDEOS = PROFILES_DATA.reduce((s, p) => s + p.videoCount, 0);
+const TOTAL_WORDS = PROFILES_DATA.reduce((s, p) => s + parseCount(p.totalWords), 0);
+const TOTAL_FOLLOWERS = PROFILES_DATA.reduce((s, p) => s + parseCount(p.followers), 0);
+const PLATFORM_COUNTS = {
+  YouTube: PROFILES_DATA.filter(p => p.platforms.includes('YouTube')).length,
+  TikTok: PROFILES_DATA.filter(p => p.platforms.includes('TikTok')).length,
+  Instagram: PROFILES_DATA.filter(p => p.platforms.includes('Instagram')).length,
+};
+
 const PROFILES_SORT_OPTIONS = [
   { value: 'followers-desc', label: 'Most followers' },
   { value: 'followers-asc', label: 'Fewest followers' },
@@ -156,9 +173,6 @@ function PlatformDot({ platform, isDark }: { platform: string; isDark: boolean }
     YouTube: '#ff0000',
     TikTok: isDark ? '#ffffff' : '#010101',
     Instagram: '#e1306c',
-    LinkedIn: '#0a66c2',
-    Spotify: '#1db954',
-    'Twitter/X': isDark ? '#ffffff' : '#14171a',
   };
 
   const logos: Record<string, JSX.Element> = {
@@ -272,7 +286,7 @@ function ProfileCard({
         {/* Identity row */}
         <div className="flex items-center gap-3">
           <div
-            className="rounded-xl overflow-hidden flex-shrink-0"
+            className="relative rounded-xl flex-shrink-0"
             style={{ width: 44, height: 44, background: isDark ? '#222' : '#f3f4f6' }}
           >
             <ImageWithFallback
@@ -280,18 +294,28 @@ function ProfileCard({
               alt={profile.displayName}
               className="w-full h-full object-cover object-top rounded-full"
             />
+            {profile.verified && (
+              <span
+                className="absolute flex items-center justify-center rounded-full"
+                style={{
+                  bottom: -1, right: -1,
+                  width: 16, height: 16,
+                  background: '#1d9bf0',
+                  border: '1.5px solid #fff',
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 16 16" fill="none">
+                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                </svg>
+              </span>
+            )}
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[13px] truncate" style={{ color: text, fontWeight: 600, letterSpacing: '-0.01em' }}>
+          <div className="flex-1 min-w-0" style={{ lineHeight: 1.3 }}>
+              <span className="text-[13px] truncate block" style={{ color: text, fontWeight: 600, letterSpacing: '-0.01em' }}>
                 {profile.displayName}
               </span>
-              {profile.verified && (
-                <BadgeCheck className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#3b82f6' }} />
-              )}
-            </div>
-            <span className="text-[11px]" style={{ color: muted }}>{profile.handle}</span>
+            <span className="text-[11px] block" style={{ color: muted }}>{profile.handle}</span>
           </div>
         </div>
 
@@ -755,6 +779,81 @@ export function ProfilesPage() {
           {/* Grid */}
           <div className="flex-1 overflow-y-auto px-6 py-6">
            <div className="max-w-[1280px] mx-auto w-full">
+
+            {/* ── Stat Boxes ─────────────────────────────────────── */}
+            <div className="grid gap-3 mb-5" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+              {/* Box 1: Profiles */}
+              <div className="flex flex-col px-4 pt-3 pb-3 rounded-xl" style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                  <Users className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Profiles</span>
+                </div>
+                <p style={{ color: text, fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                  {TOTAL_PROFILES}
+                </p>
+                <p className="mt-1.5" style={{ color: muted, fontSize: '0.6875rem' }}>total creators</p>
+              </div>
+
+              {/* Box 2: Total Videos */}
+              <div className="flex flex-col px-4 pt-3 pb-3 rounded-xl" style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                  <Film className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Total Videos</span>
+                </div>
+                <p style={{ color: text, fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                  {TOTAL_VIDEOS.toLocaleString()}
+                </p>
+                <p className="mt-1.5" style={{ color: muted, fontSize: '0.6875rem' }}>across all profiles</p>
+              </div>
+
+              {/* Box 3: Total Words */}
+              <div className="flex flex-col px-4 pt-3 pb-3 rounded-xl" style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                  <FileText className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Total Words</span>
+                </div>
+                <p style={{ color: text, fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                  {fmtLargeNum(TOTAL_WORDS)}
+                </p>
+                <p className="mt-1.5" style={{ color: muted, fontSize: '0.6875rem' }}>transcribed words</p>
+              </div>
+
+              {/* Box 4: By Platform — mini breakdown */}
+              <div className="flex flex-col px-4 pt-3 pb-3 rounded-xl" style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                  <Globe className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>By Platform</span>
+                </div>
+                <div className="flex flex-col gap-1 mt-0.5">
+                  {([
+                    { platform: 'YouTube', color: '#ff0000', count: PLATFORM_COUNTS.YouTube },
+                    { platform: 'TikTok', color: isDark ? '#ffffff' : '#010101', count: PLATFORM_COUNTS.TikTok },
+                    { platform: 'Instagram', color: '#e1306c', count: PLATFORM_COUNTS.Instagram },
+                  ] as const).map(row => (
+                    <div key={row.platform} className="flex items-center gap-1.5" style={{ fontSize: '0.6875rem' }}>
+                      <PlatformDot platform={row.platform} isDark={isDark} />
+                      <span style={{ color: muted }}>{row.count} creators</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Box 5: Audience Reach */}
+              <div className="flex flex-col px-4 pt-3 pb-3 rounded-xl" style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                  <Eye className="w-3.5 h-3.5" />
+                  <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Audience Reach</span>
+                </div>
+                <p style={{ color: text, fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                  {fmtLargeNum(TOTAL_FOLLOWERS)}
+                </p>
+                <p className="mt-1.5" style={{ color: muted, fontSize: '0.6875rem' }}>combined followers</p>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="my-[26px]" style={{ borderTop: `1px solid ${border}` }} />
+
             <div
               className="grid gap-2"
               style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}

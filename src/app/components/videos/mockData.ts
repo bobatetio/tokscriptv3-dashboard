@@ -21,12 +21,11 @@ export const MOCK_SESSIONS: VideoSession[] = [
     name: 'Download Mar 3, 2026 3:15 PM',
     createdAt: '2026-03-03T15:15:00.000Z',
     sourceLinks: [
-      'https://linkedin.com/feed/update/mock1005',
       'https://tiktok.com/@fitnesswithsarah/video/mock1006',
       'https://youtube.com/watch?v=mock1007',
       'https://instagram.com/reel/mock1008',
     ],
-    videos: VIDEOS_DATA.filter(v => [1005, 1006, 1007, 1008].includes(v.id)),
+    videos: VIDEOS_DATA.filter(v => [1006, 1007, 1008].includes(v.id)),
     status: 'complete',
   },
   {
@@ -34,16 +33,14 @@ export const MOCK_SESSIONS: VideoSession[] = [
     name: 'Download Feb 27, 2026 11:45 AM',
     createdAt: '2026-02-27T11:45:00.000Z',
     sourceLinks: [
-      'https://twitter.com/buildinpublic/status/mock1009',
       'https://youtube.com/watch?v=mock1010',
       'https://tiktok.com/@booknerd/video/mock1011',
-      'https://linkedin.com/feed/update/mock1012',
       'https://youtube.com/watch?v=mock1013',
       'https://instagram.com/reel/mock1014',
       'https://youtube.com/watch?v=mock1015',
       'https://tiktok.com/@worldwanderer/video/mock1016',
     ],
-    videos: VIDEOS_DATA.filter(v => [1009, 1010, 1011, 1012, 1013, 1014, 1015, 1016].includes(v.id)),
+    videos: VIDEOS_DATA.filter(v => [1010, 1011, 1013, 1014, 1015, 1016].includes(v.id)),
     status: 'complete',
   },
 ];

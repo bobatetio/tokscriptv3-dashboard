@@ -11,34 +11,39 @@ interface SelectionBarProps {
   onDownloadData: () => void;
   onDownloadAll: () => void;
   onDeselect: () => void;
+  onSelectPage?: () => void;        // unused — kept for backwards compat
+  totalPageCount?: number;           // unused — kept for backwards compat
 }
 
 export function SelectionBar({
   selectedCount, isDark, accentColor,
   onDownloadVideos, onDownloadCovers, onDownloadTranscripts, onDownloadData, onDownloadAll,
-  onDeselect,
+  onDeselect, onSelectPage, totalPageCount,
 }: SelectionBarProps) {
   const hasSelection = selectedCount > 0;
+
   const btnStyle: React.CSSProperties = {
     background: 'transparent',
-    color: isDark ? '#666' : '#aaa',
-    border: `1px solid ${isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)'}`,
+    color: isDark ? '#999' : '#555',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)'}`,
     cursor: hasSelection ? 'pointer' : 'default',
     opacity: hasSelection ? 1 : 0.5,
     fontWeight: 500,
   };
-  const divider = <div style={{ width: 1, height: 18, background: isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.12)' }} />;
 
-  /* CSS vars for hover — scoped to .sb-v1 */
-  const hoverFill = isDark ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)';
-  const borderHover = isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.22)';
-  const textBright = isDark ? '#333' : '#fff';
-  const closeHover = isDark ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)';
+  const divider = (
+    <div style={{ width: 1, height: 18, background: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)' }} />
+  );
+
+  const hoverFill    = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+  const borderHover  = isDark ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.18)';
+  const textBright   = isDark ? '#ffffff' : '#111111';
+  const closeHover   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
 
   return (
-    <div style={{ position: 'sticky', top: 0, zIndex: 20, marginBottom: 12, animation: 'slideUp 0.2s ease-out' }}>
+    <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 50, animation: 'sbSlideUp 0.22s ease-out' }}>
       <style>{`
-        @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes sbSlideUp { from { opacity: 0; transform: translateX(-50%) translateY(12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         .sb-btn {
           transition: background 0.22s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1), color 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -53,6 +58,13 @@ export function SelectionBar({
         .sb-v1 .sb-close:hover {
           background: var(--sb-close-hover) !important;
           color: var(--sb-text-bright) !important;
+        }
+        .sb-all-btn {
+          transition: opacity 0.18s ease, filter 0.18s ease;
+        }
+        .sb-v1 .sb-all-btn:hover {
+          opacity: 0.85 !important;
+          filter: brightness(1.08);
         }
         .sel-bar-tip {
           position: relative;
@@ -73,7 +85,7 @@ export function SelectionBar({
           pointer-events: none;
           opacity: 0;
           transition: opacity 0.15s ease, transform 0.15s ease;
-          z-index: 30;
+          z-index: 60;
         }
         .sel-bar-tip:hover::after {
           opacity: 1;
@@ -83,23 +95,29 @@ export function SelectionBar({
       <div
         className="sb-v1"
         style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
           padding: '11px 20px',
+          whiteSpace: 'nowrap',
           borderRadius: 12,
-          background: isDark ? '#ffffff' : '#1a1a1a',
-          boxShadow: `0 4px 20px -6px ${accentColor}25`,
+          background: isDark ? '#1a1a1a' : '#ffffff',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+          boxShadow: '0 8px 32px -8px rgba(0,0,0,0.18)',
           '--sb-hover-fill': hoverFill,
           '--sb-border-hover': borderHover,
           '--sb-text-bright': textBright,
           '--sb-close-hover': closeHover,
         } as React.CSSProperties}
       >
-        {hasSelection ? (
-          <span style={{ color: accentColor, fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{selectedCount} selected</span>
-        ) : (
-          <span style={{ color: isDark ? '#666' : '#aaa', fontWeight: 400, fontSize: 11 }}>0 selected — click items to select</span>
-        )}
+        {/* Count badge */}
+        <span style={{ color: accentColor, fontWeight: 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0 }}>
+          {selectedCount} selected
+        </span>
+
         {divider}
+
         <button
           className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
           style={btnStyle}
@@ -133,17 +151,26 @@ export function SelectionBar({
           <Database size={13} /> Data
         </button>
         <button
-          className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
-          style={btnStyle}
+          className="sb-all-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
+          style={{
+            background: accentColor,
+            color: '#fff',
+            border: 'none',
+            cursor: hasSelection ? 'pointer' : 'default',
+            opacity: hasSelection ? 1 : 0.5,
+            fontWeight: 600,
+          }}
           data-tip="Download all content"
           onClick={() => { if (hasSelection) onDownloadAll(); }}
         >
           <Archive size={13} /> Download All
         </button>
+
         {divider}
+
         <button
           className="sb-close sel-bar-tip flex items-center justify-center p-1.5 rounded-lg"
-          style={{ background: 'transparent', color: isDark ? '#666' : '#aaa', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'transparent', color: isDark ? '#777' : '#999', border: 'none', cursor: 'pointer' }}
           data-tip="Deselect all"
           onClick={onDeselect}
         >

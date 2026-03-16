@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import {
   Search, X, ChevronDown, Clock, FileText, Calendar, SlidersHorizontal,
   LayoutGrid, List, Columns2, CheckCheck, Play, Download, ImageDown,
-  MoreHorizontal, Loader2, Check,
+  MoreHorizontal, Loader2, Check, Copy, ExternalLink,
 } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext';
 import { AppSidebar } from '../AppSidebar';
@@ -18,23 +18,49 @@ import {
   simulateCoverDownload,
   simulateZipDownload,
 } from './downloadUtils';
+import { SelectionBar } from '../SelectionBar';
+
+// ─── Verified creators ────────────────────────────────────────────────────────
+const VERIFIED_CREATORS = new Set([
+  '@tokcast', '@founders', '@engineering', '@productteam',
+  '@fitwithjess', '@techbrosam', '@kitchenlabs', '@gamervault',
+  '@keynoteking', '@aifuturist', '@productivityhacks', '@chefmike',
+]);
 
 // ─── Platform badge ────────────────────────────────────────────────────────────
-const PLATFORM_META: Record<string, { color: string; bg: string }> = {
-  TikTok:      { color: '#ffffff', bg: '#010101' },
-  Instagram:   { color: '#ffffff', bg: '#e1306c' },
-  YouTube:     { color: '#ffffff', bg: '#ff0000' },
-  'Twitter/X': { color: '#ffffff', bg: '#14171a' },
-  LinkedIn:    { color: '#ffffff', bg: '#0a66c2' },
-};
+function PlatformIconSVG({ platform }: { platform: string }) {
+  if (platform === 'YouTube') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
+    </svg>
+  );
+  if (platform === 'TikTok') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+      <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
+    </svg>
+  );
+  if (platform === 'Instagram') return (
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+  return null;
+}
 
-function PlatformBadge({ platform }: { platform: string }) {
-  const meta = PLATFORM_META[platform] ?? { color: '#fff', bg: '#6b7280' };
+function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
   return (
     <span
-      className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-      style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
+        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        fontWeight: 500,
+      }}
     >
+      <PlatformIconSVG platform={platform} />
       {platform}
     </span>
   );
@@ -152,7 +178,7 @@ function VideoResultCard({
         {/* Platform + duration badges (all states) */}
         {entry && (
           <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-            <PlatformBadge platform={entry.platform} />
+            <PlatformBadge platform={entry.platform} isDark={isDark} />
             <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>
               {formatDuration(entry.duration)}
             </span>
@@ -164,7 +190,20 @@ function VideoResultCard({
       <div className="p-3 flex flex-col gap-1.5 flex-1">
         {entry ? (
           <>
-            <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+            <div className="flex items-center gap-1.5">
+              <div className="relative flex-shrink-0">
+                <img src={entry.avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                {VERIFIED_CREATORS.has(entry.creator) && (
+                  <span className="absolute flex items-center justify-center rounded-full"
+                    style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                    <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                    </svg>
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+            </div>
             <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{entry.title}</p>
             <p className="text-[10px]" style={{ color: muted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
               {entry.transcriptSnippet}
@@ -240,6 +279,7 @@ export function VideoResultsPage() {
       return video.id + i * 1000;
     }));
   });
+  const [listOpenMenuId, setListOpenMenuId]     = useState<number | null>(null);
 
   const toggleSelect = (id: number) => {
     setSelectedIds(prev => {
@@ -398,53 +438,6 @@ export function VideoResultsPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  {/* Videos download card */}
-                  <button
-                    onClick={() => {
-                      const targets = items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id));
-                      simulateZipDownload(targets.map(i => i.entry!.title), 'videos');
-                    }}
-                    className="flex flex-col px-4 pt-3 pb-3 text-left rounded-lg transition-colors"
-                    style={{ border: `1px solid ${border}`, background: 'transparent', cursor: 'pointer', minWidth: 150 }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
-                      <Download className="w-3.5 h-3.5" />
-                      <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Videos</span>
-                    </div>
-                    <p style={{ color: text, fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.2 }}>
-                      {selectedIds.size === items.length ? 'Download All' : `Download ${selectedIds.size}`}
-                    </p>
-                    <span className="mt-1.5" style={{ color: '#00b8b2', fontSize: '0.6875rem', fontWeight: 500 }}>
-                      {selectedIds.size === items.length ? `${items.length} selected` : `${selectedIds.size} of ${items.length}`}
-                    </span>
-                  </button>
-
-                  {/* Covers download card */}
-                  <button
-                    onClick={() => {
-                      items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id))
-                        .forEach(i => simulateCoverDownload(i.entry!.title, i.entry!.thumbnail));
-                    }}
-                    className="flex flex-col px-4 pt-3 pb-3 text-left rounded-lg transition-colors"
-                    style={{ border: `1px solid ${border}`, background: 'transparent', cursor: 'pointer', minWidth: 150 }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.025)'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                  >
-                    <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
-                      <ImageDown className="w-3.5 h-3.5" />
-                      <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>Covers</span>
-                    </div>
-                    <p style={{ color: text, fontWeight: 600, fontSize: '0.875rem', lineHeight: 1.2 }}>
-                      {selectedIds.size === items.length ? 'Download All' : `Download ${selectedIds.size}`}
-                    </p>
-                    <span className="mt-1.5" style={{ color: '#00b8b2', fontSize: '0.6875rem', fontWeight: 500 }}>
-                      {selectedIds.size === items.length ? `${items.length} selected` : `${selectedIds.size} of ${items.length}`}
-                    </span>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -512,7 +505,7 @@ export function VideoResultsPage() {
                       className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1"
                       style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 148 }}
                     >
-                      {['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter/X'].map(opt => {
+                      {['TikTok', 'Instagram', 'YouTube'].map(opt => {
                         const sel = activePlatforms.includes(opt);
                         return (
                           <button
@@ -810,29 +803,193 @@ export function VideoResultsPage() {
             </div>
           </div>
 
-          {/* ── 3. Grid ────────────────────────────────────────────────────── */}
+          {/* ── 3. Content ─────────────────────────────────────────────────── */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
               {filteredItems.length > 0 ? (
-                <div
-                  className="grid gap-3"
-                  style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}
-                >
-                  {filteredItems.map(item => (
-                    <VideoResultCard
-                      key={item.id}
-                      item={item}
-                      isDark={isDark}
-                      cardBg={cardBg}
-                      border={border}
-                      text={text}
-                      muted={muted}
-                      hoverBg={hoverBg}
-                      isSelected={selectedIds.has(item.id)}
-                      onToggleSelect={toggleSelect}
-                    />
-                  ))}
-                </div>
+                viewMode === 'list' ? (
+                  /* ── List view ── */
+                  <div
+                    className="rounded-2xl overflow-hidden"
+                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                  >
+                    {/* Header row */}
+                    <div
+                      className="flex items-center px-4 py-2"
+                      style={{ borderBottom: `1px solid ${border}` }}
+                    >
+                      <div style={{ width: 48, flexShrink: 0, marginRight: 12 }} />
+                      <div className="flex-shrink-0 text-[10px] uppercase tracking-wider" style={{ width: 280, color: muted }}>Content</div>
+                      <div className="flex-1 min-w-0 text-[10px] uppercase tracking-wider" style={{ color: muted }}>Transcript</div>
+                      <div className="flex-shrink-0 text-right text-[10px] uppercase tracking-wider" style={{ width: 80, color: muted }}>Date</div>
+                      <div className="flex-shrink-0 text-center text-[10px] uppercase tracking-wider" style={{ width: 60, color: muted }}>Duration</div>
+                      <div className="flex-shrink-0 text-center text-[10px] uppercase tracking-wider" style={{ width: 80, color: muted }}>Status</div>
+                      <div style={{ width: 32, flexShrink: 0 }} />
+                    </div>
+                    {/* Data rows */}
+                    {filteredItems.map(item => {
+                      const e = item.entry;
+                      if (!e) return null;
+                      const isPending     = item.status === 'pending';
+                      const isDownloading = item.status === 'downloading';
+                      const isComplete    = item.status === 'complete';
+                      const menuOpen      = listOpenMenuId === item.id;
+
+                      const statusPill = (() => {
+                        if (isPending)     return { label: 'Pending',    bg: 'rgba(245,158,11,0.12)',  color: isDark ? '#fbbf24' : '#d97706' };
+                        if (isDownloading) return { label: 'Processing', bg: 'rgba(245,158,11,0.12)',  color: isDark ? '#fbbf24' : '#d97706' };
+                        return                    { label: 'Complete',   bg: 'rgba(34,197,94,0.12)',   color: isDark ? '#4ade80' : '#16a34a' };
+                      })();
+
+                      const dateParts = e.date.split(', ');
+                      const dateLine1 = dateParts[0] ?? e.date;
+
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center px-4 py-2.5"
+                          style={{ borderBottom: `1px solid ${border}` }}
+                          onMouseEnter={ev => { (ev.currentTarget as HTMLDivElement).style.background = hoverBg; }}
+                          onMouseLeave={ev => { (ev.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+                        >
+                          {/* Thumbnail */}
+                          <div className="flex-shrink-0 relative rounded-lg overflow-hidden" style={{ width: 48, aspectRatio: '9/16', marginRight: 12 }}>
+                            <ImageWithFallback src={e.thumbnail} alt={e.title} className="w-full h-full object-cover" style={{ opacity: isComplete ? 1 : 0.5 }} />
+                            <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)' }} />
+                            {isComplete && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Play className="w-3 h-3 text-white fill-white opacity-80" />
+                              </div>
+                            )}
+                            {isDownloading && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 size={14} color="#ffffff" style={{ animation: 'spin 1s linear infinite' }} />
+                              </div>
+                            )}
+                            <div className="absolute bottom-1 left-1">
+                              <PlatformBadge platform={e.platform} isDark={isDark} />
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-shrink-0 flex flex-col gap-0.5" style={{ width: 280 }}>
+                            <div className="flex items-center gap-1.5">
+                              <div className="relative flex-shrink-0">
+                                <img src={e.avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                                {VERIFIED_CREATORS.has(e.creator) && (
+                                  <span className="absolute flex items-center justify-center rounded-full"
+                                    style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                    <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                    </svg>
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px]" style={{ color: muted }}>{e.creator}</span>
+                            </div>
+                            <p className="text-xs truncate" style={{ color: text, fontWeight: 500 }}>{e.title}</p>
+                          </div>
+
+                          {/* Transcript preview */}
+                          <div className="flex-1 min-w-0">
+                            {isPending || isDownloading ? (
+                              <span className="text-[11px]" style={{ color: muted }}>Processing…</span>
+                            ) : (
+                              <p className="text-[11px]" style={{
+                                color: muted, lineHeight: 1.4,
+                                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                              } as React.CSSProperties}>
+                                {e.transcriptSnippet}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Date */}
+                          <div className="flex-shrink-0 flex flex-col items-end" style={{ width: 80 }}>
+                            <span className="text-[11px]" style={{ color: text }}>{dateLine1}</span>
+                          </div>
+
+                          {/* Duration */}
+                          <div className="flex-shrink-0 text-center" style={{ width: 60 }}>
+                            <span className="text-[11px]" style={{ color: muted }}>{formatDuration(e.duration)}</span>
+                          </div>
+
+                          {/* Status pill */}
+                          <div className="flex-shrink-0 flex justify-center" style={{ width: 80 }}>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full" style={{
+                              background: statusPill.bg, color: statusPill.color, fontWeight: 500, whiteSpace: 'nowrap',
+                            }}>
+                              {statusPill.label}
+                            </span>
+                          </div>
+
+                          {/* 3-dot menu */}
+                          <div className="flex-shrink-0 relative" style={{ width: 32 }}>
+                            <button
+                              className="flex items-center justify-center w-7 h-7 rounded-lg"
+                              style={{
+                                color: menuOpen ? text : muted,
+                                background: menuOpen ? (isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb') : 'transparent',
+                              }}
+                              onClick={e2 => { e2.stopPropagation(); setListOpenMenuId(menuOpen ? null : item.id); }}
+                              onMouseEnter={ev => { if (!menuOpen) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                              onMouseLeave={ev => { if (!menuOpen) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                            >
+                              <MoreHorizontal className="w-3.5 h-3.5" />
+                            </button>
+                            {menuOpen && (
+                              <>
+                                <div className="fixed inset-0 z-40" onClick={e2 => { e2.stopPropagation(); setListOpenMenuId(null); }} />
+                                <div
+                                  className="absolute right-0 bottom-full mb-1 rounded-xl overflow-hidden z-50 py-1 flex flex-col"
+                                  style={{ background: isDark ? '#1a1a1a' : '#ffffff', border: `1px solid ${border}`, boxShadow: '0 4px 16px rgba(0,0,0,0.2)', minWidth: 180 }}
+                                >
+                                  {[
+                                    { label: 'Copy transcript', icon: <Copy className="w-3 h-3" />, action: () => { navigator.clipboard?.writeText(e.transcriptSnippet); setListOpenMenuId(null); } },
+                                    { label: 'View original',   icon: <ExternalLink className="w-3 h-3" />, action: () => { window.open(item.url ?? `https://example.com/video/${item.id}`, '_blank'); setListOpenMenuId(null); } },
+                                  ].map(menuItem => (
+                                    <button
+                                      key={menuItem.label}
+                                      className="flex items-center gap-2 px-3 py-1.5 text-[11px] w-full text-left"
+                                      style={{ color: muted, background: 'transparent' }}
+                                      onClick={e2 => { e2.stopPropagation(); menuItem.action(); }}
+                                      onMouseEnter={ev => { (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                                      onMouseLeave={ev => { (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                                    >
+                                      {menuItem.icon}
+                                      {menuItem.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* ── Grid view ── */
+                  <div
+                    className="grid gap-3"
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}
+                  >
+                    {filteredItems.map(item => (
+                      <VideoResultCard
+                        key={item.id}
+                        item={item}
+                        isDark={isDark}
+                        cardBg={cardBg}
+                        border={border}
+                        text={text}
+                        muted={muted}
+                        hoverBg={hoverBg}
+                        isSelected={selectedIds.has(item.id)}
+                        onToggleSelect={toggleSelect}
+                      />
+                    ))}
+                  </div>
+                )
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 gap-3">
                   <p style={{ color: muted, fontSize: '0.875rem' }}>No videos match your filters</p>
@@ -851,6 +1008,41 @@ export function VideoResultsPage() {
           </main>
         </div>
       </div>
+
+      {/* Floating SelectionBar */}
+      {selectedIds.size > 0 && (
+        <SelectionBar
+          selectedCount={selectedIds.size}
+          isDark={isDark}
+          accentColor="#3b82f6"
+          onDownloadVideos={() => {
+            const targets = items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id));
+            simulateZipDownload(targets.map(i => i.entry!.title), 'videos');
+          }}
+          onDownloadCovers={() => {
+            items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id))
+              .forEach(i => simulateCoverDownload(i.entry!.title, i.entry!.thumbnail));
+          }}
+          onDownloadTranscripts={() => {
+            const targets = items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id));
+            simulateZipDownload(targets.map(i => i.entry!.title), 'transcripts');
+          }}
+          onDownloadData={() => {
+            const targets = items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id));
+            simulateZipDownload(targets.map(i => i.entry!.title), 'data');
+          }}
+          onDownloadAll={() => {
+            const targets = items.filter(i => i.status === 'complete' && i.entry && selectedIds.has(i.id));
+            simulateZipDownload(targets.map(i => i.entry!.title), 'all');
+          }}
+          onDeselect={() => setSelectedIds(new Set())}
+          onSelectPage={() => {
+            const allIds = new Set(items.map(i => i.id));
+            setSelectedIds(allIds);
+          }}
+          totalPageCount={items.length}
+        />
+      )}
 
     </>
   );

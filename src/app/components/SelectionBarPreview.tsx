@@ -92,7 +92,6 @@ const MOCK_CARDS = [
   { id: 2, platform: 'TikTok', duration: '0:58', date: 'Mar 7, 2026', title: '5 Morning Habits That Changed My Life', creator: '@productivityhacks', thumbnail: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&q=80', snippet: "Good morning, everyone. I've been doing these five habits for 18..." },
   { id: 3, platform: 'Instagram', duration: '1:23', date: 'Mar 6, 2026', title: 'The Secret to Perfect Pasta Every Time', creator: '@chefmike', thumbnail: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&q=80', snippet: "Okay, today I'm settling this once and for all. The number one..." },
   { id: 4, platform: 'YouTube', duration: '22:10', date: 'Mar 5, 2026', title: 'React Server Components Explained Simply', creator: '@webdevdaily', thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80', snippet: 'React Server Components fundamentally change how we...' },
-  { id: 5, platform: 'LinkedIn', duration: '4:47', date: 'Mar 4, 2026', title: 'Why Most LinkedIn Posts Fail', creator: '@growthops', thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80', snippet: "I've analysed 1,200 LinkedIn posts this year. The pattern is clear..." },
   { id: 6, platform: 'TikTok', duration: '0:45', date: 'Mar 3, 2026', title: '30-Day Fitness Challenge Results', creator: '@fitnesswithsarah', thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80', snippet: 'Day 30. I cannot believe I actually made it. My starting weight was...' },
 ];
 
@@ -100,7 +99,6 @@ const PLATFORM_COLORS: Record<string, { bg: string; color: string }> = {
   YouTube: { bg: '#FF0000', color: '#fff' },
   TikTok: { bg: '#000000', color: '#fff' },
   Instagram: { bg: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)', color: '#fff' },
-  LinkedIn: { bg: '#0A66C2', color: '#fff' },
 };
 
 /* ─── CSS variable injector per-variation ─── */

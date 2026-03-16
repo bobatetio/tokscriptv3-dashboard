@@ -37,6 +37,13 @@ import { SaveToFolderModal } from './SaveToFolderModal';
 import { SelectionBar } from './SelectionBar';
 import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
 
+// ─── Verified Creators ────────────────────────────────────────────────────────
+const VERIFIED_CREATORS = new Set([
+  '@tokcast', '@founders', '@engineering', '@productteam',
+  '@fitwithjess', '@techbrosam', '@kitchenlabs', '@gamervault',
+  '@keynoteking', '@aifuturist', '@productivityhacks', '@chefmike',
+]);
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 interface Transcript {
   id: number;
@@ -48,6 +55,9 @@ interface Transcript {
   source: string;
   views: string;
   platform?: string;
+  avatar?: string;
+  status?: 'complete' | 'failed' | 'processing';
+  url?: string;
 }
 
 interface VideoItem {
@@ -59,6 +69,9 @@ interface VideoItem {
   source?: string;
   views?: string;
   platform?: string;
+  avatar?: string;
+  status?: 'complete' | 'failed' | 'processing';
+  url?: string;
 }
 
 interface GroupItem {
@@ -71,26 +84,26 @@ interface GroupItem {
 
 
 const SINGLES: Transcript[] = [
-  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M', platform: 'YouTube' },
-  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K', platform: 'TikTok' },
-  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K', platform: 'Instagram' },
-  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M', platform: 'YouTube' },
-  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K', platform: 'TikTok' },
-  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M', platform: 'YouTube' },
-  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M', platform: 'YouTube' },
-  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',    date: 'Feb 17', words: 9150, thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80', source: '@strategy',   views: '445K', platform: 'Instagram' },
-  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M', platform: 'TikTok' },
-  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K', platform: 'YouTube' },
-  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M', platform: 'Instagram' },
-  { id: 12, title: 'All-Hands February',             duration: '1:48',    date: 'Feb 13', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80', source: '@company',    views: '912K', platform: 'YouTube' },
-  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K', platform: 'TikTok' },
-  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M', platform: 'YouTube' },
-  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K', platform: 'Instagram' },
-  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9',  words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K', platform: 'YouTube' },
-  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8',  words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M', platform: 'TikTok' },
-  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7',  words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K', platform: 'Instagram' },
-  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',    date: 'Feb 6', words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80', source: '@demos',      views: '1.8M', platform: 'YouTube' },
-  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5',  words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K', platform: 'TikTok' },
+  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=productteam' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
+  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=research' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
+  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=teamlead' , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
+  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
+  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=designops' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000005' },
+  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=sales' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
+  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tokcast' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0007' },
+  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',  date: 'Feb 17', words: 9150,  thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80',  source: '@strategy',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=strategy' , status: 'complete', url: 'https://www.instagram.com/reel/mock0008/' },
+  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=growth' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000009' },
+  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=cx' , status: 'processing', url: 'https://www.youtube.com/watch?v=mock0010' },
+  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=engineering' , status: 'failed', url: 'https://www.instagram.com/reel/mock0011/' },
+  { id: 12, title: 'All-Hands February',             duration: '1:48',  date: 'Feb 13', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80',  source: '@company',     views: '912K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=company' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0012' },
+  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=marketing' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000013' },
+  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=product' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0014' },
+  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=support' , status: 'processing', url: 'https://www.instagram.com/reel/mock0015/' },
+  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9',  words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=finance' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0016' },
+  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8',  words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=people' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000017' },
+  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7',  words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=brand' , status: 'processing', url: 'https://www.instagram.com/reel/mock0018/' },
+  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',  date: 'Feb 6',  words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80',  source: '@demos',       views: '1.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=demos' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0019' },
+  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5',  words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=ux' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000020' },
 ];
 
 const SNIPPETS: Record<number, string> = {
@@ -143,28 +156,28 @@ const COLLECTIONS: GroupItem[] = [
   {
     id: 101, name: 'Q1 Product Reviews', count: 4,
     videos: [
-      { id: 201, title: 'Jan product demo', duration: '1:03',  date: 'Jan 15, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@productteam', views: '1.2M', platform: 'YouTube' },
-      { id: 202, title: 'Feb deep-dive session', duration: '0:51',  date: 'Feb 3, 2026', thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@productteam', views: '678K', platform: 'TikTok' },
-      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@productteam', views: '341K', platform: 'YouTube' },
-      { id: 204, title: 'Feature comparison talk', duration: '0:37',  date: 'Feb 18, 2026', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@productteam', views: '892K', platform: 'Instagram' },
+      { id: 201, title: 'Jan product demo',        duration: '1:03', date: 'Jan 15, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@jasonlee',   views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=jasonlee' },
+      { id: 202, title: 'Feb deep-dive session',   duration: '0:51', date: 'Feb 3, 2026',  thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@sarahkim',   views: '678K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=sarahkim' },
+      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@mikepatel',  views: '341K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=mikepatel' },
+      { id: 204, title: 'Feature comparison talk', duration: '0:37', date: 'Feb 18, 2026', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@emilychan',  views: '892K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=emilychan' },
     ],
   },
   {
     id: 102, name: 'User Research Series', count: 3,
     videos: [
-      { id: 205, title: 'Interview – Alex M.', duration: '1:45',  date: 'Feb 5, 2026', thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@research', views: '2.1M', platform: 'TikTok' },
-      { id: 206, title: 'Interview – Priya S.', duration: '1:17',  date: 'Feb 7, 2026', thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@research', views: '445K', platform: 'Instagram' },
-      { id: 207, title: 'Focus group session', duration: '0:43',  date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@research', views: '987K', platform: 'YouTube' },
+      { id: 205, title: 'Interview – Alex M.',  duration: '1:45', date: 'Feb 5, 2026',  thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@alexmorgan',   views: '2.1M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=alexmorgan' },
+      { id: 206, title: 'Interview – Priya S.', duration: '1:17', date: 'Feb 7, 2026',  thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@priyasharma', views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=priyasharma' },
+      { id: 207, title: 'Focus group session',  duration: '0:43', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@davidsoto',   views: '987K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=davidsoto' },
     ],
   },
   {
     id: 103, name: 'Marketing Campaigns', count: 5,
     videos: [
-      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@marketing', views: '3.2M', platform: 'Instagram' },
-      { id: 209, title: 'Ad script review', duration: '1:06', date: 'Feb 1, 2026', thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@marketing', views: '512K', platform: 'YouTube' },
-      { id: 210, title: 'Influencer briefing', duration: '1:38',  date: 'Feb 8, 2026', thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@marketing', views: '1.9M', platform: 'TikTok' },
-      { id: 211, title: 'Launch event recap', duration: '0:52',  date: 'Feb 14, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@marketing', views: '732K', platform: 'YouTube' },
-      { id: 212, title: 'Post-launch debrief', duration: '1:23',  date: 'Feb 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@marketing', views: '289K', platform: 'TikTok' },
+      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@ninawoods',  views: '3.2M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ninawoods' },
+      { id: 209, title: 'Ad script review',         duration: '1:06', date: 'Feb 1, 2026',  thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@tombrady',   views: '512K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tombrady' },
+      { id: 210, title: 'Influencer briefing',      duration: '1:38', date: 'Feb 8, 2026',  thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@lucyzhang',  views: '1.9M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=lucyzhang' },
+      { id: 211, title: 'Launch event recap',       duration: '0:52', date: 'Feb 14, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@carlosrey',  views: '732K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=carlosrey' },
+      { id: 212, title: 'Post-launch debrief',      duration: '1:23', date: 'Feb 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@amandafox',  views: '289K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=amandafox' },
     ],
   },
 ];
@@ -173,20 +186,20 @@ const BULK: GroupItem[] = [
   {
     id: 301, name: 'Conference 2026 Batch', count: 6,
     videos: [
-      { id: 401, title: 'Opening keynote', duration: '1:56',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@conference', views: '1.7M', platform: 'YouTube' },
-      { id: 402, title: 'Panel: Future of AI', duration: '1:31',  date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@conference', views: '4.2M', platform: 'YouTube' },
-      { id: 403, title: 'Workshop – UX trends', duration: '0:46',    date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@conference', views: '891K', platform: 'YouTube' },
-      { id: 404, title: 'Startup pitch session', duration: '1:14',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@conference', views: '2.3M', platform: 'YouTube' },
-      { id: 405, title: 'Closing remarks', duration: '0:33',  date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@conference', views: '556K', platform: 'YouTube' },
-      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@conference', views: '1.1M', platform: 'YouTube' },
+      { id: 401, title: 'Opening keynote',         duration: '1:56', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@keynoteking',  views: '1.7M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=keynoteking' },
+      { id: 402, title: 'Panel: Future of AI',     duration: '1:31', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@aifuturist',   views: '4.2M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=aifuturist' },
+      { id: 403, title: 'Workshop – UX trends',    duration: '0:46', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@uxtrends',     views: '891K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=uxtrends' },
+      { id: 404, title: 'Startup pitch session',   duration: '1:14', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@startuplife',  views: '2.3M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=startuplife' },
+      { id: 405, title: 'Closing remarks',         duration: '0:33', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@closingnotes', views: '556K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=closingnotes' },
+      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@networkpro',   views: '1.1M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=networkpro' },
     ],
   },
   {
     id: 302, name: 'Onboarding Videos', count: 3,
     videos: [
-      { id: 407, title: 'Welcome & orientation', duration: '0:57',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@onboarding', views: '445K', platform: 'Instagram' },
-      { id: 408, title: 'Platform walkthrough', duration: '1:22',  date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@onboarding', views: '338K', platform: 'Instagram' },
-      { id: 409, title: 'Team intro session', duration: '0:41',  date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@onboarding', views: '201K', platform: 'Instagram' },
+      { id: 407, title: 'Welcome & orientation', duration: '0:57', date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@hrteam',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=hrteam' },
+      { id: 408, title: 'Platform walkthrough',  duration: '1:22', date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@devops101', views: '338K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=devops101' },
+      { id: 409, title: 'Team intro session',    duration: '0:41', date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@ceofounder', views: '201K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ceofounder' },
     ],
   },
 ];
@@ -234,27 +247,27 @@ const FOLDERS: GroupItem[] = [
 // Extra videos belonging to saved profiles (beyond SINGLES)
 const PROFILE_EXTRAS: Transcript[] = [
   // @productteam
-  { id: 701, title: 'Sprint retrospective Q1',  duration: '0:42', date: 'Feb 16', words: 2890, thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',  source: '@productteam', views: '872K' },
-  { id: 702, title: 'Design system rollout',    duration: '1:02', date: 'Feb 10', words: 3540, thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80',  source: '@productteam', views: '1.4M' },
+  { id: 701, title: 'Sprint retrospective Q1',  duration: '0:42', date: 'Feb 16', words: 2890, thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',  source: '@productteam', views: '872K', avatar: 'https://i.pravatar.cc/80?u=productteam' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX701' },
+  { id: 702, title: 'Design system rollout',    duration: '1:02', date: 'Feb 10', words: 3540, thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80',  source: '@productteam', views: '1.4M', avatar: 'https://i.pravatar.cc/80?u=productteam' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX702' },
   // @founders
-  { id: 703, title: 'Series A announcement',    duration: '0:36', date: 'Feb 19', words: 1980, thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@founders',    views: '4.8M' },
-  { id: 704, title: 'Team culture deep-dive',   duration: '1:18', date: 'Feb 14', words: 6220, thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80',  source: '@founders',    views: '2.1M' },
-  { id: 705, title: 'Vision for 2026',          duration: '0:54', date: 'Feb 9',  words: 4410, thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80',  source: '@founders',    views: '3.7M' },
+  { id: 703, title: 'Series A announcement',    duration: '0:36', date: 'Feb 19', words: 1980, thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@founders',    views: '4.8M', avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'failed', url: 'https://www.youtube.com/watch?v=mockX703' },
+  { id: 704, title: 'Team culture deep-dive',   duration: '1:18', date: 'Feb 14', words: 6220, thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80',  source: '@founders',    views: '2.1M', avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX704' },
+  { id: 705, title: 'Vision for 2026',          duration: '0:54', date: 'Feb 9',  words: 4410, thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80',  source: '@founders',    views: '3.7M', avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX705' },
   // @tokcast
-  { id: 706, title: 'Podcast Episode 13',       duration: '1:22', date: 'Feb 15', words: 7120, thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '1.9M' },
-  { id: 707, title: 'Tokcast Live AMA – Feb',   duration: '0:48', date: 'Feb 11', words: 5340, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80',  source: '@tokcast',     views: '1.1M' },
+  { id: 706, title: 'Podcast Episode 13',       duration: '1:22', date: 'Feb 15', words: 7120, thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '1.9M', avatar: 'https://i.pravatar.cc/80?u=tokcast' , status: 'processing', url: 'https://www.youtube.com/watch?v=mockX706' },
+  { id: 707, title: 'Tokcast Live AMA – Feb',   duration: '0:48', date: 'Feb 11', words: 5340, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80',  source: '@tokcast',     views: '1.1M', avatar: 'https://i.pravatar.cc/80?u=tokcast' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX707' },
   // @research
-  { id: 708, title: 'Synthetic data study',     duration: '1:09', date: 'Feb 18', words: 4820, thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80',  source: '@research',    views: '643K' },
-  { id: 709, title: 'Usability findings Q1',    duration: '0:55', date: 'Feb 13', words: 3670, thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80',  source: '@research',    views: '478K' },
+  { id: 708, title: 'Synthetic data study',     duration: '1:09', date: 'Feb 18', words: 4820, thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80',  source: '@research',    views: '643K', avatar: 'https://i.pravatar.cc/80?u=research' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX708' },
+  { id: 709, title: 'Usability findings Q1',    duration: '0:55', date: 'Feb 13', words: 3670, thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80',  source: '@research',    views: '478K', avatar: 'https://i.pravatar.cc/80?u=research' , status: 'failed', url: 'https://www.youtube.com/watch?v=mockX709' },
   // @marketing
-  { id: 710, title: 'Campaign results – Jan',   duration: '0:31', date: 'Feb 20', words: 1890, thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80',  source: '@marketing',   views: '612K' },
-  { id: 711, title: 'Content strategy 2026',    duration: '1:16', date: 'Feb 15', words: 5030, thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80',  source: '@marketing',   views: '1.7M' },
+  { id: 710, title: 'Campaign results – Jan',   duration: '0:31', date: 'Feb 20', words: 1890, thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80',  source: '@marketing',   views: '612K', avatar: 'https://i.pravatar.cc/80?u=marketing' , status: 'processing', url: 'https://www.youtube.com/watch?v=mockX710' },
+  { id: 711, title: 'Content strategy 2026',    duration: '1:16', date: 'Feb 15', words: 5030, thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80',  source: '@marketing',   views: '1.7M', avatar: 'https://i.pravatar.cc/80?u=marketing' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX711' },
   // @engineering
-  { id: 712, title: 'Infra migration update',   duration: '1:04', date: 'Feb 13', words: 6740, thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80',  source: '@engineering', views: '1.8M' },
-  { id: 713, title: 'Code review guidelines',   duration: '0:38', date: 'Feb 8',  words: 3160, thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '921K' },
+  { id: 712, title: 'Infra migration update',   duration: '1:04', date: 'Feb 13', words: 6740, thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80',  source: '@engineering', views: '1.8M', avatar: 'https://i.pravatar.cc/80?u=engineering' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX712' },
+  { id: 713, title: 'Code review guidelines',   duration: '0:38', date: 'Feb 8',  words: 3160, thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '921K', avatar: 'https://i.pravatar.cc/80?u=engineering' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX713' },
   // @growth
-  { id: 714, title: 'Q1 growth metrics',        duration: '0:57', date: 'Feb 17', words: 7840, thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '2.3M' },
-  { id: 715, title: 'Acquisition channel mix',  duration: '1:11', date: 'Feb 12', words: 9120, thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@growth',      views: '1.5M' },
+  { id: 714, title: 'Q1 growth metrics',        duration: '0:57', date: 'Feb 17', words: 7840, thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '2.3M', avatar: 'https://i.pravatar.cc/80?u=growth' , status: 'processing', url: 'https://www.youtube.com/watch?v=mockX714' },
+  { id: 715, title: 'Acquisition channel mix',  duration: '1:11', date: 'Feb 12', words: 9120, thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@growth',      views: '1.5M', avatar: 'https://i.pravatar.cc/80?u=growth' , status: 'complete', url: 'https://www.youtube.com/watch?v=mockX715' },
 ];
 
 const S = (id: number) => SINGLES.find(s => s.id === id)!;
@@ -462,13 +475,6 @@ function FolderStatCards({ items, isDark, border, text, muted }: {
 }
 
 // ─── Discover Strip ───────────────────────────────────────────────────────────
-const DISCOVER_PLATFORM_META: Record<string, { color: string; bg: string }> = {
-  TikTok:      { color: '#ffffff', bg: '#010101' },
-  Instagram:   { color: '#ffffff', bg: '#e1306c' },
-  YouTube:     { color: '#ffffff', bg: '#ff0000' },
-  'Twitter/X': { color: '#ffffff', bg: '#14171a' },
-  LinkedIn:    { color: '#ffffff', bg: '#0a66c2' },
-};
 
 function PlatformIconSVG({ platform }: { platform: string }) {
   if (platform === 'YouTube') return (
@@ -488,45 +494,20 @@ function PlatformIconSVG({ platform }: { platform: string }) {
       <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
     </svg>
   );
-  if (platform === 'LinkedIn') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z" />
-      <circle cx="4" cy="4" r="2" />
-    </svg>
-  );
-  if (platform === 'Twitter/X') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L2.252 2.25H8.08l4.226 5.593 5.938-5.593z" />
-    </svg>
-  );
   return null;
 }
 
 function VideoPlatformBadge({ platform, isDark }: { platform?: string; isDark: boolean }) {
   if (!platform) return null;
-  const meta = DISCOVER_PLATFORM_META[platform] ?? { color: '#fff', bg: '#6b7280' };
-  if (isDark) {
-    return (
-      <span
-        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]"
-        style={{
-          background: 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(255,255,255,0.13)',
-          color: '#ffffff',
-          fontWeight: 600,
-          backdropFilter: 'blur(6px)',
-          WebkitBackdropFilter: 'blur(6px)',
-        }}
-      >
-        <PlatformIconSVG platform={platform} />
-        {platform}
-      </span>
-    );
-  }
   return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
-      style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}
+      style={{
+        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
+        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        fontWeight: 500,
+      }}
     >
       <PlatformIconSVG platform={platform} />
       {platform}
@@ -537,15 +518,15 @@ function VideoPlatformBadge({ platform, isDark }: { platform?: string; isDark: b
 interface DiscoverEntry {
   id: number; title: string; creator: string; platform: string;
   duration: string; date: string; thumbnail: string; snippet: string;
+  avatar: string;
 }
 
 const DISCOVER_ENTRIES: DiscoverEntry[] = [
-  { id: 1,  platform: 'YouTube',   duration: '0:58', date: 'Feb 24, 2026', title: 'Product launch keynote',    creator: '@productteam',  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  snippet: "Welcome everyone to our biggest launch of the year. Today we're unveiling features that will fundamentally change how you think about productivity..." },
-  { id: 2,  platform: 'TikTok',    duration: '1:44', date: 'Feb 23, 2026', title: 'User interview – Sarah K.',  creator: '@research',     thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  snippet: "So what I found really interesting in my workflow was the amount of time I was spending just trying to organise all the notes from these sessions..." },
-  { id: 3,  platform: 'Instagram', duration: '0:32', date: 'Feb 22, 2026', title: 'Weekly standup recap',        creator: '@teamlead',     thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  snippet: "Team, quick recap from today: we're blocking Wednesday morning for deep work, shipping is on track, and the design review is Friday at 2pm..." },
-  { id: 4,  platform: 'YouTube',   duration: '1:51', date: 'Feb 21, 2026', title: 'Investor Q&A session',        creator: '@founders',     thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  snippet: "The question everyone keeps asking is how we plan to monetise at scale. The short answer is that we're not chasing revenue first — we're chasing retention..." },
-  { id: 6,  platform: 'YouTube',   duration: '1:33', date: 'Feb 18, 2026', title: 'Podcast Episode 12',          creator: '@tokcast',      thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  snippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." },
-  { id: 8,  platform: 'LinkedIn',  duration: '0:47', date: 'Feb 19, 2026', title: 'Sales call – Acme Corp',      creator: '@sales',        thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  snippet: "We've been tracking the exact moment customers decide to churn and the pattern is surprisingly consistent — it happens in the first 14 days of onboarding..." },
+  { id: 1,  platform: 'YouTube',   duration: '0:58', date: 'Feb 24, 2026', title: 'Product launch keynote',    creator: '@productteam',  avatar: 'https://i.pravatar.cc/80?u=productteam',  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  snippet: "Welcome everyone to our biggest launch of the year. Today we're unveiling features that will fundamentally change how you think about productivity..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
+  { id: 2,  platform: 'TikTok',    duration: '1:44', date: 'Feb 23, 2026', title: 'User interview – Sarah K.',  creator: '@research',     avatar: 'https://i.pravatar.cc/80?u=research',     thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  snippet: "So what I found really interesting in my workflow was the amount of time I was spending just trying to organise all the notes from these sessions..." , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
+  { id: 3,  platform: 'Instagram', duration: '0:32', date: 'Feb 22, 2026', title: 'Weekly standup recap',        creator: '@teamlead',     avatar: 'https://i.pravatar.cc/80?u=teamlead',     thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  snippet: "Team, quick recap from today: we're blocking Wednesday morning for deep work, shipping is on track, and the design review is Friday at 2pm..." , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
+  { id: 4,  platform: 'YouTube',   duration: '1:51', date: 'Feb 21, 2026', title: 'Investor Q&A session',        creator: '@founders',     avatar: 'https://i.pravatar.cc/80?u=founders',     thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  snippet: "The question everyone keeps asking is how we plan to monetise at scale. The short answer is that we're not chasing revenue first — we're chasing retention..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
+  { id: 6,  platform: 'YouTube',   duration: '1:33', date: 'Feb 18, 2026', title: 'Podcast Episode 12',          creator: '@tokcast',      avatar: 'https://i.pravatar.cc/80?u=tokcast',      thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  snippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
 ];
 
 function DiscoverCard({
@@ -557,8 +538,6 @@ function DiscoverCard({
   const [copied, setCopied]         = React.useState(false);
   const [favourited, setFavourited] = React.useState(false);
   const [showMenu, setShowMenu]     = React.useState(false);
-  const meta = DISCOVER_PLATFORM_META[entry.platform] ?? { color: '#fff', bg: '#6b7280' };
-
   return (
     <div
       className="flex-shrink-0 rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
@@ -575,43 +554,7 @@ function DiscoverCard({
           <Play className="w-5 h-5 text-white fill-white opacity-80" />
         </div>
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-          {isDark ? (
-            <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px]"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.13)', color: '#ffffff', fontWeight: 600, backdropFilter: 'blur(6px)' }}
-            >
-              {entry.platform === 'YouTube' && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                  <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
-                </svg>
-              )}
-              {entry.platform === 'TikTok' && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                  <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
-                </svg>
-              )}
-              {entry.platform === 'Instagram' && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
-                  <rect x="2" y="2" width="20" height="20" rx="5" />
-                  <circle cx="12" cy="12" r="5" />
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-                </svg>
-              )}
-              {entry.platform === 'LinkedIn' && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
-                  <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.35-1.85 3.58 0 4.25 2.36 4.25 5.43v6.31zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z" />
-                </svg>
-              )}
-              {entry.platform}
-            </span>
-          ) : (
-            <span
-              className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px]"
-              style={{ background: meta.bg, color: meta.color, fontWeight: 600 }}
-            >
-              {entry.platform}
-            </span>
-          )}
+          <VideoPlatformBadge platform={entry.platform} isDark={isDark} />
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>
             {formatDuration(entry.duration)}
           </span>
@@ -620,7 +563,20 @@ function DiscoverCard({
 
       {/* Content */}
       <div className="p-3 flex flex-col gap-1.5 flex-1">
-        <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+        <div className="flex items-center gap-1.5">
+          <div className="relative flex-shrink-0">
+            <img src={entry.avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+            {VERIFIED_CREATORS.has(entry.creator) && (
+              <span className="absolute flex items-center justify-center rounded-full"
+                style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                </svg>
+              </span>
+            )}
+          </div>
+          <span className="text-[10px]" style={{ color: muted }}>{entry.creator}</span>
+        </div>
         <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{entry.title}</p>
         <p
           className="text-[10px]"
@@ -1428,17 +1384,18 @@ export function DashboardPage() {
   // Unified filter bar state — multi-select
   const [singlesActiveDurations, setSinglesActiveDurations] = useState<string[]>([]);
   const [singlesActiveWords, setSinglesActiveWords] = useState<string[]>([]);
-  const [singlesActivePlatforms, setSinglesActivePlatforms] = useState<string[]>([]);
+  const [singlesActivePlatform, setSinglesActivePlatform] = useState('All');
   const [singlesActiveDateRanges, setSinglesActiveDateRanges] = useState<string[]>([]);
   const [openSinglesDropdown, setOpenSinglesDropdown] = useState<string | null>(null);
   const [collectionSearchQuery, setCollectionSearchQuery] = useState('');
   const [openColDropdown, setOpenColDropdown] = useState<string | null>(null);
   const [colSortBy, setColSortBy] = useState('date-desc');
   const [colActiveDateRanges, setColActiveDateRanges] = useState<string[]>([]);
-  const [colActivePlatforms, setColActivePlatforms] = useState<string[]>([]);
+  const [colActivePlatform, setColActivePlatform] = useState('All');
   const [groupActiveDurations, setGroupActiveDurations] = useState<string[]>([]);
   const [groupActiveWords, setGroupActiveWords] = useState<string[]>([]);
   const [groupActiveDateRanges, setGroupActiveDateRanges] = useState<string[]>([]);
+  const [groupActivePlatform, setGroupActivePlatform] = useState('All');
   const [singlesSelectedIds, setSinglesSelectedIds] = useState<Set<number>>(new Set());
   const [groupSelectedIds, setGroupSelectedIds] = useState<Set<number>>(new Set());
 
@@ -1579,7 +1536,8 @@ export function DashboardPage() {
           (singlesActiveWords.includes('5K+')   && t.words > 5000)
         );
         const matchSrc = filterSources.length === 0 || filterSources.includes(t.source);
-        return matchQ && matchD && matchW && matchSrc;
+        const matchP = singlesActivePlatform === 'All' || singlesActivePlatform === t.platform;
+        return matchQ && matchD && matchW && matchSrc && matchP;
       });
       results = [...results].sort((a, b) => {
         switch (sortBy) {
@@ -1601,6 +1559,9 @@ export function DashboardPage() {
       if (collectionSearchQuery) {
         const cq = collectionSearchQuery.toLowerCase();
         vids = vids.filter(v => v.title.toLowerCase().includes(cq) || (v.source ?? '').toLowerCase().includes(cq));
+      }
+      if (groupActivePlatform !== 'All') {
+        vids = vids.filter(v => (v.platform ?? '') === groupActivePlatform);
       }
       vids = vids.sort((a, b) => {
         switch (colSortBy) {
@@ -1624,8 +1585,8 @@ export function DashboardPage() {
       const cq = collectionSearchQuery.toLowerCase();
       groups = groups.filter(g => g.name.toLowerCase().includes(cq));
     }
-    if (colActivePlatforms.length > 0) {
-      groups = groups.filter(g => g.videos.some(v => colActivePlatforms.includes(v.platform ?? '')));
+    if (colActivePlatform !== 'All') {
+      groups = groups.filter(g => g.videos.some(v => (v.platform ?? '') === colActivePlatform));
     }
     if (colSortBy === 'title-asc') groups.sort((a, b) => a.name.localeCompare(b.name));
     else if (colSortBy === 'title-desc') groups.sort((a, b) => b.name.localeCompare(a.name));
@@ -1732,41 +1693,34 @@ export function DashboardPage() {
 
             <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
 
-            {/* Platform multi-select */}
-            <div className="relative flex-shrink-0">
-              <button
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                style={{
-                  background: singlesActivePlatforms.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                  color: singlesActivePlatforms.length > 0 ? '#00b8b2' : muted,
-                  border: `1px solid ${singlesActivePlatforms.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
-                  fontWeight: singlesActivePlatforms.length > 0 ? 500 : 400,
-                }}
-                onClick={() => setOpenSinglesDropdown(openSinglesDropdown === 'platform' ? null : 'platform')}
-              >
-                {singlesActivePlatforms.length === 0 ? 'Platform' : singlesActivePlatforms.length === 1 ? singlesActivePlatforms[0] : `${singlesActivePlatforms.length} platforms`}
-                <ChevronDown className={`w-3 h-3 transition-transform ${openSinglesDropdown === 'platform' ? 'rotate-180' : ''}`} />
-              </button>
-              {openSinglesDropdown === 'platform' && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setOpenSinglesDropdown(null)} />
-                  <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 148 }}>
-                    {['TikTok', 'Instagram', 'YouTube', 'LinkedIn', 'Twitter/X'].map(opt => {
-                      const sel = singlesActivePlatforms.includes(opt);
-                      return (
-                        <button key={opt}
-                          onClick={e => { e.stopPropagation(); setSinglesActivePlatforms(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
-                          className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
-                          style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
-                          onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-                          onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                        >{opt}{sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}</button>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
+            {/* Platform tabs */}
+            {(['All', 'TikTok', 'Instagram', 'YouTube'] as const).map(tab => {
+              const isActive = singlesActivePlatform === tab;
+              const tabIcons: Record<string, JSX.Element | null> = {
+                All: null,
+                TikTok: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" /></svg>,
+                Instagram: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>,
+                YouTube: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>,
+              };
+              return (
+                <button key={tab}
+                  onClick={() => setSinglesActivePlatform(tab)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] flex-shrink-0 transition-all"
+                  style={{
+                    background: isActive ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)') : 'transparent',
+                    color: isActive ? text : muted,
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  {tabIcons[tab]}
+                  {tab}
+                </button>
+              );
+            })}
+
+            <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+
+            <div className="flex-1" />
 
             {/* Duration multi-select */}
             <div className="relative flex-shrink-0">
@@ -1943,18 +1897,15 @@ export function DashboardPage() {
             </div>
 
             {/* Clear all */}
-            {(filterSources.length > 0 || singlesActivePlatforms.length > 0 || singlesActiveDateRanges.length > 0 || singlesActiveDurations.length > 0 || singlesActiveWords.length > 0 || sortBy !== 'date-desc' || searchQuery) && (
+            {(filterSources.length > 0 || singlesActivePlatform !== 'All' || singlesActiveDateRanges.length > 0 || singlesActiveDurations.length > 0 || singlesActiveWords.length > 0 || sortBy !== 'date-desc' || searchQuery) && (
               <>
                 <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
                 <button className="flex items-center gap-1 text-xs hover:opacity-70 flex-shrink-0" style={{ color: '#00b8b2', fontWeight: 500 }}
-                  onClick={() => { setFilterSources([]); setSinglesActivePlatforms([]); setSinglesActiveDateRanges([]); setSinglesActiveDurations([]); setSinglesActiveWords([]); setSortBy('date-desc'); setSearchQuery(''); }}>
+                  onClick={() => { setFilterSources([]); setSinglesActivePlatform('All'); setSinglesActiveDateRanges([]); setSinglesActiveDurations([]); setSinglesActiveWords([]); setSortBy('date-desc'); setSearchQuery(''); }}>
                   <X className="w-3 h-3" /> Clear
                 </button>
               </>
             )}
-
-
-            <div className="flex-1" />
 
             {/* View toggle */}
             <div className="flex items-center p-0.5 rounded-lg flex-shrink-0"
@@ -1981,7 +1932,8 @@ export function DashboardPage() {
           {/* Content */}
           {singlesViewMode === 'hybrid' ? (
             /* ── Hybrid: left compact list + right detail panel ── */
-            <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-hidden">
+            <div className="flex max-w-[1280px] mx-auto w-full h-full min-h-0 overflow-hidden px-6 py-5">
               {/* Left: compact scrollable list */}
               <div className="flex-shrink-0 flex flex-col" style={{ width: 240, borderRight: `1px solid ${border}` }}>
                 <div
@@ -2013,7 +1965,22 @@ export function DashboardPage() {
                               className="text-[11px] leading-snug"
                               style={{ color: text, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', display: 'block' }}
                             >{item.title}</p>
-                            <p className="text-[10px] truncate" style={{ color: muted }}>{(item as Transcript).source}</p>
+                            <div className="flex items-center gap-1">
+                              {(item as Transcript).avatar && (
+                                <div className="relative flex-shrink-0">
+                                  <img src={(item as Transcript).avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                  {VERIFIED_CREATORS.has((item as Transcript).source) && (
+                                    <span className="absolute flex items-center justify-center rounded-full"
+                                      style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                      <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                                        <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                      </svg>
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                              <p className="text-[10px] truncate" style={{ color: muted }}>{(item as Transcript).source}</p>
+                            </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
                               <span className="text-[9px]" style={{ color: muted }}>{item.date}</span>
@@ -2067,6 +2034,7 @@ export function DashboardPage() {
                 )}
               </div>
             </div>
+            </div>
           ) : (
           <div className="flex-1 overflow-y-auto">
           <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
@@ -2077,6 +2045,11 @@ export function DashboardPage() {
                 isDark={isDark}
                 accentColor="#00b8b2"
                 onDeselect={() => { setSinglesSelectedIds(new Set()); }}
+                onSelectPage={() => {
+                  const allIds = new Set(items.map((t: any) => t.id));
+                  setSinglesSelectedIds(allIds);
+                }}
+                totalPageCount={items.length}
                 onDownloadVideos={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-videos'); }}
                 onDownloadCovers={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-covers'); }}
                 onDownloadTranscripts={() => { simulateZipDownload(Array.from(singlesSelectedIds).map(String), 'selected-transcripts'); }}
@@ -2091,38 +2064,149 @@ export function DashboardPage() {
                 <button className="text-xs" style={{ color: '#00b8b2' }} onClick={() => { setSearchQuery(''); setFilterSources([]); setSinglesActiveDurations([]); setSinglesActiveWords([]); }}>Clear filters</button>
               </div>
             ) : singlesViewMode === 'list' ? (
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col" style={{ borderRadius: 12, border: `1px solid ${border}`, overflow: 'hidden' }}>
+                {/* Table header */}
+                <div className="flex items-center px-4 py-2 text-[10px] uppercase tracking-wider flex-shrink-0" style={{ color: muted, borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                  <div style={{ width: 48 }} className="mr-3 flex-shrink-0" />
+                  <div style={{ width: 220 }} className="flex-shrink-0">Content</div>
+                  <div className="flex-1 min-w-0">Transcript</div>
+                  <div style={{ width: 80 }} className="text-right mr-4 flex-shrink-0">Date</div>
+                  <div style={{ width: 60 }} className="text-center mr-4 flex-shrink-0">Duration</div>
+                  <div style={{ width: 80 }} className="text-center mr-2 flex-shrink-0">Status</div>
+                  <div style={{ width: 32 }} className="flex-shrink-0" />
+                </div>
                 {(items as Transcript[]).map((item) => {
+                  const itemStatus: string = (item as Transcript & { status?: string }).status || 'complete';
+                  const statusColors = {
+                    complete:      { bg: isDark ? 'rgba(34,197,94,0.12)'  : 'rgba(34,197,94,0.10)',  color: isDark ? '#4ade80' : '#16a34a' },
+                    failed:        { bg: isDark ? 'rgba(239,68,68,0.12)'  : 'rgba(239,68,68,0.10)',  color: isDark ? '#f87171' : '#dc2626' },
+                    'in-progress': { bg: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.10)', color: isDark ? '#fbbf24' : '#d97706' },
+                  };
+                  const sc = statusColors[itemStatus as keyof typeof statusColors] ?? statusColors.complete;
+                  const statusLabel = itemStatus === 'in-progress' ? 'In Progress' : itemStatus.charAt(0).toUpperCase() + itemStatus.slice(1);
+                  const snippet = SNIPPETS[item.id] ?? '';
                   return (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 px-4 py-3 rounded-2xl cursor-pointer transition-colors relative overflow-hidden"
-                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                    className="flex items-center px-4 cursor-pointer transition-colors relative"
+                    style={{ borderBottom: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff', minHeight: 52 }}
                     onClick={() => setSinglesSlideId(item.id)}
                     onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
                   >
-                    <div className="w-12 aspect-[9/16] rounded-xl overflow-hidden flex-shrink-0 relative">
+                    {/* Thumbnail */}
+                    <div className="w-12 aspect-[9/16] rounded-lg overflow-hidden flex-shrink-0 relative mr-3" style={{ minHeight: 40 }}>
                       <ImageWithFallback src={(item as Transcript).thumbnail ?? ''} alt={item.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
-                        <Play className="w-4 h-4 text-white fill-white" />
+                        <Play className="w-3 h-3 text-white fill-white" />
                       </div>
-                      <span className="absolute bottom-1 right-1 text-[9px] px-1 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.7)', color: '#fff' }}>{formatDuration(item.duration)}</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[11px]" style={{ color: muted }}>{(item as Transcript).source}</span>
+                    {/* Content */}
+                    <div style={{ width: 220 }} className="flex-shrink-0 py-2.5 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        {(item as Transcript).avatar && (
+                          <div className="relative flex-shrink-0">
+                            <img src={(item as Transcript).avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                            {VERIFIED_CREATORS.has((item as Transcript).source) && (
+                              <span className="absolute flex items-center justify-center rounded-full"
+                                style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                </svg>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <span className="text-[10px] truncate" style={{ color: muted }}>{(item as Transcript).source}</span>
                       </div>
-                      <p className="truncate text-sm mb-1" style={{ color: text, fontWeight: 500 }}>{item.title}</p>
-                      <p className="text-xs" style={{ color: muted }}>{(item as Transcript).words.toLocaleString()} words</p>
+                      <p className="truncate text-[12px]" style={{ color: text, fontWeight: 500 }}>{item.title}</p>
                     </div>
-                    <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
-                      <div className="flex items-center gap-1" style={{ color: muted }}>
-                        <Calendar className="w-3 h-3" />
-                        <span className="text-[11px]">{item.date}</span>
-                      </div>
-                      <span className="text-[11px]" style={{ color: muted }}>{(item as Transcript).views} views</span>
+                    {/* Transcript snippet */}
+                    <div className="flex-1 min-w-0 py-2.5 mr-4">
+                      {itemStatus === 'failed' ? (
+                        <span className="text-[11px]" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Failed to process</span>
+                      ) : (
+                        <p className="text-[11px] leading-relaxed" style={{ color: muted, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
+                          {snippet || '—'}
+                        </p>
+                      )}
                     </div>
+                    {/* Date */}
+                    <div style={{ width: 80 }} className="flex-shrink-0 text-right mr-4 py-2.5">
+                      <p className="text-[11px]" style={{ color: text }}>{item.date}</p>
+                    </div>
+                    {/* Duration */}
+                    <div style={{ width: 60 }} className="flex-shrink-0 text-center mr-4 py-2.5">
+                      <span className="text-[11px]" style={{ color: muted }}>{formatDuration(item.duration)}</span>
+                    </div>
+                    {/* Status pill */}
+                    <div style={{ width: 80 }} className="flex-shrink-0 text-center mr-2 py-2.5">
+                      <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-medium"
+                        style={{ background: sc.bg, color: sc.color }}>
+                        {statusLabel}
+                      </span>
+                    </div>
+                    {/* Three-dot menu */}
+                    <div style={{ width: 32 }} className="flex-shrink-0 flex items-center justify-center py-2.5">
+                      <button
+                        className="p-1 rounded-lg transition-colors"
+                        style={{ color: openMenuId === item.id ? text : muted, background: openMenuId === item.id ? (isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb') : 'transparent' }}
+                        onClick={e => {
+                          e.stopPropagation();
+                          if (openMenuId === item.id) { setOpenMenuId(null); setMenuPos(null); setMoveSubMenuOpen(false); }
+                          else { const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect(); setOpenMenuId(item.id); setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right }); setMoveSubMenuOpen(false); }
+                        }}
+                        title="More options"
+                        onMouseEnter={ev => { if (openMenuId !== item.id) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                        onMouseLeave={ev => { if (openMenuId !== item.id) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                      >
+                        <MoreHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {/* Backdrop */}
+                    {openMenuId === item.id && (
+                      <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setOpenMenuId(null); setMenuPos(null); setMoveSubMenuOpen(false); }} />
+                    )}
+                    {/* Dropdown portal */}
+                    {openMenuId === item.id && menuPos && (() => {
+                      const isFav = favouritedIds.has(item.id);
+                      const slMenuItems: { icon: React.ReactNode; label: string; destructive?: boolean; separator?: boolean; keepOpen?: boolean; action: () => void }[] = [
+                        { icon: <Copy className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Copy Transcript', action: () => { const t = customTitles[item.id] || item.title; navigator.clipboard.writeText(`[Transcript: ${t}]\nDuration: ${formatDuration(item.duration)}\n\nSample transcript content for "${t}".`).then(() => showToast('Transcript copied to clipboard')).catch(() => showToast('Could not access clipboard')); } },
+                        { icon: <Download className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Download', action: () => { const t = customTitles[item.id] || item.title; const blob = new Blob([`[Transcript: ${t}]\nDuration: ${formatDuration(item.duration)}\n\nSample transcript content for "${t}".`], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${t.replace(/[^a-z0-9]/gi, '_')}.txt`; a.click(); URL.revokeObjectURL(url); showToast('Transcript downloaded'); } },
+                        { icon: <Link2 className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Share Link', action: () => { navigator.clipboard.writeText(`https://app.tokscript.com/results/${item.id}`).then(() => showToast('Share link copied to clipboard')).catch(() => showToast('Could not access clipboard')); } },
+                        { icon: <Heart className="w-3.5 h-3.5 flex-shrink-0" style={isFav ? { fill: 'currentColor' } : {}} />, label: isFav ? 'Remove from Favourites' : 'Favourite', action: () => { setFavouritedIds(prev => { const s = new Set(prev); s.has(item.id) ? s.delete(item.id) : s.add(item.id); return s; }); showToast(isFav ? 'Removed from Favourites' : 'Added to Favourites'); } },
+                        { icon: <FolderInput className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Move to Folder', keepOpen: true, action: () => { setMoveSubMenuOpen(true); } },
+                        { icon: <Pencil className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Edit Transcript', action: () => { setEditingItem({ id: item.id, title: customTitles[item.id] || item.title }); } },
+                        { icon: <RefreshCw className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Reprocess', action: () => { showToast('Reprocessing transcript…'); } },
+                        { icon: <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Delete', destructive: true, separator: true, action: () => { setDeletedIds(prev => new Set([...prev, item.id])); setSelectedTranscriptId(prev => prev === item.id ? null : prev); showToast('Transcript deleted'); } },
+                      ];
+                      return (
+                        <div key="singles-list-ctx" className="fixed z-50 rounded-xl shadow-xl py-1" style={{ background: isDark ? '#141414' : '#ffffff', border: `1px solid ${border}`, minWidth: 204, top: menuPos.top, right: menuPos.right }} onClick={e => e.stopPropagation()}>
+                          {moveSubMenuOpen ? (
+                            <>
+                              <button className="w-full flex items-center gap-2 px-3 py-2 text-xs" style={{ color: muted, background: 'transparent' }} onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = hoverBg)} onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')} onClick={e => { e.stopPropagation(); setMoveSubMenuOpen(false); }}>
+                                <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ transform: 'rotate(180deg)' }} /> Back
+                              </button>
+                              <div style={{ height: 1, background: border, margin: '2px 0' }} />
+                              <p className="px-3 pt-2 pb-1 text-[10px] uppercase" style={{ color: muted, letterSpacing: '0.08em' }}>Choose folder</p>
+                              {folders.map(f => (
+                                <button key={f.id} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left" style={{ color: text, background: 'transparent' }} onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = hoverBg)} onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')} onClick={e => { e.stopPropagation(); const title = customTitles[item.id] || item.title; setFolders(prev => prev.map(folder => folder.id === f.id ? { ...folder, count: folder.count + 1, videos: [...folder.videos, { id: item.id, title, duration: item.duration, date: (item as Transcript).date || '' }] } : folder)); showToast(`Moved to "${f.name}"`); setOpenMenuId(null); setMenuPos(null); setMoveSubMenuOpen(false); }}>
+                                  <Folder className="w-3.5 h-3.5 flex-shrink-0" style={{ color: muted }} />{f.name}
+                                </button>
+                              ))}
+                            </>
+                          ) : (
+                            slMenuItems.flatMap(opt => [
+                              opt.separator ? <div key={`sep-${opt.label}`} style={{ height: 1, background: border, margin: '4px 0' }} /> : null,
+                              <button key={opt.label} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left" style={{ color: opt.destructive ? '#d95656' : text, background: 'transparent' }} onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = hoverBg)} onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')} onClick={e => { e.stopPropagation(); opt.action(); if (!opt.keepOpen) { setOpenMenuId(null); setMenuPos(null); setMoveSubMenuOpen(false); } }}>
+                                {opt.icon}{opt.label}
+                                {opt.label === 'Move to Folder' && <ChevronRight className="w-3 h-3 ml-auto flex-shrink-0" style={{ color: muted }} />}
+                              </button>,
+                            ])
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                   );
                 })}
@@ -2217,7 +2301,22 @@ export function DashboardPage() {
                       </div>
                     </div>
                     <div className="p-3 flex flex-col gap-1.5 flex-1">
-                      <span className="text-[10px]" style={{ color: muted }}>{(item as Transcript).source}</span>
+                      <div className="flex items-center gap-1.5">
+                        {(item as Transcript).avatar && (
+                          <div className="relative flex-shrink-0">
+                            <img src={(item as Transcript).avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                            {VERIFIED_CREATORS.has((item as Transcript).source) && (
+                              <span className="absolute flex items-center justify-center rounded-full"
+                                style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                                  <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                </svg>
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <span className="text-[10px]" style={{ color: muted }}>{(item as Transcript).source}</span>
+                      </div>
                       <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{item.title}</p>
                       <p className="text-[10px]" style={{ color: muted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
                         {SNIPPETS[item.id] ?? ''}
@@ -2454,6 +2553,35 @@ export function DashboardPage() {
             {/* Duration, Words, Date — only inside a group */}
             {!isGroups && (
               <>
+                {/* Platform tabs — inside group detail */}
+                {(['All', 'TikTok', 'Instagram', 'YouTube'] as const).map(tab => {
+                  const isActive = groupActivePlatform === tab;
+                  const tabIcons: Record<string, JSX.Element | null> = {
+                    All: null,
+                    TikTok: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" /></svg>,
+                    Instagram: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>,
+                    YouTube: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>,
+                  };
+                  return (
+                    <button key={tab}
+                      onClick={() => setGroupActivePlatform(tab)}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] flex-shrink-0 transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)') : 'transparent',
+                        color: isActive ? text : muted,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      {tabIcons[tab]}
+                      {tab}
+                    </button>
+                  );
+                })}
+
+                <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+
+                <div className="flex-1" />
+
                 {/* Duration multi-select */}
                 <div className="relative flex-shrink-0">
                   <button
@@ -2563,49 +2691,34 @@ export function DashboardPage() {
               </>
             )}
 
-            {/* Platform chip — only on collections list */}
+            {/* Platform tabs — on collections list */}
             {isGroups && (
-              <div className="relative flex-shrink-0">
-                <button
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-all"
-                  style={{
-                    background: colActivePlatforms.length > 0 ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                    color: colActivePlatforms.length > 0 ? '#00b8b2' : muted,
-                    border: `1px solid ${colActivePlatforms.length > 0 ? 'rgba(0,184,178,0.25)' : border}`,
-                    fontWeight: colActivePlatforms.length > 0 ? 500 : 400,
-                  }}
-                  onClick={() => setOpenColDropdown(openColDropdown === 'platform' ? null : 'platform')}
-                >
-                  <Globe className="w-3 h-3" />
-                  {colActivePlatforms.length === 0 ? 'Platform' : colActivePlatforms.length === 1 ? colActivePlatforms[0] : `${colActivePlatforms.length} selected`}
-                  <ChevronDown className={`w-3 h-3 transition-transform ${openColDropdown === 'platform' ? 'rotate-180' : ''}`} />
-                </button>
-                {openColDropdown === 'platform' && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setOpenColDropdown(null)} />
-                    <div className="absolute left-0 top-full mt-1 rounded-xl shadow-xl z-50 py-1" style={{ background: isDark ? '#141414' : '#fff', border: `1px solid ${border}`, minWidth: 140 }}>
-                      {['TikTok', 'Instagram', 'YouTube'].map(opt => {
-                        const sel = colActivePlatforms.includes(opt);
-                        return (
-                          <button key={opt}
-                            onClick={e => { e.stopPropagation(); setColActivePlatforms(prev => sel ? prev.filter(v => v !== opt) : [...prev, opt]); }}
-                            className="w-full flex items-center justify-between px-3 py-2 text-xs transition-colors"
-                            style={{ color: sel ? '#00b8b2' : muted, background: sel ? (isDark ? 'rgba(0,184,178,0.08)' : 'rgba(0,184,178,0.05)') : 'transparent', fontWeight: sel ? 500 : 400 }}
-                            onMouseEnter={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-                            onMouseLeave={ev => { if (!sel) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                          >
-                            <span className="flex items-center gap-1.5">
-                              <PlatformIconSVG platform={opt} />
-                              {opt}
-                            </span>
-                            {sel && <CheckCheck className="w-3 h-3 flex-shrink-0" style={{ color: '#00b8b2' }} />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-              </div>
+              <>
+                {(['All', 'TikTok', 'Instagram', 'YouTube'] as const).map(tab => {
+                  const isActive = colActivePlatform === tab;
+                  const tabIcons: Record<string, JSX.Element | null> = {
+                    All: null,
+                    TikTok: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" /></svg>,
+                    Instagram: <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="2" width="20" height="20" rx="5" /><circle cx="12" cy="12" r="5" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>,
+                    YouTube: <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>,
+                  };
+                  return (
+                    <button key={tab}
+                      onClick={() => setColActivePlatform(tab)}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] flex-shrink-0 transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.07)') : 'transparent',
+                        color: isActive ? text : muted,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      {tabIcons[tab]}
+                      {tab}
+                    </button>
+                  );
+                })}
+                <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
+              </>
             )}
 
             {/* Sort */}
@@ -2640,11 +2753,11 @@ export function DashboardPage() {
               )}
             </div>
 
-            {(collectionSearchQuery || colSortBy !== 'date-desc' || colActiveDateRanges.length > 0 || colActivePlatforms.length > 0 || groupActiveDurations.length > 0 || groupActiveWords.length > 0 || groupActiveDateRanges.length > 0) && (
+            {(collectionSearchQuery || colSortBy !== 'date-desc' || colActiveDateRanges.length > 0 || colActivePlatform !== 'All' || groupActiveDurations.length > 0 || groupActiveWords.length > 0 || groupActiveDateRanges.length > 0 || groupActivePlatform !== 'All') && (
               <>
                 <div className="w-px h-4 flex-shrink-0" style={{ background: border }} />
                 <button className="flex items-center gap-1 text-xs hover:opacity-70 flex-shrink-0" style={{ color: '#00b8b2', fontWeight: 500 }}
-                  onClick={() => { setCollectionSearchQuery(''); setColSortBy('date-desc'); setColActiveDateRanges([]); setColActivePlatforms([]); setGroupActiveDurations([]); setGroupActiveWords([]); setGroupActiveDateRanges([]); }}>
+                  onClick={() => { setCollectionSearchQuery(''); setColSortBy('date-desc'); setColActiveDateRanges([]); setColActivePlatform('All'); setGroupActivePlatform('All'); setGroupActiveDurations([]); setGroupActiveWords([]); setGroupActiveDateRanges([]); }}>
                   <X className="w-3 h-3" /> Clear
                 </button>
               </>
@@ -2679,7 +2792,8 @@ export function DashboardPage() {
           {/* Content */}
           {groupViewMode === 'hybrid' && !isGroups ? (
             /* ── Hybrid: left compact list + right detail panel ── */
-            <div className="flex flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 overflow-hidden">
+            <div className="flex max-w-[1280px] mx-auto w-full h-full min-h-0 overflow-hidden px-6 py-5">
               {/* Left: compact scrollable list */}
               <div className="flex-shrink-0 flex flex-col" style={{ width: 240, borderRight: `1px solid ${border}` }}>
                 <div
@@ -2714,7 +2828,22 @@ export function DashboardPage() {
                                 style={{ color: text, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', display: 'block' }}
                               >{item.title}</p>
                               {item.source && (
-                                <p className="text-[10px] truncate" style={{ color: muted }}>{item.source}</p>
+                                <div className="flex items-center gap-1">
+                                  {item.avatar && (
+                                    <div className="relative flex-shrink-0">
+                                      <img src={item.avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                      {VERIFIED_CREATORS.has(item.source) && (
+                                        <span className="absolute flex items-center justify-center rounded-full"
+                                          style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                          <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                                            <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                          </svg>
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+                                  <p className="text-[10px] truncate" style={{ color: muted }}>{item.source}</p>
+                                </div>
                               )}
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
@@ -2788,6 +2917,7 @@ export function DashboardPage() {
                 )}
               </div>
             </div>
+            </div>
           ) : (
           <div className="flex-1 overflow-y-auto">
           <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
@@ -2836,15 +2966,20 @@ export function DashboardPage() {
               />
             )}
             {isGroups && (
-              <div className="my-4" style={{ borderTop: `1px solid ${border}`, opacity: 0.5 }} />
+              <div style={{ borderTop: `1px solid ${border}`, opacity: 0.5, marginTop: 26, marginBottom: 26 }} />
             )}
             {/* Selection bar */}
             {(view.category === 'collections' || view.category === 'bulk') && view.groupId != null && groupSelectedIds.size > 0 && (
               <SelectionBar
                 selectedCount={groupSelectedIds.size}
                 isDark={isDark}
-                accentColor="#00b8b2"
+                accentColor={view.category === 'collections' ? '#8b5cf6' : '#00b8b2'}
                 onDeselect={() => { setGroupSelectedIds(new Set()); }}
+                onSelectPage={() => {
+                  const allIds = new Set(items.map((v: any) => v.id));
+                  setGroupSelectedIds(allIds);
+                }}
+                totalPageCount={items.length}
                 onDownloadVideos={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-videos'); }}
                 onDownloadCovers={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-covers'); }}
                 onDownloadTranscripts={() => { simulateZipDownload(Array.from(groupSelectedIds).map(String), 'selected-transcripts'); }}
@@ -2954,7 +3089,7 @@ export function DashboardPage() {
                     </div>
                   </div>
                   {/* Text */}
-                  <div className="px-3.5 pt-3 pb-3.5">
+                  <div className="px-3.5 pt-2.5 pb-3">
                     <p className="text-xs" style={{ color: text, fontWeight: 600 }}>
                       {view.category === 'collections' ? 'Add New Collection' : 'Start a new bulk'}
                     </p>
@@ -3019,20 +3154,22 @@ export function DashboardPage() {
                       </div>
 
                       {/* Info row */}
-                      <div className="px-3.5 pt-2 pb-2.5 flex items-start justify-between gap-2">
+                      <div className="px-3.5 pt-2.5 pb-3 flex items-center justify-between gap-2">
                         <div className="min-w-0">
                           <p className="text-xs truncate" style={{ color: text, fontWeight: 600 }}>{g.name}</p>
-                          <p className="text-[10px] mt-0.5" style={{ color: muted }}>{g.count} video{g.count !== 1 ? 's' : ''}</p>
+                          <p className="text-[10px] mt-1" style={{ color: muted }}>{g.count} video{g.count !== 1 ? 's' : ''}</p>
                         </div>
                         <span
-                          className="inline-flex items-center justify-center rounded-md flex-shrink-0 mt-0.5"
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] flex-shrink-0"
                           style={{
-                            width: 22, height: 22,
-                            background: (DISCOVER_PLATFORM_META[g.videos[0]?.platform ?? ''] ?? { bg: '#6b7280' }).bg,
-                            color: '#fff',
+                            background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
+                            color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
+                            border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+                            fontWeight: 500,
                           }}
                         >
                           <PlatformIconSVG platform={g.videos[0]?.platform ?? ''} />
+                          {g.videos[0]?.platform ?? ''}
                         </span>
                       </div>
                     </div>
@@ -3043,36 +3180,130 @@ export function DashboardPage() {
             ) : (
               /* Video cards — identical to singles grid */
               groupViewMode === 'list' ? (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col" style={{ borderRadius: 12, border: `1px solid ${border}`, overflow: 'hidden' }}>
+                  {/* Table header */}
+                  <div className="flex items-center px-4 py-2 text-[10px] uppercase tracking-wider flex-shrink-0" style={{ color: muted, borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                    <div style={{ width: 48 }} className="mr-3 flex-shrink-0" />
+                    <div style={{ width: 220 }} className="flex-shrink-0">Content</div>
+                    <div className="flex-1 min-w-0">Transcript</div>
+                    <div style={{ width: 80 }} className="text-right mr-4 flex-shrink-0">Date</div>
+                    <div style={{ width: 60 }} className="text-center mr-4 flex-shrink-0">Duration</div>
+                    <div style={{ width: 80 }} className="text-center mr-2 flex-shrink-0">Status</div>
+                    <div style={{ width: 32 }} className="flex-shrink-0" />
+                  </div>
                   {(items as VideoItem[]).map(item => {
                     const thumb = item.thumbnail ?? `https://picsum.photos/seed/${item.id}/80/140`;
+                    const itemStatus: string = (item as VideoItem & { status?: string }).status || 'complete';
+                    const statusColors = {
+                      complete:      { bg: isDark ? 'rgba(34,197,94,0.12)'  : 'rgba(34,197,94,0.10)',  color: isDark ? '#4ade80' : '#16a34a' },
+                      failed:        { bg: isDark ? 'rgba(239,68,68,0.12)'  : 'rgba(239,68,68,0.10)',  color: isDark ? '#f87171' : '#dc2626' },
+                      'in-progress': { bg: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.10)', color: isDark ? '#fbbf24' : '#d97706' },
+                    };
+                    const sc = statusColors[itemStatus as keyof typeof statusColors] ?? statusColors.complete;
+                    const statusLabel = itemStatus === 'in-progress' ? 'In Progress' : itemStatus.charAt(0).toUpperCase() + itemStatus.slice(1);
+                    const snippet = SNIPPETS[item.id] ?? '';
                     return (
                       <div
                         key={item.id}
-                        className="flex items-center gap-4 px-4 py-3 rounded-2xl cursor-pointer transition-colors"
-                        style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                        className="flex items-center px-4 cursor-pointer transition-colors relative"
+                        style={{ borderBottom: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff', minHeight: 52 }}
                         onClick={() => setGroupSlideId(item.id)}
                         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
                       >
-                        <div className="w-12 aspect-[9/16] rounded-xl overflow-hidden flex-shrink-0 relative">
+                        {/* Thumbnail */}
+                        <div className="w-12 aspect-[9/16] rounded-lg overflow-hidden flex-shrink-0 relative mr-3" style={{ minHeight: 40 }}>
                           <ImageWithFallback src={thumb} alt={item.title} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
-                            <Play className="w-4 h-4 text-white fill-white" />
-                          </div>
-                          <span className="absolute bottom-1 right-1 text-[9px] px-1 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.7)', color: '#fff' }}>{formatDuration(item.duration)}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[11px]" style={{ color: muted }}>{item.source ?? ''}</span>
-                          <p className="truncate text-sm mb-1" style={{ color: text, fontWeight: 500 }}>{item.title}</p>
-                          <p className="text-xs" style={{ color: muted }}>{item.views ?? ''}{item.views ? ' views' : ''}</p>
-                        </div>
-                        <div className="flex-shrink-0 text-right flex flex-col items-end gap-1">
-                          <div className="flex items-center gap-1" style={{ color: muted }}>
-                            <Calendar className="w-3 h-3" />
-                            <span className="text-[11px]">{item.date}</span>
+                            <Play className="w-3 h-3 text-white fill-white" />
                           </div>
                         </div>
+                        {/* Content */}
+                        <div style={{ width: 220 }} className="flex-shrink-0 py-2.5 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            {item.avatar && (
+                              <div className="relative flex-shrink-0">
+                                <img src={item.avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />
+                                {VERIFIED_CREATORS.has(item.source ?? '') && (
+                                  <span className="absolute flex items-center justify-center rounded-full"
+                                    style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                    <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
+                                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                    </svg>
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <span className="text-[10px] truncate" style={{ color: muted }}>{item.source ?? ''}</span>
+                          </div>
+                          <p className="truncate text-[12px]" style={{ color: text, fontWeight: 500 }}>{item.title}</p>
+                        </div>
+                        {/* Transcript snippet */}
+                        <div className="flex-1 min-w-0 py-2.5 mr-4">
+                          {itemStatus === 'failed' ? (
+                            <span className="text-[11px]" style={{ color: isDark ? '#f87171' : '#dc2626' }}>Failed to process</span>
+                          ) : (
+                            <p className="text-[11px] leading-relaxed" style={{ color: muted, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
+                              {snippet || '—'}
+                            </p>
+                          )}
+                        </div>
+                        {/* Date */}
+                        <div style={{ width: 80 }} className="flex-shrink-0 text-right mr-4 py-2.5">
+                          <p className="text-[11px]" style={{ color: text }}>{item.date}</p>
+                        </div>
+                        {/* Duration */}
+                        <div style={{ width: 60 }} className="flex-shrink-0 text-center mr-4 py-2.5">
+                          <span className="text-[11px]" style={{ color: muted }}>{formatDuration(item.duration)}</span>
+                        </div>
+                        {/* Status pill */}
+                        <div style={{ width: 80 }} className="flex-shrink-0 text-center mr-2 py-2.5">
+                          <span className="inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-medium"
+                            style={{ background: sc.bg, color: sc.color }}>
+                            {statusLabel}
+                          </span>
+                        </div>
+                        {/* Three-dot menu */}
+                        <div style={{ width: 32 }} className="flex-shrink-0 flex items-center justify-center py-2.5">
+                          <button
+                            className="p-1 rounded-lg transition-colors"
+                            style={{ color: openMenuId === item.id ? text : muted, background: openMenuId === item.id ? (isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb') : 'transparent' }}
+                            onClick={e => {
+                              e.stopPropagation();
+                              if (openMenuId === item.id) { setOpenMenuId(null); setMenuPos(null); }
+                              else { const r = (e.currentTarget as HTMLButtonElement).getBoundingClientRect(); setOpenMenuId(item.id); setMenuPos({ top: r.bottom + 4, right: window.innerWidth - r.right }); }
+                            }}
+                            title="More options"
+                            onMouseEnter={ev => { if (openMenuId !== item.id) (ev.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                            onMouseLeave={ev => { if (openMenuId !== item.id) (ev.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                          >
+                            <MoreHorizontal className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        {/* Backdrop */}
+                        {openMenuId === item.id && (
+                          <div className="fixed inset-0 z-40" onClick={e => { e.stopPropagation(); setOpenMenuId(null); setMenuPos(null); }} />
+                        )}
+                        {/* Dropdown portal */}
+                        {openMenuId === item.id && menuPos && (() => {
+                          const grpMenuItems: { icon: React.ReactNode; label: string; destructive?: boolean; separator?: boolean; action: () => void }[] = [
+                            { icon: <Copy className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Copy Transcript', action: () => { const t = customTitles[item.id] || item.title; navigator.clipboard.writeText(`[Transcript: ${t}]\nDuration: ${formatDuration(item.duration)}\n\nSample transcript content for "${t}".`).then(() => showToast('Transcript copied to clipboard')).catch(() => showToast('Could not access clipboard')); } },
+                            { icon: <Download className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Download', action: () => { const t = customTitles[item.id] || item.title; const blob = new Blob([`[Transcript: ${t}]\nDuration: ${formatDuration(item.duration)}\n\nSample transcript content for "${t}".`], { type: 'text/plain' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `${t.replace(/[^a-z0-9]/gi, '_')}.txt`; a.click(); URL.revokeObjectURL(url); showToast('Transcript downloaded'); } },
+                            { icon: <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />, label: 'View Original', action: () => { const url = (item as VideoItem & { url?: string }).url; if (url) window.open(url, '_blank'); else showToast('No original URL available'); } },
+                            { icon: <FolderInput className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Move to Folder', action: () => { setFolderModalFor({ id: item.id, rect: { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0, x: 0, y: 0, toJSON: () => ({}) } as DOMRect, title: item.title }); } },
+                            { icon: <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />, label: 'Delete', destructive: true, separator: true, action: () => { setDeletedIds(prev => new Set([...prev, item.id])); showToast('Item deleted'); } },
+                          ];
+                          return (
+                            <div key="group-list-ctx" className="fixed z-50 rounded-xl shadow-xl py-1" style={{ background: isDark ? '#141414' : '#ffffff', border: `1px solid ${border}`, minWidth: 204, top: menuPos.top, right: menuPos.right }} onClick={e => e.stopPropagation()}>
+                              {grpMenuItems.flatMap(opt => [
+                                opt.separator ? <div key={`sep-${opt.label}`} style={{ height: 1, background: border, margin: '4px 0' }} /> : null,
+                                <button key={opt.label} className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-left" style={{ color: opt.destructive ? '#d95656' : text, background: 'transparent' }} onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.background = hoverBg)} onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.background = 'transparent')} onClick={e => { e.stopPropagation(); opt.action(); setOpenMenuId(null); setMenuPos(null); }}>
+                                  {opt.icon}{opt.label}
+                                </button>,
+                              ])}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -3167,7 +3398,22 @@ export function DashboardPage() {
                           </div>
                         </div>
                         <div className="p-3 flex flex-col gap-1.5 flex-1">
-                          <span className="text-[10px]" style={{ color: muted }}>{item.source ?? ''}</span>
+                          <div className="flex items-center gap-1.5">
+                            {item.avatar && (
+                              <div className="relative flex-shrink-0">
+                                <img src={item.avatar} alt="" className="w-4 h-4 rounded-full object-cover" />
+                                {VERIFIED_CREATORS.has(item.source ?? '') && (
+                                  <span className="absolute flex items-center justify-center rounded-full"
+                                    style={{ bottom: -1, right: -1, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
+                                    <svg width="5" height="5" viewBox="0 0 16 16" fill="none">
+                                      <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
+                                    </svg>
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            <span className="text-[10px]" style={{ color: muted }}>{item.source ?? ''}</span>
+                          </div>
                           <p className="text-xs" style={{ color: text, fontWeight: 600, lineHeight: 1.35 }}>{item.title}</p>
                           <p className="text-[10px]" style={{ color: muted, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties}>
                             {SNIPPETS[item.id] ?? ''}
