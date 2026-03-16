@@ -195,14 +195,14 @@ function PlatformIconSVG({ platform }: { platform: string }) {
   return null;
 }
 
-function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
+function PlatformBadge({ platform }: { platform: string }) {
   return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
       style={{
-        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
-        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        background: 'rgba(255,255,255,0.06)',
+        color: 'rgba(255,255,255,0.6)',
+        border: '1px solid rgba(255,255,255,0.1)',
         fontWeight: 500,
       }}
     >
@@ -381,7 +381,7 @@ function HistoryRow({ entry, isDark, border, text, muted, hoverBg, onSelect, ope
         <div className="absolute inset-0 flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.25)' }}>
           <Play className="w-3 h-3 text-white fill-white" />
         </div>
-        <PlatformBadge platform={entry.platform} isDark={isDark} />
+        <PlatformBadge platform={entry.platform} />
         <button
           className="absolute top-1 left-1 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
           style={{ background: 'rgba(0,0,0,0.5)' }}
@@ -565,7 +565,7 @@ function HistoryCard({ entry, isDark, border, text, muted, hoverBg, onSelect, is
               {entry.platform}
             </span>
           ) : (
-            <PlatformBadge platform={entry.platform} isDark={isDark} />
+            <PlatformBadge platform={entry.platform} />
           )}
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(entry.duration)}</span>
         </div>

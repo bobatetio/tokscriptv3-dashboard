@@ -41,3 +41,5 @@
 - Inactive state pills/buttons: `#f3f4f6` background in light mode, `rgba(255,255,255,0.05)` in dark.
 - Borders: always use the `border` token variable — never colored borders on inactive elements.
 - After a CTA action (like "Start Scanning"), ALWAYS show a progress/loading phase before navigating away. Never jump immediately.
+- Video thumbnails MUST stay 9:16 portrait — the platform is for short-form vertical video. Never use 16:9 landscape thumbnails.
+- Platform icons (YouTube/TikTok/Instagram) must be monochrome throughout the app. No brand colors — consistency with the rest of the platform.

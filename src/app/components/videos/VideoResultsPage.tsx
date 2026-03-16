@@ -49,14 +49,14 @@ function PlatformIconSVG({ platform }: { platform: string }) {
   return null;
 }
 
-function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
+function PlatformBadge({ platform }: { platform: string }) {
   return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
       style={{
-        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
-        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        background: 'rgba(255,255,255,0.06)',
+        color: 'rgba(255,255,255,0.6)',
+        border: '1px solid rgba(255,255,255,0.1)',
         fontWeight: 500,
       }}
     >
@@ -178,7 +178,7 @@ function VideoResultCard({
         {/* Platform + duration badges (all states) */}
         {entry && (
           <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-            <PlatformBadge platform={entry.platform} isDark={isDark} />
+            <PlatformBadge platform={entry.platform} />
             <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>
               {formatDuration(entry.duration)}
             </span>
@@ -867,7 +867,7 @@ export function VideoResultsPage() {
                               </div>
                             )}
                             <div className="absolute bottom-1 left-1">
-                              <PlatformBadge platform={e.platform} isDark={isDark} />
+                              <PlatformBadge platform={e.platform} />
                             </div>
                           </div>
 

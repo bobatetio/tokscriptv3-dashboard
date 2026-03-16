@@ -286,14 +286,14 @@ const FILLER_PARAGRAPHS = [
 ];
 
 // ─── Platform badge ────────────────────────────────────────────────────────────
-function VideoPlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
+function VideoPlatformBadge({ platform }: { platform: string }) {
   return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
       style={{
-        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
-        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        background: 'rgba(255,255,255,0.06)',
+        color: 'rgba(255,255,255,0.6)',
+        border: '1px solid rgba(255,255,255,0.1)',
         fontWeight: 500,
       }}
     >
@@ -372,7 +372,7 @@ function VideoCard({
             </div>
           </div>
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-          <VideoPlatformBadge platform={video.platform} isDark={isDark} />
+          <VideoPlatformBadge platform={video.platform} />
           <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>{formatDuration(video.duration)}</span>
         </div>
         {/* ── Action overlays ── */}
@@ -576,7 +576,7 @@ function VideoRow({
       {/* Content */}
       <div className="flex-shrink-0 py-2.5" style={{ width: 280 }}>
         <div className="flex items-center gap-1.5 mb-0.5">
-          <VideoPlatformBadge platform={video.platform} isDark={isDark} />
+          <PlatformBadge platform={video.platform} isDark={isDark} />
           {avatar && (
             <div className="relative flex-shrink-0">
               <img src={avatar} alt="" className="w-3.5 h-3.5 rounded-full object-cover" />

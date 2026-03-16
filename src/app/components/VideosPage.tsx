@@ -6,6 +6,7 @@ import {
   FileText, MoreHorizontal, Columns2, Video, Layers,
   Heart, FolderPlus, Copy, ExternalLink, FolderInput, Trash2,
   Eye, MessageCircle, Share2, TrendingUp, MoreVertical, Bookmark,
+  RefreshCw,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
@@ -87,13 +88,12 @@ function formatRelativeRefresh(isoDate: string | undefined): string {
   const then = new Date(isoDate);
   const diffMs = now.getTime() - then.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'just now';
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 1) return '<1m';
+  if (diffMin < 60) return `${diffMin}m`;
   const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `about ${diffHr}h ago`;
+  if (diffHr < 24) return `${diffHr}h`;
   const diffDay = Math.floor(diffHr / 24);
-  if (diffDay === 1) return 'yesterday';
-  return `${diffDay}d ago`;
+  return `${diffDay}d`;
 }
 
 // ─── Platform badge ───────────────────────────────────────────────────────────
@@ -120,12 +120,21 @@ function PlatformIconSVG({ platform }: { platform: string }) {
 
 function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
   return (
+    <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}>
+      <PlatformIconSVG platform={platform} />
+    </span>
+  );
+}
+
+function VideoPlatformBadge({ platform }: { platform?: string }) {
+  if (!platform) return null;
+  return (
     <span
       className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px]"
       style={{
-        background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6',
-        color: isDark ? 'rgba(255,255,255,0.6)' : '#6b7280',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'}`,
+        background: 'rgba(255,255,255,0.06)',
+        color: 'rgba(255,255,255,0.6)',
+        border: '1px solid rgba(255,255,255,0.1)',
         fontWeight: 500,
       }}
     >
@@ -325,7 +334,7 @@ function VideoCard({
 
         {/* Bottom row: platform badge + duration */}
         <div className="absolute bottom-2 left-2 right-2 flex items-end justify-between">
-          <PlatformBadge platform={entry.platform} isDark={isDark} />
+          <VideoPlatformBadge platform={entry.platform} />
           <span className="text-[10px] px-1.5 py-0.5 rounded"
             style={{ background: 'rgba(0,0,0,0.65)', color: '#fff' }}>
             {formatDuration(entry.duration)}
@@ -446,7 +455,7 @@ function VideoCard({
 }
 
 // ─── Table Header (list view) ─────────────────────────────────────────────────
-function VideoListHeader({ muted, border }: { muted: string; border: string }) {
+function VideoListHeader({ muted, border, isDark }: { muted: string; border: string; isDark: boolean }) {
   const th = (content: React.ReactNode, width: number | string, align: 'left' | 'center' | 'right' = 'left', mr = 0) => (
     <div
       className="flex-shrink-0 flex items-center"
@@ -460,7 +469,7 @@ function VideoListHeader({ muted, border }: { muted: string; border: string }) {
     >
       <span
         className="text-[10px] uppercase tracking-wider"
-        style={{ color: muted }}
+        style={{ color: muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
       >
         {content}
       </span>
@@ -470,53 +479,53 @@ function VideoListHeader({ muted, border }: { muted: string; border: string }) {
   return (
     <div
       className="flex items-center px-3 py-2"
-      style={{ borderBottom: `1px solid ${border}` }}
+      style={{ borderBottom: `1px solid ${border}`, minWidth: 1460, background: isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb' }}
     >
       {/* 1. Checkbox */}
-      <div style={{ width: 28, flexShrink: 0, marginRight: 4 }} />
+      <div style={{ width: 28, flexShrink: 0, marginRight: 8 }} />
       {/* 2. Video content */}
-      {th('Video', 190, 'left', 8)}
-      {/* 3. Platform */}
-      {th('Platform', 80, 'left', 8)}
-      {/* 4. Posted at */}
-      {th('Posted at', 140, 'left', 8)}
-      {/* 5. Duration - clock icon */}
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+      {th('Video', 220, 'left', 16)}
+      {/* 3. Posted at */}
+      {th('Posted at', 110, 'left', 16)}
+      {/* 4. Duration - clock icon */}
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 52, marginRight: 16 }}>
         <Clock style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 6. Views - eye icon */}
-      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 8 }}>
+      {/* 5. Views - eye icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 56, marginRight: 16 }}>
         <Eye style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 7. Virality - trending up icon */}
-      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+      {/* 6. Virality - trending up icon */}
+      <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 52, marginRight: 16 }}>
         <TrendingUp style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 8. Likes - heart icon */}
-      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+      {/* 7. Likes - heart icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
         <Heart style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 9. Comments - message icon */}
-      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+      {/* 8. Comments - message icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
         <MessageCircle style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 10. Shares - share icon */}
-      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
+      {/* 9. Shares - share icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
         <Share2 style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 11. Bookmarks - bookmark icon */}
-      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 50, marginRight: 8 }}>
+      {/* 10. Bookmarks - bookmark icon */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 56, marginRight: 16 }}>
         <Bookmark style={{ width: 12, height: 12, color: muted }} />
       </div>
-      {/* 12. Engagement */}
-      {th('Eng.', 55, 'right', 8)}
-      {/* 13. Transcript */}
-      {th('Transcript', 'flex', 'left', 8)}
-      {/* 14. Status */}
-      {th('Status', 68, 'center', 8)}
-      {/* 15. Last refresh */}
-      {th('Refreshed', 100, 'right', 8)}
-      {/* 16. Menu */}
+      {/* 11. Engagement */}
+      {th('Eng.', 60, 'right', 16)}
+      {/* 12. Transcript */}
+      {th('Transcript', 200, 'left', 16)}
+      {/* 13. Status */}
+      {th('Status', 76, 'center', 16)}
+      {/* 14. Last refresh */}
+      <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 48, marginRight: 8 }}>
+        <RefreshCw style={{ width: 12, height: 12, color: muted }} />
+      </div>
+      {/* 15. Menu */}
       <div style={{ width: 28, flexShrink: 0 }} />
     </div>
   );
@@ -524,13 +533,14 @@ function VideoListHeader({ muted, border }: { muted: string; border: string }) {
 
 // ─── Video Row (list view) ────────────────────────────────────────────────────
 function VideoRow({
-  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect, openMenuId, setOpenMenuId, medianViews,
+  entry, isDark, border, text, muted, hoverBg, onSelect, isSelected, onToggleSelect, openMenuId, setOpenMenuId, medianViews, index,
 }: {
   entry: HistoryEntry; isDark: boolean; border: string; text: string; muted: string; hoverBg: string;
   onSelect: (e: HistoryEntry) => void;
   isSelected: boolean; onToggleSelect: (id: number) => void;
   openMenuId: number | null; setOpenMenuId: (id: number | null) => void;
   medianViews: number;
+  index: number;
 }) {
   const [folderModalFor, setFolderModalFor] = useState<{ id: number; rect: DOMRect; title: string } | null>(null);
   const status = entry.status || 'complete';
@@ -563,6 +573,9 @@ function VideoRow({
   const bookmarks = entry.bookmarks;
   const lastRefresh = entry.lastRefresh;
 
+  const noData = status === 'failed' || (views == null || views === 0);
+  const noEngagement = status === 'processing' && (likes ?? 0) === 0 && (comments ?? 0) === 0 && (shares ?? 0) === 0 && (bookmarks ?? 0) === 0;
+
   const viralityInfo = (() => {
     if (views == null || views === 0) return null;
     const factor = views / (medianViews || 1);
@@ -578,14 +591,14 @@ function VideoRow({
     return ((total / views) * 100).toFixed(1) + '%';
   })();
 
-  const postedAt = (() => {
+  const [postedDate, postedTime] = (() => {
     try {
-      return new Date(entry.date).toLocaleString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric',
-        hour: 'numeric', minute: '2-digit',
-      });
+      const d = new Date(entry.date);
+      const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+      return [date, time];
     } catch {
-      return entry.date;
+      return [entry.date, ''];
     }
   })();
 
@@ -595,17 +608,20 @@ function VideoRow({
         className="flex items-center px-3 py-2 cursor-pointer"
         style={{
           borderBottom: `1px solid ${border}`,
-          background: isSelected ? (isDark ? 'rgba(0,184,178,0.04)' : 'rgba(0,184,178,0.03)') : 'transparent',
+          background: isSelected ? (isDark ? 'rgba(0,184,178,0.04)' : 'rgba(0,184,178,0.03)')
+            : index % 2 === 1 ? (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)')
+            : 'transparent',
           transition: 'background 0.1s ease',
+          minWidth: 1460,
         }}
         onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = hoverBg; }}
-        onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = 'transparent'; }}
+        onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = index % 2 === 1 ? (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.015)') : 'transparent'; }}
         onClick={() => onSelect(entry)}
       >
         {/* 1. Checkbox */}
         <div
           className="flex items-center justify-center flex-shrink-0"
-          style={{ width: 28, marginRight: 4 }}
+          style={{ width: 28, marginRight: 8 }}
           onClick={e => { e.stopPropagation(); onToggleSelect(entry.id); }}
         >
           <div style={{
@@ -623,12 +639,12 @@ function VideoRow({
         </div>
 
         {/* 2. Content: thumbnail + text block */}
-        <div className="flex-shrink-0 flex items-center gap-2" style={{ width: 190, marginRight: 8 }}>
-          <div className="flex-shrink-0 relative rounded-md overflow-hidden" style={{ width: 36, aspectRatio: '9/16' }}>
+        <div className="flex-shrink-0 flex items-start gap-2" style={{ width: 220, marginRight: 16 }}>
+          <div className="flex-shrink-0 relative rounded overflow-hidden" style={{ width: 30, aspectRatio: '9/16' }}>
             <ImageWithFallback src={entry.thumbnail} alt={entry.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)' }} />
             <div className="absolute inset-0 flex items-center justify-center">
-              <Play style={{ width: 10, height: 10, color: '#fff', fill: '#fff', opacity: 0.85 }} />
+              <Play style={{ width: 8, height: 8, color: '#fff', fill: '#fff', opacity: 0.85 }} />
             </div>
           </div>
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
@@ -642,44 +658,41 @@ function VideoRow({
             </p>
             <div className="flex items-center gap-1">
               <div className="relative flex-shrink-0">
-                <img src={entry.avatar} alt="" style={{ width: 14, height: 14, borderRadius: '50%', objectFit: 'cover' }} />
+                <img src={entry.avatar} alt="" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover' }} />
                 {VERIFIED_CREATORS.has(entry.creator) && (
                   <span className="absolute flex items-center justify-center rounded-full"
-                    style={{ bottom: -1, right: -1, width: 7, height: 7, background: '#1d9bf0', border: '1px solid #fff' }}>
+                    style={{ bottom: -2, right: -2, width: 8, height: 8, background: '#1d9bf0', border: '1px solid #fff' }}>
                     <svg width="4" height="4" viewBox="0 0 16 16" fill="none">
                       <path d="M6.5 11.5L3 8l1-1 2.5 2.5L12 4l1 1-6.5 6.5z" fill="#fff"/>
                     </svg>
                   </span>
                 )}
               </div>
-              <span style={{ fontSize: 10, color: muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.creator}</span>
+              <span style={{ fontSize: 11, color: muted, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.creator}</span>
+              <PlatformBadge platform={entry.platform} isDark={isDark} />
             </div>
           </div>
         </div>
 
-        {/* 3. Platform */}
-        <div className="flex-shrink-0 flex items-center" style={{ width: 80, marginRight: 8 }}>
-          <PlatformBadge platform={entry.platform} isDark={isDark} />
+        {/* 3. Posted at */}
+        <div className="flex-shrink-0 flex flex-col justify-center" style={{ width: 110, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: text, lineHeight: 1.3 }}>{postedDate}</span>
+          <span style={{ fontSize: 10, color: muted, lineHeight: 1.3 }}>{postedTime}</span>
         </div>
 
-        {/* 4. Posted at */}
-        <div className="flex-shrink-0" style={{ width: 140, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: muted }}>{postedAt}</span>
-        </div>
-
-        {/* 5. Duration */}
-        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
+        {/* 4. Duration */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 52, marginRight: 16 }}>
           <span style={{ fontSize: 11, color: muted }}>{formatDuration(entry.duration)}</span>
         </div>
 
-        {/* 6. Views */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: text, fontWeight: 500 }}>{formatCount(views)}</span>
+        {/* 5. Views */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 56, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: noData ? muted : text, fontWeight: 400 }}>{noData ? '—' : formatCount(views)}</span>
         </div>
 
-        {/* 7. Virality */}
-        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 48, marginRight: 8 }}>
-          {viralityInfo ? (
+        {/* 6. Virality */}
+        <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 52, marginRight: 16 }}>
+          {!noData && viralityInfo ? (
             <span style={{
               fontSize: 10, fontWeight: 600, color: viralityInfo.color, background: viralityInfo.bg,
               padding: '1px 5px', borderRadius: 4,
@@ -691,35 +704,35 @@ function VideoRow({
           )}
         </div>
 
-        {/* 8. Likes */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: muted }}>{formatCount(likes)}</span>
+        {/* 7. Likes */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: muted }}>{(noData || noEngagement) ? '—' : formatCount(likes)}</span>
         </div>
 
-        {/* 9. Comments */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: muted }}>{formatCount(comments)}</span>
+        {/* 8. Comments */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: muted }}>{(noData || noEngagement) ? '—' : formatCount(comments)}</span>
         </div>
 
-        {/* 10. Shares */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 45, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: muted }}>{formatCount(shares)}</span>
+        {/* 9. Shares */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 52, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: muted }}>{(noData || noEngagement) ? '—' : formatCount(shares)}</span>
         </div>
 
-        {/* 11. Bookmarks */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 50, marginRight: 8 }}>
+        {/* 10. Bookmarks */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 56, marginRight: 16 }}>
           <span style={{ fontSize: 11, color: muted }}>
-            {bookmarks != null && bookmarks > 0 ? formatCount(bookmarks) : '—'}
+            {(noData || noEngagement) ? '—' : formatCount(bookmarks)}
           </span>
         </div>
 
-        {/* 12. Engagement */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 55, marginRight: 8 }}>
-          <span style={{ fontSize: 11, color: muted }}>{engagementStr}</span>
+        {/* 11. Engagement */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 60, marginRight: 16 }}>
+          <span style={{ fontSize: 11, color: muted }}>{(noData || noEngagement) ? '—' : engagementStr}</span>
         </div>
 
-        {/* 13. Transcript */}
-        <div className="flex-1 min-w-0" style={{ marginRight: 8 }}>
+        {/* 12. Transcript */}
+        <div className="flex-shrink-0 min-w-0" style={{ width: 200, marginRight: 16 }}>
           {status === 'failed' ? (
             <span style={{ fontSize: 11, color: isDark ? '#f87171' : '#dc2626' }}>Failed to process</span>
           ) : (
@@ -732,8 +745,8 @@ function VideoRow({
           )}
         </div>
 
-        {/* 14. Status */}
-        <div className="flex-shrink-0 flex justify-center" style={{ width: 68, marginRight: 8 }}>
+        {/* 13. Status */}
+        <div className="flex-shrink-0 flex justify-center" style={{ width: 76, marginRight: 16 }}>
           <span style={{
             fontSize: 10, padding: '2px 8px', borderRadius: 999,
             background: statusPill.bg,
@@ -745,12 +758,12 @@ function VideoRow({
           </span>
         </div>
 
-        {/* 15. Last refresh */}
-        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 100, marginRight: 8 }}>
+        {/* 14. Last refresh */}
+        <div className="flex-shrink-0 flex items-center justify-end" style={{ width: 48, marginRight: 8 }}>
           <span style={{ fontSize: 11, color: muted }}>{formatRelativeRefresh(lastRefresh)}</span>
         </div>
 
-        {/* 16. Menu */}
+        {/* 15. Menu */}
         <div className="flex-shrink-0 relative flex items-center justify-center" style={{ width: 28 }}>
           <button
             className="flex items-center justify-center w-6 h-6 rounded-md"
@@ -853,6 +866,29 @@ export function VideosPage() {
       setSelectedIds(new Set());
     }
   }, [viewMode]);
+
+  // Inject always-visible scrollbar styles for the list view table
+  useEffect(() => {
+    const id = 'videos-table-scrollbar-styles';
+    let style = document.getElementById(id) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement('style');
+      style.id = id;
+      document.head.appendChild(style);
+    }
+    const track = isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb';
+    const thumb = isDark ? 'rgba(255,255,255,0.25)' : '#b0b5bd';
+    const thumbHover = isDark ? 'rgba(255,255,255,0.35)' : '#9ca3af';
+    style.textContent = `
+      .videos-table-scroll { scrollbar-width: thin; scrollbar-color: ${thumb} ${track}; }
+      .videos-table-scroll::-webkit-scrollbar { width: 6px; height: 12px; }
+      .videos-table-scroll::-webkit-scrollbar-track { background: ${track}; }
+      .videos-table-scroll::-webkit-scrollbar-thumb { background: ${thumb}; border-radius: 4px; }
+      .videos-table-scroll::-webkit-scrollbar-thumb:hover { background: ${thumbHover}; }
+      .videos-table-scroll::-webkit-scrollbar-corner { background: ${track}; }
+    `;
+    return () => { style?.remove(); };
+  }, [isDark]);
 
   const bg      = isDark ? '#0d0d0d' : '#ffffff';
   const border  = isDark ? '#262626' : '#e5e7eb';
@@ -1397,17 +1433,18 @@ export function VideosPage() {
               {filteredVideos.length > 0 ? (
                 viewMode === 'list' ? (
                   <div
-                    className="rounded-2xl overflow-hidden"
-                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff' }}
+                    className="rounded-2xl videos-table-scroll"
+                    style={{ border: `1px solid ${border}`, background: isDark ? '#141414' : '#ffffff', maxHeight: 'calc(100vh - 220px)', overflowX: 'scroll', overflowY: 'auto' }}
                   >
-                    <VideoListHeader muted={muted} border={border} />
-                    {paginatedVideos.map(e => (
+                    <VideoListHeader muted={muted} border={border} isDark={isDark} />
+                    {paginatedVideos.map((e, i) => (
                       <VideoRow
                         key={e.id} entry={e} isDark={isDark} border={border} text={text} muted={muted} hoverBg={hoverBg}
                         onSelect={entry => setSelectedEntry(entry)}
                         isSelected={selectedIds.has(e.id)} onToggleSelect={toggleSelect}
                         openMenuId={listOpenMenuId} setOpenMenuId={setListOpenMenuId}
                         medianViews={medianViews}
+                        index={i}
                       />
                     ))}
                   </div>
