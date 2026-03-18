@@ -96,7 +96,7 @@ export function SessionDetailView({ session, onBack }: SessionDetailViewProps) {
         </div>
 
         {/* Video grid — 4 col */}
-        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+        <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
           {session.videos.map(v => (
             <div
               key={v.id}

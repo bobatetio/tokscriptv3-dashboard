@@ -92,16 +92,12 @@ export function NewTranscriptionPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="new-transcription" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      {/* ══ TOP HEADER ══════════════════════════════════════════════════════ */}
-      <AppHeader sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
-
-      {/* ══ BODY ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-1 overflow-hidden">
-
-        {/* Shared sidebar — structurally identical to DashboardPage */}
-        <AppSidebar activePage="new-transcription" collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader />
 
         {/* Main area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

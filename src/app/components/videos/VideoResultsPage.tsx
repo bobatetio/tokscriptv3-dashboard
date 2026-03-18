@@ -13,6 +13,7 @@ import { HistoryEntry } from '../DiscoverPage';
 import { VIDEOS_DATA } from './videoData';
 import { VideoDownloadItem } from './types';
 import { formatDuration } from '../../utils/formatDuration';
+import { formatCardDate } from '../../utils/formatDate';
 import {
   simulateVideoDownload,
   simulateCoverDownload,
@@ -209,7 +210,7 @@ function VideoResultCard({
               {entry.transcriptSnippet}
             </p>
             <div className="flex items-center justify-between mt-auto pt-1">
-              <span className="text-[10px]" style={{ color: muted }}>{entry.date}</span>
+              <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(entry.date)}</span>
               <div className="flex items-center gap-1">
                 <button className="p-1 rounded-md" style={{ color: muted, background: defaultActionBg, border: `1px solid ${border}`, cursor: 'pointer' }}
                   onClick={e => { e.stopPropagation(); simulateVideoDownload(entry.title); }} title="Download video"
@@ -403,14 +404,12 @@ export function VideoResultsPage() {
         }
       `}</style>
 
-      <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
-        <AppHeader
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed(c => !c)}
-        />
+      <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+        <AppSidebar activePage="videos" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-        <div className="flex flex-1 overflow-hidden">
-          <AppSidebar activePage="videos" collapsed={sidebarCollapsed} />
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+             style={isDark ? undefined : { background: '#ffffff' }}>
+          <AppHeader />
 
           <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
@@ -972,7 +971,7 @@ export function VideoResultsPage() {
                   /* ── Grid view ── */
                   <div
                     className="grid gap-3"
-                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}
+                    style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}
                   >
                     {filteredItems.map(item => (
                       <VideoResultCard

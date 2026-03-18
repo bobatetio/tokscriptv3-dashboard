@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { AppLogo } from './AppLogo';
 import Rd from '../../imports/Rd';
@@ -371,7 +372,7 @@ export function FreeResultPage() {
               <span className="flex items-center gap-1"><Heart className="w-3 h-3" /> {video.likes} likes</span>
               <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDuration(video.duration)}</span>
               <span className="flex items-center gap-1"><Globe className="w-3 h-3" /> {video.language}</span>
-              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {video.date}</span>
+              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {formatCardDate(video.date)}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px]" style={{ color: muted }}>
@@ -483,18 +484,30 @@ export function FreeResultPage() {
             {/* Tab content */}
             <div className="relative">
               {activeTab === 'transcript' && (
-                <div className="p-5 flex flex-col gap-3">
-                  {TRANSCRIPT_PARAGRAPHS.map((para, i) => (
-                    <p key={i} className="text-xs leading-relaxed" style={{ color: text }}>
-                      {para}
-                    </p>
-                  ))}
+                <div className="p-5">
+                  <div
+                    className="rounded-2xl p-5"
+                    style={{ background: isDark ? '#0d0d0d' : '#f9fafb', border: `1px solid ${border}` }}
+                  >
+                    <div className="flex flex-col gap-3">
+                      {TRANSCRIPT_PARAGRAPHS.map((para, i) => (
+                        <p key={i} className="text-xs leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.72)' : '#374151', lineHeight: 1.75 }}>
+                          {para}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
 
               {/* Caption tab — preview + blur */}
               {activeTab === 'caption' && (
                 <div className="p-5 flex flex-col gap-0">
+                  {/* Caption rows in prompt-style container */}
+                  <div
+                    className="rounded-2xl p-5"
+                    style={{ background: isDark ? '#0d0d0d' : '#f9fafb', border: `1px solid ${border}` }}
+                  >
                   {/* Free captions */}
                   {CAPTIONS.slice(0, FREE_CAPTIONS).map((c, i) => (
                     <div
@@ -508,7 +521,7 @@ export function FreeResultPage() {
                       >
                         {c.time}
                       </span>
-                      <p className="text-xs leading-relaxed" style={{ color: text }}>{c.text}</p>
+                      <p className="text-xs leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.72)' : '#374151', lineHeight: 1.75 }}>{c.text}</p>
                     </div>
                   ))}
 
@@ -530,7 +543,7 @@ export function FreeResultPage() {
                           >
                             {c.time}
                           </span>
-                          <p className="text-xs leading-relaxed" style={{ color: text }}>{c.text}</p>
+                          <p className="text-xs leading-relaxed" style={{ color: isDark ? 'rgba(255,255,255,0.72)' : '#374151', lineHeight: 1.75 }}>{c.text}</p>
                         </div>
                       ))}
                     </div>
@@ -578,6 +591,7 @@ export function FreeResultPage() {
                         </div>
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               )}

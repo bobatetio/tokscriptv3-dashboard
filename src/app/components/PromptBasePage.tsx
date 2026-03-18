@@ -1018,15 +1018,14 @@ export function PromptBasePage() {
   const activeFilterCount = (activeCategory !== 'All' ? 1 : 0) + (searchQuery ? 1 : 0) + (sortBy !== 'popular' ? 1 : 0);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
-
-      {/* ══ TOP HEADER ══════════════════════════════════════════════════════ */}
-      <AppHeader sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="prompt-base" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
       {/* ══ BODY ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-1 overflow-hidden">
-
-        <AppSidebar activePage="prompt-base" collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        {/* ══ TOP HEADER ══════════════════════════════════════════════════════ */}
+        <AppHeader />
 
         {/* Main area */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

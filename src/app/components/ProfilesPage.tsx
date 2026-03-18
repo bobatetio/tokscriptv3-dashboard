@@ -535,14 +535,12 @@ export function ProfilesPage() {
     });
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
-      <AppHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={() => setSidebarCollapsed(c => !c)}
-      />
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="profiles" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      <div className="flex flex-1 overflow-hidden">
-        <AppSidebar activePage="profiles" collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader />
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Title bar */}
@@ -824,7 +822,7 @@ export function ProfilesPage() {
                   <Globe className="w-3.5 h-3.5" />
                   <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>By Platform</span>
                 </div>
-                <div className="flex flex-col gap-1 mt-0.5">
+                <div className="flex items-center gap-3 mt-1.5">
                   {([
                     { platform: 'YouTube', color: '#ff0000', count: PLATFORM_COUNTS.YouTube },
                     { platform: 'TikTok', color: isDark ? '#ffffff' : '#010101', count: PLATFORM_COUNTS.TikTok },
@@ -832,7 +830,7 @@ export function ProfilesPage() {
                   ] as const).map(row => (
                     <div key={row.platform} className="flex items-center gap-1.5" style={{ fontSize: '0.6875rem' }}>
                       <PlatformDot platform={row.platform} isDark={isDark} />
-                      <span style={{ color: muted }}>{row.count} creators</span>
+                      <span style={{ color: muted }}>{row.count}</span>
                     </div>
                   ))}
                 </div>

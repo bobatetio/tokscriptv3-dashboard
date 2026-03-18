@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router';
 import {
   Plus, LayoutDashboard, BookOpen, Compass,
   ChevronRight, ChevronDown, Settings, HelpCircle, LogOut, Folder, Zap,
-  FileText, Video,
+  FileText, Video, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
+import { AppLogo } from './AppLogo';
 import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
@@ -27,6 +28,7 @@ export type LibraryItem = 'singles' | 'collections' | 'bulk' | 'favourites';
 interface AppSidebarProps {
   activePage: SidebarPage;
   collapsed: boolean;
+  onToggle?: () => void;
   activeFolderId?: number;
   // Dashboard-specific overrides
   activeLibraryItem?: LibraryItem;
@@ -57,6 +59,7 @@ const FAVOURITES_ID = 500;
 export function AppSidebar({
   activePage,
   collapsed,
+  onToggle,
   activeFolderId,
   activeLibraryItem,
   activeGroupId,
@@ -109,7 +112,7 @@ export function AppSidebar({
   }, [userMenuOpen]);
 
   // ── Colour tokens ─────────────────────────────────────────────────────────
-  const sidebarBg = isDark ? '#111111' : '#fafafa';
+  const sidebarBg = isDark ? '#111111' : '#f3f4f6';
   const border    = isDark ? '#262626' : '#e5e7eb';
   const text      = isDark ? '#ffffff' : '#111827';
   const muted     = isDark ? '#888888' : '#6b7280';
@@ -156,11 +159,21 @@ export function AppSidebar({
 
     return (
       <aside
-        className="flex flex-col flex-shrink-0 h-full"
-        style={{ width: 52, borderRight: `1px solid ${border}`, background: sidebarBg }}
+        className="flex flex-col flex-shrink-0 overflow-hidden"
+        style={{ width: 52, background: sidebarBg, margin: '10px 0 10px 10px', borderRadius: 12 }}
       >
-        {/* + New Transcript button */}
+        {/* Toggle to expand */}
         <div className="flex items-center justify-center pt-4 pb-2 flex-shrink-0">
+          <button onClick={onToggle} title="Expand sidebar"
+            className="p-1.5 rounded-lg transition-colors" style={{ color: muted }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* + New Transcript button */}
+        <div className="flex items-center justify-center pt-0 pb-2 flex-shrink-0">
           <button
             title="New Transcript"
             onClick={openNewTranscript}
@@ -342,11 +355,27 @@ export function AppSidebar({
   // ── Expanded state ────────────────────────────────────────────────────────
   return (
     <aside
-      className="flex flex-col flex-shrink-0 h-full overflow-hidden"
-      style={{ width: 216, borderRight: `1px solid ${border}`, background: sidebarBg }}
+      className="flex flex-col flex-shrink-0 overflow-hidden"
+      style={{ width: 216, background: sidebarBg, margin: '10px 0 10px 10px', borderRadius: 12 }}
     >
+      {/* Logo + toggle */}
+      <div className="flex items-center justify-between px-3 pt-4 pb-2 flex-shrink-0">
+        <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+          className="flex-shrink-0 transition-opacity hover:opacity-75">
+          <AppLogo height={22} />
+        </button>
+        {onToggle && (
+          <button className="p-1.5 rounded-lg transition-colors" style={{ color: muted }}
+            onClick={onToggle} title="Collapse sidebar"
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
+            <PanelLeftClose className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* New Transcript button */}
-      <div className="px-3 pt-4 pb-3 flex-shrink-0">
+      <div className="px-3 pt-2 pb-3 flex-shrink-0">
         <button
           onClick={openNewTranscript}
           className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs transition-all"
@@ -735,7 +764,6 @@ export function AppSidebar({
           </div>
         )}
 
-        <div className="mb-3" style={{ height: 1, background: isDark ? 'rgba(255,255,255,0.08)' : border }} />
         <div ref={menuRef} className="relative">
           {userMenuOpen && (
             <div className="absolute bottom-full mb-1.5 left-0 right-0 rounded-xl overflow-hidden z-50"

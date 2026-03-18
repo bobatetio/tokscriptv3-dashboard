@@ -40,13 +40,12 @@ export function SettingsPage() {
   const hoverBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: bg }}>
-      <AppSidebar activePage="settings" collapsed={sidebarCollapsed} />
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="settings" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
         <AppHeader
-          sidebarCollapsed={sidebarCollapsed}
-          onToggleSidebar={() => setSidebarCollapsed(c => !c)}
           leftSlot={
             <span className="text-xs" style={{ color: muted }}>Settings</span>
           }

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import {
   TranscriptDetailPanel,
   TranscriptDetailVideo,
@@ -97,19 +98,19 @@ function formatRelativeRefresh(isoDate: string | undefined): string {
 }
 
 // ─── Platform badge ───────────────────────────────────────────────────────────
-function PlatformIconSVG({ platform }: { platform: string }) {
+function PlatformIconSVG({ platform, size = 10 }: { platform: string; size?: number }) {
   if (platform === 'YouTube') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
       <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" />
     </svg>
   );
   if (platform === 'TikTok') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
       <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
     </svg>
   );
   if (platform === 'Instagram') return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ flexShrink: 0 }}>
       <rect x="2" y="2" width="20" height="20" rx="5" />
       <circle cx="12" cy="12" r="5" />
       <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
@@ -121,7 +122,7 @@ function PlatformIconSVG({ platform }: { platform: string }) {
 function PlatformBadge({ platform, isDark }: { platform: string; isDark: boolean }) {
   return (
     <span style={{ color: isDark ? 'rgba(255,255,255,0.5)' : '#9ca3af' }}>
-      <PlatformIconSVG platform={platform} />
+      <PlatformIconSVG platform={platform} size={13} />
     </span>
   );
 }
@@ -366,7 +367,7 @@ function VideoCard({
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-auto pt-1">
-          <span className="text-[10px]" style={{ color: muted }}>{entry.date}</span>
+          <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(entry.date)}</span>
           <div className="flex items-center gap-1">
 
             {/* Download video */}
@@ -591,16 +592,7 @@ function VideoRow({
     return ((total / views) * 100).toFixed(1) + '%';
   })();
 
-  const [postedDate, postedTime] = (() => {
-    try {
-      const d = new Date(entry.date);
-      const date = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-      return [date, time];
-    } catch {
-      return [entry.date, ''];
-    }
-  })();
+  const formattedDate = formatCardDate(entry.date);
 
   return (
     <>
@@ -639,7 +631,7 @@ function VideoRow({
         </div>
 
         {/* 2. Content: thumbnail + text block */}
-        <div className="flex-shrink-0 flex items-start gap-2" style={{ width: 220, marginRight: 16 }}>
+        <div className="flex-shrink-0 flex items-center gap-2" style={{ width: 220, marginRight: 16 }}>
           <div className="flex-shrink-0 relative rounded overflow-hidden" style={{ width: 30, aspectRatio: '9/16' }}>
             <ImageWithFallback src={entry.thumbnail} alt={entry.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)' }} />
@@ -648,14 +640,6 @@ function VideoRow({
             </div>
           </div>
           <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-            <p
-              style={{
-                fontSize: 11, fontWeight: 500, color: text, lineHeight: 1.3,
-                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-              } as React.CSSProperties}
-            >
-              {entry.title}
-            </p>
             <div className="flex items-center gap-1">
               <div className="relative flex-shrink-0">
                 <img src={entry.avatar} alt="" style={{ width: 16, height: 16, borderRadius: '50%', objectFit: 'cover' }} />
@@ -671,13 +655,20 @@ function VideoRow({
               <span style={{ fontSize: 11, color: muted, fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.creator}</span>
               <PlatformBadge platform={entry.platform} isDark={isDark} />
             </div>
+            <p
+              style={{
+                fontSize: 11, fontWeight: 500, color: text, lineHeight: 1.3,
+                display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+              } as React.CSSProperties}
+            >
+              {entry.title}
+            </p>
           </div>
         </div>
 
         {/* 3. Posted at */}
         <div className="flex-shrink-0 flex flex-col justify-center" style={{ width: 110, marginRight: 16 }}>
-          <span style={{ fontSize: 11, color: text, lineHeight: 1.3 }}>{postedDate}</span>
-          <span style={{ fontSize: 10, color: muted, lineHeight: 1.3 }}>{postedTime}</span>
+          <span style={{ fontSize: 11, color: text, lineHeight: 1.3 }}>{formattedDate}</span>
         </div>
 
         {/* 4. Duration */}
@@ -952,12 +943,12 @@ export function VideosPage() {
   const hasActiveFilter = activePlatform !== 'All' || activeDurations.length > 0 || activeWords.length > 0 || activeDateRanges.length > 0 || sortBy !== 'date-desc' || !!searchQuery;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="videos" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      <AppHeader sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
-
-      <div className="flex flex-1 overflow-hidden">
-        <AppSidebar activePage="videos" collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader />
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
@@ -1450,7 +1441,7 @@ export function VideosPage() {
                   </div>
                 ) : (
                   /* Grid view */
-                  <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+                  <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
                     {/* Blue CTA card */}
                     <div
                       className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
@@ -1698,7 +1689,7 @@ export function VideosPage() {
             /* Sessions grid */
             <div className="flex-1 overflow-y-auto">
               <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
                   {/* CTA tile — start new download */}
                   <div
                     className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"

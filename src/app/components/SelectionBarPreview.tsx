@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Download, ImageDown, FileText, Database, Archive, X, ArrowLeft, Search, ChevronDown, Heart, FolderPlus, Play, LayoutGrid, List, Columns, Copy, MoreHorizontal } from 'lucide-react';
+import { Download, X, ArrowLeft, Search, ChevronDown, Heart, FolderPlus, Play, LayoutGrid, List, Columns, Copy, MoreHorizontal } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useTheme } from '../context/ThemeContext';
+import { formatCardDate } from '../utils/formatDate';
 
 /* ─── Action definitions ─── */
 const ACTIONS = [
   { icon: Download, label: 'Videos' },
-  { icon: ImageDown, label: 'Covers' },
-  { icon: FileText, label: 'Transcripts' },
-  { icon: Database, label: 'Data' },
-  { icon: Archive, label: 'Download All' },
+  { icon: Download, label: 'Covers' },
+  { icon: Download, label: 'Transcripts' },
+  { icon: Download, label: 'Data' },
+  { icon: Download, label: 'Download All' },
 ] as const;
 
 /* ─── Global hover animation styles ─── */
@@ -88,11 +89,11 @@ const HOVER_CSS = `
 
 /* ─── Mock video data for cards ─── */
 const MOCK_CARDS = [
-  { id: 1, platform: 'YouTube', duration: '14:32', date: 'Mar 8, 2026', title: 'How I Built a $10M SaaS in 12 Months', creator: '@tokcast', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80', snippet: 'I want to talk about the exact playbook we used to grow from...' },
-  { id: 2, platform: 'TikTok', duration: '0:58', date: 'Mar 7, 2026', title: '5 Morning Habits That Changed My Life', creator: '@productivityhacks', thumbnail: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&q=80', snippet: "Good morning, everyone. I've been doing these five habits for 18..." },
-  { id: 3, platform: 'Instagram', duration: '1:23', date: 'Mar 6, 2026', title: 'The Secret to Perfect Pasta Every Time', creator: '@chefmike', thumbnail: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&q=80', snippet: "Okay, today I'm settling this once and for all. The number one..." },
-  { id: 4, platform: 'YouTube', duration: '22:10', date: 'Mar 5, 2026', title: 'React Server Components Explained Simply', creator: '@webdevdaily', thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80', snippet: 'React Server Components fundamentally change how we...' },
-  { id: 6, platform: 'TikTok', duration: '0:45', date: 'Mar 3, 2026', title: '30-Day Fitness Challenge Results', creator: '@fitnesswithsarah', thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80', snippet: 'Day 30. I cannot believe I actually made it. My starting weight was...' },
+  { id: 1, platform: 'YouTube', duration: '14:32', date: 'Mar 8, 2026, 10:15 AM', title: 'How I Built a $10M SaaS in 12 Months', creator: '@tokcast', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80', snippet: 'I want to talk about the exact playbook we used to grow from...' },
+  { id: 2, platform: 'TikTok', duration: '0:58', date: 'Mar 7, 2026, 2:30 PM', title: '5 Morning Habits That Changed My Life', creator: '@productivityhacks', thumbnail: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=400&q=80', snippet: "Good morning, everyone. I've been doing these five habits for 18..." },
+  { id: 3, platform: 'Instagram', duration: '1:23', date: 'Mar 6, 2026, 4:45 PM', title: 'The Secret to Perfect Pasta Every Time', creator: '@chefmike', thumbnail: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&q=80', snippet: "Okay, today I'm settling this once and for all. The number one..." },
+  { id: 4, platform: 'YouTube', duration: '22:10', date: 'Mar 5, 2026, 9:00 AM', title: 'React Server Components Explained Simply', creator: '@webdevdaily', thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&q=80', snippet: 'React Server Components fundamentally change how we...' },
+  { id: 6, platform: 'TikTok', duration: '0:45', date: 'Mar 3, 2026, 1:15 PM', title: '30-Day Fitness Challenge Results', creator: '@fitnesswithsarah', thumbnail: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&q=80', snippet: 'Day 30. I cannot believe I actually made it. My starting weight was...' },
 ];
 
 const PLATFORM_COLORS: Record<string, { bg: string; color: string }> = {
@@ -392,7 +393,7 @@ function MockVideoCard({ card, isDark, accentColor, isSelected }: {
         <p className="text-xs" style={{ color: textColor, fontWeight: 600, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{card.title}</p>
         <p className="text-[10px]" style={{ color: mutedColor, lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{card.snippet}</p>
         <div className="flex items-center justify-between mt-auto pt-1">
-          <span className="text-[10px]" style={{ color: mutedColor }}>{card.date}</span>
+          <span className="text-[10px]" style={{ color: mutedColor }}>{formatCardDate(card.date)}</span>
           <div className="flex items-center gap-1">
             <Copy size={12} style={{ color: mutedColor }} />
             <MoreHorizontal size={12} style={{ color: mutedColor }} />

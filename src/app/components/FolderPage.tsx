@@ -408,10 +408,11 @@ export function FolderPage() {
 
   if (!folder) {
     return (
-      <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
-        <AppHeader sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
-        <div className="flex flex-1 overflow-hidden">
-          <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} activeFolderId={Number(id)} />
+      <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+        <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} activeFolderId={Number(id)} />
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+             style={isDark ? undefined : { background: '#ffffff' }}>
+          <AppHeader />
           <main className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <Folder className="w-10 h-10 mx-auto mb-3" style={{ color: muted }} />
@@ -475,14 +476,12 @@ export function FolderPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
-      <AppHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={() => setSidebarCollapsed(c => !c)}
-      />
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} activeFolderId={folder.id} />
 
-      <div className="flex flex-1 overflow-hidden">
-        <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} activeFolderId={folder.id} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader />
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, ImageDown, FileText, Database, Archive, X } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 
 interface SelectionBarProps {
   selectedCount: number;
@@ -132,7 +132,7 @@ export function SelectionBar({
           data-tip="Download all selected cover images"
           onClick={() => { if (hasSelection) onDownloadCovers(); }}
         >
-          <ImageDown size={13} /> Covers
+          <Download size={13} /> Covers
         </button>
         <button
           className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
@@ -140,7 +140,7 @@ export function SelectionBar({
           data-tip="Download all video transcripts"
           onClick={() => { if (hasSelection) onDownloadTranscripts(); }}
         >
-          <FileText size={13} /> Transcripts
+          <Download size={13} /> Transcripts
         </button>
         <button
           className="sb-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
@@ -148,7 +148,7 @@ export function SelectionBar({
           data-tip="Download all video data"
           onClick={() => { if (hasSelection) onDownloadData(); }}
         >
-          <Database size={13} /> Data
+          <Download size={13} /> Data
         </button>
         <button
           className="sb-all-btn sel-bar-tip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs"
@@ -163,7 +163,7 @@ export function SelectionBar({
           data-tip="Download all content"
           onClick={() => { if (hasSelection) onDownloadAll(); }}
         >
-          <Archive size={13} /> Download All
+          <Download size={13} /> Download All
         </button>
 
         {divider}

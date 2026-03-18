@@ -1,27 +1,20 @@
 import React, { useContext, useRef, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { PanelLeftClose, PanelLeftOpen, Sun, Moon, Bell, Zap } from 'lucide-react';
+import { Sun, Moon, Bell, Zap } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { UserContext } from '../context/UserContext';
 import Rd from '../../imports/Rd';
-import { AppLogo } from './AppLogo';
 import { NotificationsDropdown } from './NotificationsDropdown';
 
 interface AppHeaderProps {
-  sidebarCollapsed: boolean;
-  onToggleSidebar: () => void;
-  /** Optional extra content rendered in the left section (after the sidebar toggle) */
   leftSlot?: React.ReactNode;
 }
 
-export function AppHeader({ sidebarCollapsed, onToggleSidebar, leftSlot }: AppHeaderProps) {
+export function AppHeader({ leftSlot }: AppHeaderProps) {
   const { isDark, toggle } = useContext(ThemeContext);
   const { plan, openUpgrade } = useContext(UserContext);
-  const navigate = useNavigate();
   const [notifOpen, setNotifOpen] = useState(false);
   const bellRef = useRef<HTMLButtonElement>(null);
 
-  const border  = isDark ? '#262626' : '#e5e7eb';
   const muted   = isDark ? '#888888' : '#6b7280';
   const text    = isDark ? '#ffffff' : '#111111';
   const hoverBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)';
@@ -29,31 +22,9 @@ export function AppHeader({ sidebarCollapsed, onToggleSidebar, leftSlot }: AppHe
   return (
     <header
       className="flex items-center justify-between px-4 h-[52px] flex-shrink-0"
-      style={{ borderBottom: `1px solid ${border}` }}
     >
-      {/* ── Left: logo + sidebar toggle + optional slot ── */}
+      {/* ── Left: optional slot ── */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => navigate('/')}
-          className="flex-shrink-0 transition-opacity hover:opacity-75"
-          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-        >
-          <AppLogo size={24} />
-        </button>
-
-        <button
-          className="p-1.5 rounded-lg transition-colors"
-          style={{ color: muted }}
-          onClick={onToggleSidebar}
-          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {sidebarCollapsed
-            ? <PanelLeftOpen  className="w-4 h-4" />
-            : <PanelLeftClose className="w-4 h-4" />}
-        </button>
-
         {leftSlot}
       </div>
 

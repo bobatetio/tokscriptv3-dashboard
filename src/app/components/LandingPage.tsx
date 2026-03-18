@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { formatDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { AppLogo } from './AppLogo';
 import BrokenEssentionalUiHighDefinition from '../../imports/BrokenEssentionalUiHighDefinition';
@@ -356,26 +357,26 @@ function AppMockup() {
   ];
 
   const transcripts = [
-    { id:1,  title:'Usability Test – Onboarding',   tag:'@ux',          duration:'31:44',   date:'Feb 5'  },
-    { id:2,  title:'Demo Day Spring 2026',            tag:'@demos',       duration:'1:08:11', date:'Feb 6'  },
-    { id:3,  title:'Brand Voice Workshop',            tag:'@brand',       duration:'22:10',   date:'Feb 7'  },
-    { id:4,  title:'Hiring Panel – Engineering',     tag:'@people',      duration:'55:46',   date:'Feb 8'  },
-    { id:5,  title:'Finance Review Q4',               tag:'@finance',     duration:'41:30',   date:'Feb 9'  },
-    { id:6,  title:'Support Team Sync',               tag:'@support',     duration:'17:22',   date:'Feb 10' },
-    { id:7,  title:'Roadmap Planning 2026',           tag:'@product',     duration:'39:05',   date:'Feb 11' },
-    { id:8,  title:'Marketing Q1 Debrief',            tag:'@marketing',   duration:'26:18',   date:'Feb 12' },
-    { id:9,  title:'All-Hands February',              tag:'@company',     duration:'1:14:00', date:'Feb 13' },
-    { id:10, title:'Backend Architecture Talk',       tag:'@engineering', duration:'48:55',   date:'Feb 14' },
-    { id:11, title:'Customer Feedback Roundup',       tag:'@cx',          duration:'33:40',   date:'Feb 15' },
-    { id:12, title:'Growth Webinar – Feb',            tag:'@growth',      duration:'57:12',   date:'Feb 16' },
-    { id:13, title:'Team Strategy Sprint',            tag:'@strategy',    duration:'1:02:30', date:'Feb 17' },
-    { id:14, title:'Podcast Episode 12',              tag:'@tokcast',     duration:'44:07',   date:'Feb 18' },
-    { id:15, title:'Sales call – Acme Corp',          tag:'@sales',       duration:'29:55',   date:'Feb 19' },
-    { id:16, title:'Design review walkthrough',       tag:'@designops',   duration:'21:18',   date:'Feb 20' },
-    { id:17, title:'Investor Q&A session',            tag:'@founders',    duration:'52:44',   date:'Feb 21' },
-    { id:18, title:'Weekly standup recap',            tag:'@teamlead',    duration:'8:05',    date:'Feb 22' },
-    { id:19, title:'User interview – Sarah K.',      tag:'@research',    duration:'38:10',   date:'Feb 23' },
-    { id:20, title:'Product launch keynote',          tag:'@productteam', duration:'14:32',   date:'Feb 24' },
+    { id:1,  title:'Usability Test – Onboarding',   tag:'@ux',          duration:'31:44',   date:'Feb 5, 2026, 2:30 PM'  },
+    { id:2,  title:'Demo Day Spring 2026',            tag:'@demos',       duration:'1:08:11', date:'Feb 6, 2026, 10:00 AM'  },
+    { id:3,  title:'Brand Voice Workshop',            tag:'@brand',       duration:'22:10',   date:'Feb 7, 2026, 3:15 PM'  },
+    { id:4,  title:'Hiring Panel – Engineering',     tag:'@people',      duration:'55:46',   date:'Feb 8, 2026, 11:30 AM'  },
+    { id:5,  title:'Finance Review Q4',               tag:'@finance',     duration:'41:30',   date:'Feb 9, 2026, 4:00 PM'  },
+    { id:6,  title:'Support Team Sync',               tag:'@support',     duration:'17:22',   date:'Feb 10, 2026, 9:45 AM' },
+    { id:7,  title:'Roadmap Planning 2026',           tag:'@product',     duration:'39:05',   date:'Feb 11, 2026, 1:00 PM' },
+    { id:8,  title:'Marketing Q1 Debrief',            tag:'@marketing',   duration:'26:18',   date:'Feb 12, 2026, 5:30 PM' },
+    { id:9,  title:'All-Hands February',              tag:'@company',     duration:'1:14:00', date:'Feb 13, 2026, 8:00 AM' },
+    { id:10, title:'Backend Architecture Talk',       tag:'@engineering', duration:'48:55',   date:'Feb 14, 2026, 2:45 PM' },
+    { id:11, title:'Customer Feedback Roundup',       tag:'@cx',          duration:'33:40',   date:'Feb 15, 2026, 12:00 PM' },
+    { id:12, title:'Growth Webinar – Feb',            tag:'@growth',      duration:'57:12',   date:'Feb 16, 2026, 3:30 PM' },
+    { id:13, title:'Team Strategy Sprint',            tag:'@strategy',    duration:'1:02:30', date:'Feb 17, 2026, 10:30 AM' },
+    { id:14, title:'Podcast Episode 12',              tag:'@tokcast',     duration:'44:07',   date:'Feb 18, 2026, 4:45 PM' },
+    { id:15, title:'Sales call – Acme Corp',          tag:'@sales',       duration:'29:55',   date:'Feb 19, 2026, 9:15 AM' },
+    { id:16, title:'Design review walkthrough',       tag:'@designops',   duration:'21:18',   date:'Feb 20, 2026, 1:30 PM' },
+    { id:17, title:'Investor Q&A session',            tag:'@founders',    duration:'52:44',   date:'Feb 21, 2026, 6:00 PM' },
+    { id:18, title:'Weekly standup recap',            tag:'@teamlead',    duration:'8:05',    date:'Feb 22, 2026, 11:00 AM' },
+    { id:19, title:'User interview – Sarah K.',      tag:'@research',    duration:'38:10',   date:'Feb 23, 2026, 3:00 PM' },
+    { id:20, title:'Product launch keynote',          tag:'@productteam', duration:'14:32',   date:'Feb 24, 2026, 7:30 PM' },
   ].map((t, i) => ({ ...t, thumbnail: thumbs[i % thumbs.length] }));
 
   const navItems = [
@@ -607,7 +608,7 @@ function AppMockup() {
                               <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5" style={{ fontSize: 10, color: muted }}>
                                 <span className="flex items-center gap-0.5"><Heart className="w-2.5 h-2.5" /> 85K likes</span>
                                 <span className="flex items-center gap-0.5"><Globe className="w-2.5 h-2.5" /> EN</span>
-                                <span className="flex items-center gap-0.5"><Calendar className="w-2.5 h-2.5" /> {selectedTranscript.date}</span>
+                                <span className="flex items-center gap-0.5"><Calendar className="w-2.5 h-2.5" /> {formatCardDate(selectedTranscript.date)}</span>
                               </div>
                               <div className="flex gap-1.5 mt-2 pt-2" style={{ borderTop: `1px solid ${border}` }}>
                                 {['View on TikTok', 'Download HD Cover'].map(btn => (
@@ -1405,7 +1406,7 @@ function LPVideoCard({ v, isDark, border, text, muted }: {
           {v.snippet}
         </p>
         <div className="flex items-center justify-between mt-auto pt-1.5">
-          <span className="text-[10px]" style={{ color: muted }}>{v.date}</span>
+          <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(v.date)}</span>
           <button
             className="p-1 rounded-md transition-colors"
             style={{ color: copied ? '#00b8b2' : muted, background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', border: `1px solid ${border}` }}

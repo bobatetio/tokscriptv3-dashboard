@@ -3,3 +3,6 @@ dist/
 temporary screenshots/
 .DS_Store
 *.local
+
+demo-clips/
+demo-frames/

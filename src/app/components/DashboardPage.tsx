@@ -32,6 +32,7 @@ import { AppSidebar } from './AppSidebar';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
 import { PROMPTS } from './PromptBasePage';
 import { formatDuration, parseDuration as _parseDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import { useNewTranscript } from '../context/NewTranscriptContext';
 import { SaveToFolderModal } from './SaveToFolderModal';
 import { SelectionBar } from './SelectionBar';
@@ -84,26 +85,26 @@ interface GroupItem {
 
 
 const SINGLES: Transcript[] = [
-  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=productteam' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
-  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=research' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
-  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=teamlead' , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
-  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
-  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=designops' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000005' },
-  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=sales' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
-  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tokcast' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0007' },
-  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',  date: 'Feb 17', words: 9150,  thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80',  source: '@strategy',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=strategy' , status: 'complete', url: 'https://www.instagram.com/reel/mock0008/' },
-  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=growth' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000009' },
-  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=cx' , status: 'processing', url: 'https://www.youtube.com/watch?v=mock0010' },
-  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=engineering' , status: 'failed', url: 'https://www.instagram.com/reel/mock0011/' },
-  { id: 12, title: 'All-Hands February',             duration: '1:48',  date: 'Feb 13', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80',  source: '@company',     views: '912K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=company' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0012' },
-  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=marketing' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000013' },
-  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=product' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0014' },
-  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=support' , status: 'processing', url: 'https://www.instagram.com/reel/mock0015/' },
-  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9',  words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=finance' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0016' },
-  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8',  words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=people' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000017' },
-  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7',  words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=brand' , status: 'processing', url: 'https://www.instagram.com/reel/mock0018/' },
-  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',  date: 'Feb 6',  words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80',  source: '@demos',       views: '1.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=demos' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0019' },
-  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5',  words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=ux' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000020' },
+  { id: 1,  title: 'Product launch keynote',        duration: '0:58',  date: 'Feb 24, 2026, 2:15 PM', words: 2341,  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  source: '@productteam', views: '2.4M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=productteam' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
+  { id: 2,  title: 'User interview – Sarah K.',      duration: '1:44',  date: 'Feb 23, 2026, 10:30 AM', words: 5820,  thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  source: '@research',    views: '892K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=research' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
+  { id: 3,  title: 'Weekly standup recap',           duration: '0:32',  date: 'Feb 22, 2026, 9:00 AM', words: 1102,  thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  source: '@teamlead',    views: '441K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=teamlead' , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
+  { id: 4,  title: 'Investor Q&A session',           duration: '1:51',  date: 'Feb 21, 2026, 3:45 PM', words: 8430,  thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  source: '@founders',    views: '3.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=founders' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
+  { id: 5,  title: 'Design review walkthrough',      duration: '1:07',  date: 'Feb 20, 2026, 11:00 AM', words: 3210,  thumbnail: 'https://images.unsplash.com/photo-1560804624-8798f895c85f?w=400&q=80',    source: '@designops',   views: '567K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=designops' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000005' },
+  { id: 6,  title: 'Sales call – Acme Corp',         duration: '0:47',  date: 'Feb 19, 2026, 1:30 PM', words: 4670,  thumbnail: 'https://images.unsplash.com/photo-1605568985653-3d8e43f4efa6?w=400&q=80',  source: '@sales',       views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=sales' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
+  { id: 7,  title: 'Podcast Episode 12',             duration: '1:33',  date: 'Feb 18, 2026, 4:00 PM', words: 6890,  thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  source: '@tokcast',     views: '2.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tokcast' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0007' },
+  { id: 8,  title: 'Team Strategy Sprint',           duration: '1:58',  date: 'Feb 17, 2026, 10:00 AM', words: 9150,  thumbnail: 'https://images.unsplash.com/photo-1763739532819-401f6a041b54?w=400&q=80',  source: '@strategy',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=strategy' , status: 'complete', url: 'https://www.instagram.com/reel/mock0008/' },
+  { id: 9,  title: 'Growth Webinar – Feb',           duration: '0:39',  date: 'Feb 16, 2026, 2:00 PM', words: 8200,  thumbnail: 'https://images.unsplash.com/photo-1769596722738-99460fa78dd6?w=400&q=80',  source: '@growth',      views: '1.6M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=growth' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000009' },
+  { id: 10, title: 'Customer Feedback Round 3',      duration: '1:22',  date: 'Feb 15, 2026, 11:30 AM', words: 4920,  thumbnail: 'https://images.unsplash.com/photo-1763318156213-37e41cd0dfec?w=400&q=80',  source: '@cx',          views: '739K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=cx' , status: 'processing', url: 'https://www.youtube.com/watch?v=mock0010' },
+  { id: 11, title: 'Backend Architecture Talk',      duration: '0:55',  date: 'Feb 14, 2026, 3:15 PM', words: 7310,  thumbnail: 'https://images.unsplash.com/photo-1590530794437-ad29186f324f?w=400&q=80',  source: '@engineering', views: '3.4M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=engineering' , status: 'failed', url: 'https://www.instagram.com/reel/mock0011/' },
+  { id: 12, title: 'All-Hands February',             duration: '1:48',  date: 'Feb 13, 2026, 9:30 AM', words: 11040, thumbnail: 'https://images.unsplash.com/photo-1718224326658-489bbfbeb2ca?w=400&q=80',  source: '@company',     views: '912K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=company' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0012' },
+  { id: 13, title: 'Marketing Q1 Debrief',           duration: '1:05',  date: 'Feb 12, 2026, 1:00 PM', words: 3890,  thumbnail: 'https://images.unsplash.com/photo-1759661966728-4a02e3c6ed91?w=400&q=80',  source: '@marketing',   views: '288K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=marketing' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000013' },
+  { id: 14, title: 'Roadmap Planning 2026',          duration: '1:37',  date: 'Feb 11, 2026, 4:30 PM', words: 5600,  thumbnail: 'https://images.unsplash.com/photo-1676276374782-39159bc5e7b4?w=400&q=80',  source: '@product',     views: '1.1M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=product' , status: 'failed', url: 'https://www.youtube.com/watch?v=mock0014' },
+  { id: 15, title: 'Support Team Sync',              duration: '0:44',  date: 'Feb 10, 2026, 10:45 AM', words: 2480,  thumbnail: 'https://images.unsplash.com/photo-1553775282-20af80779df7?w=400&q=80',    source: '@support',     views: '504K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=support' , status: 'processing', url: 'https://www.instagram.com/reel/mock0015/' },
+  { id: 16, title: 'Finance Review Q4',              duration: '1:19',  date: 'Feb 9, 2026, 2:30 PM', words: 6120,  thumbnail: 'https://images.unsplash.com/photo-1753955900083-b62ee8d97805?w=400&q=80',  source: '@finance',     views: '678K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=finance' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0016' },
+  { id: 17, title: 'Hiring Panel – Engineering',     duration: '1:52',  date: 'Feb 8, 2026, 11:15 AM', words: 8340,  thumbnail: 'https://images.unsplash.com/photo-1758520144437-f068ecaf0d83?w=400&q=80',  source: '@people',      views: '2.2M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=people' , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000017' },
+  { id: 18, title: 'Brand Voice Workshop',           duration: '0:28',  date: 'Feb 7, 2026, 3:00 PM', words: 3060,  thumbnail: 'https://images.unsplash.com/photo-1758873268663-5a362616b5a7?w=400&q=80',  source: '@brand',       views: '991K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=brand' , status: 'processing', url: 'https://www.instagram.com/reel/mock0018/' },
+  { id: 19, title: 'Demo Day Spring 2026',           duration: '1:44',  date: 'Feb 6, 2026, 9:45 AM', words: 10200, thumbnail: 'https://images.unsplash.com/photo-1757876598533-749f56cd1c66?w=400&q=80',  source: '@demos',       views: '1.8M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=demos' , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0019' },
+  { id: 20, title: 'Usability Test – Onboarding',   duration: '1:11',  date: 'Feb 5, 2026, 1:45 PM', words: 4730,  thumbnail: 'https://images.unsplash.com/photo-1552257079-e48b715185fa?w=400&q=80',    source: '@ux',          views: '356K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=ux' , status: 'processing', url: 'https://www.tiktok.com/@creator/video/10000000020' },
 ];
 
 const SNIPPETS: Record<number, string> = {
@@ -156,28 +157,28 @@ const COLLECTIONS: GroupItem[] = [
   {
     id: 101, name: 'Q1 Product Reviews', count: 4,
     videos: [
-      { id: 201, title: 'Jan product demo',        duration: '1:03', date: 'Jan 15, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@jasonlee',   views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=jasonlee' },
-      { id: 202, title: 'Feb deep-dive session',   duration: '0:51', date: 'Feb 3, 2026',  thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@sarahkim',   views: '678K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=sarahkim' },
-      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@mikepatel',  views: '341K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=mikepatel' },
-      { id: 204, title: 'Feature comparison talk', duration: '0:37', date: 'Feb 18, 2026', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@emilychan',  views: '892K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=emilychan' },
+      { id: 201, title: 'Jan product demo',        duration: '1:03', date: 'Jan 15, 2026, 10:15 AM', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@jasonlee',   views: '1.2M', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=jasonlee' },
+      { id: 202, title: 'Feb deep-dive session',   duration: '0:51', date: 'Feb 3, 2026, 2:30 PM',  thumbnail: 'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=400&q=80', source: '@sarahkim',   views: '678K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=sarahkim' },
+      { id: 203, title: 'Stakeholder walkthrough', duration: '1:28', date: 'Feb 10, 2026, 4:45 PM', thumbnail: 'https://images.unsplash.com/photo-1551434678-e076c223a692?w=400&q=80', source: '@mikepatel',  views: '341K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=mikepatel' },
+      { id: 204, title: 'Feature comparison talk', duration: '0:37', date: 'Feb 18, 2026, 9:00 AM', thumbnail: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400&q=80', source: '@emilychan',  views: '892K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=emilychan' },
     ],
   },
   {
     id: 102, name: 'User Research Series', count: 3,
     videos: [
-      { id: 205, title: 'Interview – Alex M.',  duration: '1:45', date: 'Feb 5, 2026',  thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@alexmorgan',   views: '2.1M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=alexmorgan' },
-      { id: 206, title: 'Interview – Priya S.', duration: '1:17', date: 'Feb 7, 2026',  thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@priyasharma', views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=priyasharma' },
-      { id: 207, title: 'Focus group session',  duration: '0:43', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@davidsoto',   views: '987K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=davidsoto' },
+      { id: 205, title: 'Interview – Alex M.',  duration: '1:45', date: 'Feb 5, 2026, 1:15 PM',  thumbnail: 'https://images.unsplash.com/photo-1535957998253-26ae1ef29506?w=400&q=80', source: '@alexmorgan',   views: '2.1M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=alexmorgan' },
+      { id: 206, title: 'Interview – Priya S.', duration: '1:17', date: 'Feb 7, 2026, 3:00 PM',  thumbnail: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&q=80', source: '@priyasharma', views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=priyasharma' },
+      { id: 207, title: 'Focus group session',  duration: '0:43', date: 'Feb 12, 2026, 7:30 PM', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@davidsoto',   views: '987K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=davidsoto' },
     ],
   },
   {
     id: 103, name: 'Marketing Campaigns', count: 5,
     videos: [
-      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@ninawoods',  views: '3.2M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ninawoods' },
-      { id: 209, title: 'Ad script review',         duration: '1:06', date: 'Feb 1, 2026',  thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@tombrady',   views: '512K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tombrady' },
-      { id: 210, title: 'Influencer briefing',      duration: '1:38', date: 'Feb 8, 2026',  thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@lucyzhang',  views: '1.9M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=lucyzhang' },
-      { id: 211, title: 'Launch event recap',       duration: '0:52', date: 'Feb 14, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@carlosrey',  views: '732K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=carlosrey' },
-      { id: 212, title: 'Post-launch debrief',      duration: '1:23', date: 'Feb 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@amandafox',  views: '289K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=amandafox' },
+      { id: 208, title: 'Brand storytelling video', duration: '0:29', date: 'Jan 28, 2026, 11:00 AM', thumbnail: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=400&q=80', source: '@ninawoods',  views: '3.2M', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ninawoods' },
+      { id: 209, title: 'Ad script review',         duration: '1:06', date: 'Feb 1, 2026, 5:15 PM',  thumbnail: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80', source: '@tombrady',   views: '512K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=tombrady' },
+      { id: 210, title: 'Influencer briefing',      duration: '1:38', date: 'Feb 8, 2026, 8:45 AM',  thumbnail: 'https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?w=400&q=80', source: '@lucyzhang',  views: '1.9M', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=lucyzhang' },
+      { id: 211, title: 'Launch event recap',       duration: '0:52', date: 'Feb 14, 2026, 12:30 PM', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@carlosrey',  views: '732K', platform: 'YouTube',   avatar: 'https://i.pravatar.cc/80?u=carlosrey' },
+      { id: 212, title: 'Post-launch debrief',      duration: '1:23', date: 'Feb 20, 2026, 6:00 PM', thumbnail: 'https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&q=80', source: '@amandafox',  views: '289K', platform: 'TikTok',    avatar: 'https://i.pravatar.cc/80?u=amandafox' },
     ],
   },
 ];
@@ -186,20 +187,20 @@ const BULK: GroupItem[] = [
   {
     id: 301, name: 'Conference 2026 Batch', count: 6,
     videos: [
-      { id: 401, title: 'Opening keynote',         duration: '1:56', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@keynoteking',  views: '1.7M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=keynoteking' },
-      { id: 402, title: 'Panel: Future of AI',     duration: '1:31', date: 'Feb 10, 2026', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@aifuturist',   views: '4.2M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=aifuturist' },
-      { id: 403, title: 'Workshop – UX trends',    duration: '0:46', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@uxtrends',     views: '891K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=uxtrends' },
-      { id: 404, title: 'Startup pitch session',   duration: '1:14', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@startuplife',  views: '2.3M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=startuplife' },
-      { id: 405, title: 'Closing remarks',         duration: '0:33', date: 'Feb 11, 2026', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@closingnotes', views: '556K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=closingnotes' },
-      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@networkpro',   views: '1.1M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=networkpro' },
+      { id: 401, title: 'Opening keynote',         duration: '1:56', date: 'Feb 10, 2026, 10:15 AM', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@keynoteking',  views: '1.7M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=keynoteking' },
+      { id: 402, title: 'Panel: Future of AI',     duration: '1:31', date: 'Feb 10, 2026, 2:30 PM', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@aifuturist',   views: '4.2M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=aifuturist' },
+      { id: 403, title: 'Workshop – UX trends',    duration: '0:46', date: 'Feb 11, 2026, 4:45 PM', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@uxtrends',     views: '891K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=uxtrends' },
+      { id: 404, title: 'Startup pitch session',   duration: '1:14', date: 'Feb 11, 2026, 9:00 AM', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@startuplife',  views: '2.3M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=startuplife' },
+      { id: 405, title: 'Closing remarks',         duration: '0:33', date: 'Feb 11, 2026, 1:15 PM', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@closingnotes', views: '556K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=closingnotes' },
+      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026, 3:00 PM', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@networkpro',   views: '1.1M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=networkpro' },
     ],
   },
   {
     id: 302, name: 'Onboarding Videos', count: 3,
     videos: [
-      { id: 407, title: 'Welcome & orientation', duration: '0:57', date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@hrteam',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=hrteam' },
-      { id: 408, title: 'Platform walkthrough',  duration: '1:22', date: 'Jan 20, 2026', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@devops101', views: '338K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=devops101' },
-      { id: 409, title: 'Team intro session',    duration: '0:41', date: 'Jan 21, 2026', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@ceofounder', views: '201K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ceofounder' },
+      { id: 407, title: 'Welcome & orientation', duration: '0:57', date: 'Jan 20, 2026, 7:30 PM', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@hrteam',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=hrteam' },
+      { id: 408, title: 'Platform walkthrough',  duration: '1:22', date: 'Jan 20, 2026, 11:00 AM', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@devops101', views: '338K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=devops101' },
+      { id: 409, title: 'Team intro session',    duration: '0:41', date: 'Jan 21, 2026, 5:15 PM', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@ceofounder', views: '201K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ceofounder' },
     ],
   },
 ];
@@ -211,35 +212,35 @@ const FOLDERS: GroupItem[] = [
   {
     id: 501, name: 'Client Projects', count: 4,
     videos: [
-      { id: 601, title: 'Acme Corp kickoff call',      duration: '1:08',  date: 'Feb 22, 2026' },
-      { id: 602, title: 'Globex review session',       duration: '0:55',  date: 'Feb 18, 2026' },
-      { id: 603, title: 'Initech product feedback',    duration: '1:34',  date: 'Feb 14, 2026' },
-      { id: 604, title: 'Umbrella Corp debrief',       duration: '0:48',  date: 'Feb 10, 2026' },
+      { id: 601, title: 'Acme Corp kickoff call',      duration: '1:08',  date: 'Feb 22, 2026, 8:45 AM' },
+      { id: 602, title: 'Globex review session',       duration: '0:55',  date: 'Feb 18, 2026, 12:30 PM' },
+      { id: 603, title: 'Initech product feedback',    duration: '1:34',  date: 'Feb 14, 2026, 6:00 PM' },
+      { id: 604, title: 'Umbrella Corp debrief',       duration: '0:48',  date: 'Feb 10, 2026, 10:15 AM' },
     ],
   },
   {
     id: 502, name: 'Internal Training', count: 3,
     videos: [
-      { id: 605, title: 'New hire orientation Q1',     duration: '1:47',  date: 'Jan 15, 2026' },
-      { id: 606, title: 'Security compliance 2026',    duration: '1:16',  date: 'Jan 22, 2026' },
-      { id: 607, title: 'Sales methodology deep-dive', duration: '1:59',    date: 'Feb 2, 2026' },
+      { id: 605, title: 'New hire orientation Q1',     duration: '1:47',  date: 'Jan 15, 2026, 2:30 PM' },
+      { id: 606, title: 'Security compliance 2026',    duration: '1:16',  date: 'Jan 22, 2026, 4:45 PM' },
+      { id: 607, title: 'Sales methodology deep-dive', duration: '1:59',    date: 'Feb 2, 2026, 9:00 AM' },
     ],
   },
   {
     id: 503, name: 'Archived Interviews', count: 5,
     videos: [
-      { id: 608, title: 'Interview – Dana R.',         duration: '1:43',  date: 'Dec 10, 2025' },
-      { id: 609, title: 'Interview – Marcus T.',       duration: '0:36',  date: 'Dec 14, 2025' },
-      { id: 610, title: 'Interview – Yuki N.',         duration: '1:25',  date: 'Dec 18, 2025' },
-      { id: 611, title: 'Interview – Omar B.',         duration: '0:53',  date: 'Jan 6, 2026' },
-      { id: 612, title: 'Interview – Leila S.',        duration: '1:18',  date: 'Jan 9, 2026' },
+      { id: 608, title: 'Interview – Dana R.',         duration: '1:43',  date: 'Dec 10, 2025, 1:15 PM' },
+      { id: 609, title: 'Interview – Marcus T.',       duration: '0:36',  date: 'Dec 14, 2025, 3:00 PM' },
+      { id: 610, title: 'Interview – Yuki N.',         duration: '1:25',  date: 'Dec 18, 2025, 7:30 PM' },
+      { id: 611, title: 'Interview – Omar B.',         duration: '0:53',  date: 'Jan 6, 2026, 11:00 AM' },
+      { id: 612, title: 'Interview – Leila S.',        duration: '1:18',  date: 'Jan 9, 2026, 5:15 PM' },
     ],
   },
   {
     id: 504, name: 'Event Recordings', count: 2,
     videos: [
-      { id: 613, title: 'Summit panel – AI futures',   duration: '1:54',    date: 'Feb 5, 2026' },
-      { id: 614, title: 'Workshop – data storytelling', duration: '1:39',  date: 'Feb 6, 2026' },
+      { id: 613, title: 'Summit panel – AI futures',   duration: '1:54',    date: 'Feb 5, 2026, 8:45 AM' },
+      { id: 614, title: 'Workshop – data storytelling', duration: '1:39',  date: 'Feb 6, 2026, 12:30 PM' },
     ],
   },
 ];
@@ -309,7 +310,7 @@ const IV_VIDEO = {
   likes: '85k',
   duration: '0:58',
   language: 'EN',
-  date: 'Feb 18, 2026',
+  date: 'Feb 18, 2026, 6:00 PM',
   wordCount: 51,
   charCount: 307,
   sentences: 10,
@@ -354,7 +355,7 @@ function transcriptToDetailVideo(t: Transcript): TranscriptDetailVideo {
     likes:       likesFromWords(words),
     duration:    t.duration,
     language:    'EN',
-    date:        `${t.date}, 2026`,
+    date:        formatCardDate(t.date),
     wordCount:   words,
     charCount:   Math.round(words * 5.1),
     sentences:   Math.round(words / 13),
@@ -522,11 +523,11 @@ interface DiscoverEntry {
 }
 
 const DISCOVER_ENTRIES: DiscoverEntry[] = [
-  { id: 1,  platform: 'YouTube',   duration: '0:58', date: 'Feb 24, 2026', title: 'Product launch keynote',    creator: '@productteam',  avatar: 'https://i.pravatar.cc/80?u=productteam',  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  snippet: "Welcome everyone to our biggest launch of the year. Today we're unveiling features that will fundamentally change how you think about productivity..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
-  { id: 2,  platform: 'TikTok',    duration: '1:44', date: 'Feb 23, 2026', title: 'User interview – Sarah K.',  creator: '@research',     avatar: 'https://i.pravatar.cc/80?u=research',     thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  snippet: "So what I found really interesting in my workflow was the amount of time I was spending just trying to organise all the notes from these sessions..." , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
-  { id: 3,  platform: 'Instagram', duration: '0:32', date: 'Feb 22, 2026', title: 'Weekly standup recap',        creator: '@teamlead',     avatar: 'https://i.pravatar.cc/80?u=teamlead',     thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  snippet: "Team, quick recap from today: we're blocking Wednesday morning for deep work, shipping is on track, and the design review is Friday at 2pm..." , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
-  { id: 4,  platform: 'YouTube',   duration: '1:51', date: 'Feb 21, 2026', title: 'Investor Q&A session',        creator: '@founders',     avatar: 'https://i.pravatar.cc/80?u=founders',     thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  snippet: "The question everyone keeps asking is how we plan to monetise at scale. The short answer is that we're not chasing revenue first — we're chasing retention..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
-  { id: 6,  platform: 'YouTube',   duration: '1:33', date: 'Feb 18, 2026', title: 'Podcast Episode 12',          creator: '@tokcast',      avatar: 'https://i.pravatar.cc/80?u=tokcast',      thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  snippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
+  { id: 1,  platform: 'YouTube',   duration: '0:58', date: 'Feb 24, 2026, 10:15 AM', title: 'Product launch keynote',    creator: '@productteam',  avatar: 'https://i.pravatar.cc/80?u=productteam',  thumbnail: 'https://images.unsplash.com/photo-1759496434742-771c92e66103?w=400&q=80',  snippet: "Welcome everyone to our biggest launch of the year. Today we're unveiling features that will fundamentally change how you think about productivity..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0001' },
+  { id: 2,  platform: 'TikTok',    duration: '1:44', date: 'Feb 23, 2026, 2:30 PM', title: 'User interview – Sarah K.',  creator: '@research',     avatar: 'https://i.pravatar.cc/80?u=research',     thumbnail: 'https://images.unsplash.com/photo-1693044216415-e2c1d759ed62?w=400&q=80',  snippet: "So what I found really interesting in my workflow was the amount of time I was spending just trying to organise all the notes from these sessions..." , status: 'complete', url: 'https://www.tiktok.com/@creator/video/10000000002' },
+  { id: 3,  platform: 'Instagram', duration: '0:32', date: 'Feb 22, 2026, 4:45 PM', title: 'Weekly standup recap',        creator: '@teamlead',     avatar: 'https://i.pravatar.cc/80?u=teamlead',     thumbnail: 'https://images.unsplash.com/photo-1573497619860-6d82917e4ec8?w=400&q=80',  snippet: "Team, quick recap from today: we're blocking Wednesday morning for deep work, shipping is on track, and the design review is Friday at 2pm..." , status: 'complete', url: 'https://www.instagram.com/reel/mock0003/' },
+  { id: 4,  platform: 'YouTube',   duration: '1:51', date: 'Feb 21, 2026, 9:00 AM', title: 'Investor Q&A session',        creator: '@founders',     avatar: 'https://i.pravatar.cc/80?u=founders',     thumbnail: 'https://images.unsplash.com/photo-1712971404080-87271ce2e473?w=400&q=80',  snippet: "The question everyone keeps asking is how we plan to monetise at scale. The short answer is that we're not chasing revenue first — we're chasing retention..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0004' },
+  { id: 6,  platform: 'YouTube',   duration: '1:33', date: 'Feb 18, 2026, 1:15 PM', title: 'Podcast Episode 12',          creator: '@tokcast',      avatar: 'https://i.pravatar.cc/80?u=tokcast',      thumbnail: 'https://images.unsplash.com/photo-1627667050609-d4ba6483a368?w=400&q=80',  snippet: "My guest today has built three companies from zero to acquisition. The one thing all three had in common? They were all solving a problem the founder personally had..." , status: 'complete', url: 'https://www.youtube.com/watch?v=mock0006' },
 ];
 
 function DiscoverCard({
@@ -587,7 +588,7 @@ function DiscoverCard({
 
         {/* Footer: date + action buttons */}
         <div className="flex items-center justify-between mt-auto pt-1">
-          <span className="text-[10px]" style={{ color: muted }}>{entry.date}</span>
+          <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(entry.date)}</span>
           <div className="flex items-center gap-1">
 
             {/* Favourite */}
@@ -1280,7 +1281,7 @@ function InlineDashboardOverview({
                   {/* Right value */}
                   <div className="flex flex-col items-end flex-shrink-0 gap-0.5">
                     <span style={{ color: text, fontWeight: 600, fontSize: '0.75rem' }}>
-                      {t.date}
+                      {formatCardDate(t.date)}
                     </span>
                     <span style={{ color: muted, fontSize: '0.6875rem' }}>
                       {formatDuration(t.duration)}
@@ -1602,22 +1603,15 @@ export function DashboardPage() {
     : listTitle;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
 
-      {/* ════════════════════════════════════════════════════════════════════
-          TOP HEADER
-      ════════════════════════════════════════════════════════════════════ */}
-      <AppHeader sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(c => !c)} />
-
-      {/* ── All three panels ─────────────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden">
-
-      {/* ═══════════════════════════════════════════���════════════════════════
+      {/* ═══════════════════════════════════════════════════════════════════
           LEFT SIDEBAR
       ════════════════════════════════════════════════════════════════════ */}
       <AppSidebar
         activePage="dashboard"
         collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(c => !c)}
         activeLibraryItem={
           view.category === 'singles'     ? 'singles'
           : view.category === 'collections' ? 'collections'
@@ -1634,10 +1628,19 @@ export function DashboardPage() {
         favouritesCount={favouritedIds.size}
       />
 
+      {/* ── Wrapper: header + content ─────────────────────────────────────────── */}
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
 
-      {/* ══���═════════════════════════════════════════════════════════════════
+      {/* ════════════════════════════════════════════════════════════════════
+          TOP HEADER
+      ════════════════════════════════════════════════════════════════════ */}
+      <AppHeader />
+
+      {/* ══════════════════════════════════════════════════════════════════════
           MAIN CONTENT (always rendered; New Transcript opens as modal)
       ════════════════════════════════════════════════════════════════════ */}
+      <div className="flex-1 flex min-w-0 overflow-hidden">
       {view.category === 'dashboard' ? (
         isFirstTimeUser ? (
           <FirstTimeDashboardOverview
@@ -1659,10 +1662,14 @@ export function DashboardPage() {
         /* ══════════════════════════════════════════════════════════════
            SINGLES FULL-PAGE VIEW  (list / grid mode)
         ══════════════════════════════════════════════════════════════ */
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto"
+             style={{ scrollbarWidth: 'thin', scrollbarColor: `${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'} transparent` }}>
+
+          {/* ── Sticky header + filter wrapper ──────────────────────────── */}
+          <div className="sticky top-0 z-10 flex-shrink-0" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
 
           {/* ── Page Header ─────────────────────────────────────────────── */}
-          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div style={{ borderBottom: `1px solid ${border}` }}>
             <div className="max-w-[1280px] mx-auto w-full px-6 pt-5 pb-4">
               <h1 style={{ color: text, fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
                 Singles
@@ -1674,7 +1681,7 @@ export function DashboardPage() {
           </div>
 
           {/* ── Unified Filter Bar ───────────────────────────────────────── */}
-          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div style={{ borderBottom: `1px solid ${border}` }}>
           <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
 
             {/* Search */}
@@ -1928,6 +1935,7 @@ export function DashboardPage() {
 
           </div>
           </div>
+          </div> {/* end sticky header + filter wrapper */}
 
           {/* Content */}
           {singlesViewMode === 'hybrid' ? (
@@ -1983,7 +1991,7 @@ export function DashboardPage() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Calendar className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
-                              <span className="text-[9px]" style={{ color: muted }}>{item.date}</span>
+                              <span className="text-[9px]" style={{ color: muted }}>{formatCardDate(item.date)}</span>
                             </div>
                           </div>
                         </div>
@@ -2036,7 +2044,7 @@ export function DashboardPage() {
             </div>
             </div>
           ) : (
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-shrink-0">
           <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
             {/* Selection bar */}
             {view.category === 'singles' && singlesSelectedIds.size > 0 && (
@@ -2133,7 +2141,7 @@ export function DashboardPage() {
                     </div>
                     {/* Date */}
                     <div style={{ width: 80 }} className="flex-shrink-0 text-right mr-4 py-2.5">
-                      <p className="text-[11px]" style={{ color: text }}>{item.date}</p>
+                      <p className="text-[11px]" style={{ color: text }}>{formatCardDate(item.date)}</p>
                     </div>
                     {/* Duration */}
                     <div style={{ width: 60 }} className="flex-shrink-0 text-center mr-4 py-2.5">
@@ -2213,7 +2221,7 @@ export function DashboardPage() {
               </div>
             ) : (
               /* grid */
-              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+              <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
                 {(items as Transcript[]).map((item) => {
                   return (
                   <div
@@ -2322,7 +2330,7 @@ export function DashboardPage() {
                         {SNIPPETS[item.id] ?? ''}
                       </p>
                       <div className="flex items-center justify-between mt-auto pt-1">
-                        <span className="text-[10px]" style={{ color: muted }}>{item.date}</span>
+                        <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(item.date)}</span>
                         <div className="flex items-center gap-1">
                           {/* Copy */}
                           <button
@@ -2462,10 +2470,14 @@ export function DashboardPage() {
         /* ══════════════════════════════════════════════════════════════
            COLLECTIONS / BULK FULL-PAGE VIEW  (list / grid mode)
         ══════════════════════════════════════════════════════════════ */
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-y-auto"
+             style={{ scrollbarWidth: 'thin', scrollbarColor: `${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'} transparent` }}>
+
+          {/* ── Sticky header + filter wrapper ──────────────────────────── */}
+          <div className="sticky top-0 z-10 flex-shrink-0" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
 
           {/* ── Page Header ─────────────────────────────────────────────── */}
-          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div style={{ borderBottom: `1px solid ${border}` }}>
             <div className="max-w-[1280px] mx-auto w-full px-6 pt-5 pb-4">
               <div className="flex items-center gap-2">
                 {view.groupId && (
@@ -2492,7 +2504,7 @@ export function DashboardPage() {
           </div>
 
           {/* ── Unified Filter Bar ───────────────────────────────────────── */}
-          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+          <div style={{ borderBottom: `1px solid ${border}` }}>
           <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
 
             {/* Search */}
@@ -2788,6 +2800,7 @@ export function DashboardPage() {
             )}
           </div>
           </div>
+          </div> {/* end sticky header + filter wrapper */}
 
           {/* Content */}
           {groupViewMode === 'hybrid' && !isGroups ? (
@@ -2847,7 +2860,7 @@ export function DashboardPage() {
                               )}
                               <div className="flex items-center gap-1">
                                 <Calendar className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
-                                <span className="text-[9px]" style={{ color: muted }}>{item.date}</span>
+                                <span className="text-[9px]" style={{ color: muted }}>{formatCardDate(item.date)}</span>
                               </div>
                             </div>
                           </div>
@@ -2919,7 +2932,7 @@ export function DashboardPage() {
             </div>
             </div>
           ) : (
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-shrink-0">
           <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
             {/* Stat cards — top-level collections/bulk overview */}
             {isGroups && (view.category === 'collections' || view.category === 'bulk') && (() => {
@@ -3250,7 +3263,7 @@ export function DashboardPage() {
                         </div>
                         {/* Date */}
                         <div style={{ width: 80 }} className="flex-shrink-0 text-right mr-4 py-2.5">
-                          <p className="text-[11px]" style={{ color: text }}>{item.date}</p>
+                          <p className="text-[11px]" style={{ color: text }}>{formatCardDate(item.date)}</p>
                         </div>
                         {/* Duration */}
                         <div style={{ width: 60 }} className="flex-shrink-0 text-center mr-4 py-2.5">
@@ -3309,7 +3322,7 @@ export function DashboardPage() {
                   })}
                 </div>
               ) : (
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(195px, 1fr))' }}>
+                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
                   {(items as VideoItem[]).map(item => {
                     const thumb = item.thumbnail ?? `https://picsum.photos/seed/${item.id}/400/700`;
                     return (
@@ -3419,7 +3432,7 @@ export function DashboardPage() {
                             {SNIPPETS[item.id] ?? ''}
                           </p>
                           <div className="flex items-center justify-between mt-auto pt-1">
-                            <span className="text-[10px]" style={{ color: muted }}>{item.date}</span>
+                            <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(item.date)}</span>
                             <div className="flex items-center gap-1">
                               {/* Copy */}
                               <button
@@ -4043,7 +4056,8 @@ export function DashboardPage() {
         </>
       )}
 
-      </div>{/* end panels row */}
+      </div>{/* end content panel */}
+      </div>{/* end wrapper */}
 
       {/* ── Dashboard Recent Transcript Detail Overlay ───────────────────────── */}
       {view.category === 'dashboard' && selectedTranscriptId !== null && (() => {

@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { formatDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import { AppSidebar } from './AppSidebar';
 import { AppHeader } from './AppHeader';
 import {
@@ -114,7 +115,7 @@ function SidebarTranscriptCard({
         </p>
         {/* Actions */}
         <div className="flex items-center justify-between mt-auto pt-1.5">
-          <span className="text-[10px]" style={{ color: muted }}>{entry.date}</span>
+          <span className="text-[10px]" style={{ color: muted }}>{formatCardDate(entry.date)}</span>
           <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
             <button
               className="p-1 rounded-md transition-colors"
@@ -266,34 +267,30 @@ export function PromptDetailPage() {
   const col = CATEGORY_COLORS[prompt.category] ?? CATEGORY_COLORS['Script'];
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="prompt-base" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      {/* ══ TOP HEADER ══════════════════════════════════════════════════════ */}
-      <AppHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={() => setSidebarCollapsed(c => !c)}
-        leftSlot={
-          <button
-            className="flex items-center gap-1.5 p-1.5 rounded-lg transition-colors text-xs"
-            style={{ color: muted }}
-            onClick={() => navigate(-1)}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = hoverBg;
-              (e.currentTarget as HTMLButtonElement).style.color = text;
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-              (e.currentTarget as HTMLButtonElement).style.color = muted;
-            }}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back
-          </button>
-        }
-      />
-
-      {/* ══ BODY ═══════════════════════════════════════════════════════════ */}
-      <div className="flex flex-1 overflow-hidden">
-        <AppSidebar activePage="prompt-base" collapsed={sidebarCollapsed} />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader
+          leftSlot={
+            <button
+              className="flex items-center gap-1.5 p-1.5 rounded-lg transition-colors text-xs"
+              style={{ color: muted }}
+              onClick={() => navigate(-1)}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = hoverBg;
+                (e.currentTarget as HTMLButtonElement).style.color = text;
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.color = muted;
+              }}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back
+            </button>
+          }
+        />
 
         {/* ── Main content ─────────────────────────────────────────────── */}
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">

@@ -1,16 +1,21 @@
-# Handoff — Force Dark-Mode Styling on Thumbnail Platform Badges
+# Handoff — Reformat Video Card Dates Site-Wide
 
 ## Status: DONE
 
 ## What was done
-Hardcoded dark-mode styling (`rgba(255,255,255,0.06)` bg, `rgba(255,255,255,0.6)` text, `rgba(255,255,255,0.1)` border) on all `VideoPlatformBadge`/`PlatformBadge` components that render on thumbnail overlays. Content-area badges (FolderPage table rows, CreatorProfile list rows, CreatorProfile header) keep their `isDark` conditionals.
+Created `formatCardDate()` utility and applied it to all date render sites across 3 files.
 
-## Files Modified
-1. `src/app/components/VideosPage.tsx` — `VideoPlatformBadge`: removed isDark prop, hardcoded dark styling, updated 1 call site
-2. `src/app/components/DashboardPage.tsx` — `VideoPlatformBadge`: removed isDark prop, hardcoded dark styling, updated 3 call sites
-3. `src/app/components/DiscoverPage.tsx` — `PlatformBadge`: removed isDark prop, hardcoded dark styling, updated 2 call sites
-4. `src/app/components/CreatorProfilePage.tsx` — `VideoPlatformBadge`: removed isDark, hardcoded dark styling, updated grid call site; list row switched from `VideoPlatformBadge` → `PlatformBadge` (content-area badge with isDark)
-5. `src/app/components/videos/VideoResultsPage.tsx` — `PlatformBadge`: removed isDark prop, hardcoded dark styling, updated 2 call sites
+### Files modified
+1. **`src/app/utils/formatDate.ts`** — NEW: shared `formatCardDate()` that converts date strings to `M/D/YY - H:MMAM/PM` (with time) or `M/D/YY` (without time)
+2. **`src/app/components/DashboardPage.tsx`** — Updated SINGLES mock data to include year+time; fixed `transcriptToDetailVideo`; applied `formatCardDate` at 8 render sites (Discover footer, Recent Transcripts, Singles hybrid/list/grid, Collections hybrid/list/grid)
+3. **`src/app/components/CreatorProfilePage.tsx`** — Applied `formatCardDate` at 2 render sites (grid card footer + list view Date column)
+4. **`src/app/components/VideosPage.tsx`** — Applied `formatCardDate` at grid card footer; replaced `toLocaleDateString`/`toLocaleTimeString` IIFE in list view with single `formatCardDate` call
 
-## Build: clean
-## Verification: Screenshots confirm dark translucent badges on thumbnails in light mode across Videos, Discover pages
+## Build: clean (vite build passes)
+
+## Verification
+- Videos grid: dates show `3/8/26 - 10:15AM` format ✓
+- Videos list: POSTED AT column shows same format ✓
+- Dashboard Recent Transcripts: `2/24/26 - 2:15PM` format ✓
+- Dashboard Singles grid: `2/5/26 - 1:45PM` format ✓
+- CreatorProfilePage grid: `2/18/26` format (no time in mock data) ✓

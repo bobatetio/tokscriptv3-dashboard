@@ -168,31 +168,26 @@ export function TranscriptResultPage() {
   }, [passed]);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: bg }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: isDark ? '#0a0a0a' : '#ffffff' }}>
+      <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
 
-      {/* ══ TOP HEADER ══════════════════════════════════════════════════════ */}
-      <AppHeader
-        sidebarCollapsed={sidebarCollapsed}
-        onToggleSidebar={() => setSidebarCollapsed(c => !c)}
-        leftSlot={
-          <button
-            className="flex items-center gap-1.5 p-1.5 rounded-lg transition-colors text-xs"
-            style={{ color: muted }}
-            onClick={() => navigate(-1)}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.color = text; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = muted; }}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Back
-          </button>
-        }
-      />
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden"
+           style={isDark ? undefined : { background: '#ffffff' }}>
+        <AppHeader
+          leftSlot={
+            <button
+              className="flex items-center gap-1.5 p-1.5 rounded-lg transition-colors text-xs"
+              style={{ color: muted }}
+              onClick={() => navigate(-1)}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; (e.currentTarget as HTMLButtonElement).style.color = text; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = muted; }}
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back
+            </button>
+          }
+        />
 
-      {/* ══ BODY ════════════════════════════════════════════════════════════ */}
-      <div className="flex flex-1 overflow-hidden">
-
-        <AppSidebar activePage="dashboard" collapsed={sidebarCollapsed} />
-
-        {/* ── Detail content — identical shell to DashboardPage's right panel ── */}
+        {/* ── Detail content ─────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <TranscriptDetailPanel
             video={video}

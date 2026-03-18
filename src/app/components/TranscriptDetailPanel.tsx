@@ -9,6 +9,7 @@ import { useState } from 'react';
 import React from 'react';
 import { useNavigate } from 'react-router';
 import { formatDuration } from '../utils/formatDuration';
+import { formatCardDate } from '../utils/formatDate';
 import {
   Heart, Clock, Globe, Calendar, Download, ExternalLink, Copy, CheckCheck,
   RefreshCw, ChevronDown, Eye, CheckCircle2, ArrowLeft,
@@ -566,7 +567,7 @@ export function TranscriptDetailPanel({
                       <Globe className="w-3 h-3" /> {video.language}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" /> {video.date}
+                      <Calendar className="w-3 h-3" /> {formatCardDate(video.date)}
                     </span>
                   </div>
 
@@ -715,29 +716,34 @@ export function TranscriptDetailPanel({
               {/* Tab content */}
               <div className="p-4" style={{ background: 'transparent' }}>
                 {activeTab === 'transcript' && (
-                  <div className="flex flex-col gap-3">
-                    {transcript.map((para, i) => (
-                      <p
-                        key={i}
-                        className="text-xs leading-relaxed"
-                        style={{ color: text }}
-                      >
-                        {para}
-                      </p>
-                    ))}
+                  <div
+                    className="rounded-2xl p-5"
+                    style={{ background: isDark ? '#0d0d0d' : '#f9fafb', border: `1px solid ${border}` }}
+                  >
+                    <div className="flex flex-col gap-3">
+                      {transcript.map((para, i) => (
+                        <p
+                          key={i}
+                          className="text-xs leading-relaxed"
+                          style={{ color: isDark ? 'rgba(255,255,255,0.72)' : '#374151', lineHeight: 1.75 }}
+                        >
+                          {para}
+                        </p>
+                      ))}
+                    </div>
                   </div>
                 )}
 
                 {activeTab === 'caption' && (
                   <div className="flex flex-col gap-5">
-                    {/* Single caption block */}
-                    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${border}` }}>
-                      <div className="flex items-center px-3.5 py-2" style={{ borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-                        <span className="text-[11px]" style={{ color: muted, fontWeight: 500 }}>Caption</span>
-                      </div>
-                      <p className="px-3.5 py-3 text-[11px] leading-relaxed" style={{
-                        color: isDark ? 'rgba(255,255,255,0.75)' : '#374151',
-                        background: isDark ? '#0d0d0d' : '#f9fafb',
+                    {/* Caption text in prompt-style container */}
+                    <div
+                      className="rounded-2xl p-5"
+                      style={{ background: isDark ? '#0d0d0d' : '#f9fafb', border: `1px solid ${border}` }}
+                    >
+                      <p className="text-xs leading-relaxed" style={{
+                        color: isDark ? 'rgba(255,255,255,0.72)' : '#374151',
+                        lineHeight: 1.75,
                       }}>
                         Wait for the end... this one actually changed how I think about it 🤯 Drop a comment if you felt the same 👇
                       </p>

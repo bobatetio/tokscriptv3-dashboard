@@ -32,7 +32,7 @@
 - Retranslate dropdown in the old code had hardcoded `bg-white border-gray-200` — must use theme-aware colors (`isDark` conditional).
 - The `PromptCategory` type is `Exclude<PromptCategory, 'All'>` — adding new categories requires updating CATEGORY_IMAGES, CATEGORY_COLORS, and CATEGORY_ICONS Records for TypeScript exhaustiveness.
 - Singles Sort dropdown was migrated from `showSortMenu` to `openSinglesDropdown === 'sort'` for consistency.
-- `AppHeader` takes `sidebarCollapsed` prop in addition to `onToggleSidebar` — both required for the standard page layout pattern (ProfilesPage, VideosPage, etc.).
+- `AppHeader` only takes `leftSlot?: React.ReactNode` — logo and sidebar toggle now live in `AppSidebar`. All pages use Pattern B: `<div flex> <AppSidebar onToggle={...} /> <div flex-col> <AppHeader /> <main> </div> </div>`. `AppSidebar` takes `onToggle?: () => void` to control collapse/expand from inside the sidebar.
 - When using useState initializers that reference other variables, ensure the variable is declared BEFORE the useState call. `const` is not hoisted — initializers using `handle` must come after `handle` is declared, or compute the value inline (e.g. `creator.startsWith('@') ? creator : \`@${creator}\``).
 
 ## Design / Color Rules
