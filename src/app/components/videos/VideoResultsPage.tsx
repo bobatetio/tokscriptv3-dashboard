@@ -6,6 +6,7 @@ import {
   MoreHorizontal, Loader2, Check, Copy, ExternalLink,
 } from 'lucide-react';
 import { ThemeContext } from '../../context/ThemeContext';
+import { useNewTranscript } from '../../context/NewTranscriptContext';
 import { AppSidebar } from '../AppSidebar';
 import { AppHeader } from '../AppHeader';
 import { ImageWithFallback } from '../figma/ImageWithFallback';
@@ -245,6 +246,7 @@ function VideoResultCard({
 export function VideoResultsPage() {
   const location = useLocation();
   const { isDark } = useContext(ThemeContext);
+  const { setPendingDownloads } = useNewTranscript();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery]           = useState('');
@@ -319,6 +321,13 @@ export function VideoResultsPage() {
   const completedCount  = items.filter(i => i.status === 'complete').length;
   const downloadingCount = items.filter(i => i.status === 'downloading').length;
   const allComplete     = completedCount === items.length;
+
+  // ─── Sync pending count to context so VideosPage can show the indicator ───
+  useEffect(() => {
+    const pending = items.filter(i => i.status === 'pending' || i.status === 'downloading').length;
+    setPendingDownloads(pending);
+    if (pending === 0) setPendingDownloads(0);
+  }, [items, setPendingDownloads]);
 
   // ─── Color tokens (identical to every page) ───────────────────────────────
   const bg      = isDark ? '#0d0d0d' : '#ffffff';

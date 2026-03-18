@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import {
   Search, Clock, CheckCheck, Play, Download, ImageDown,
   SlidersHorizontal, ChevronDown, Calendar, LayoutGrid, List, X,
-  FileText, MoreHorizontal, Columns2, Video, Layers,
+  FileText, MoreHorizontal, Columns2, Video, Loader2,
   Heart, FolderPlus, Copy, ExternalLink, FolderInput, Trash2,
   Eye, MessageCircle, Share2, TrendingUp, MoreVertical, Bookmark,
   RefreshCw,
@@ -25,10 +25,6 @@ import { useNewTranscript } from '../context/NewTranscriptContext';
 import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
 import { SelectionBar } from './SelectionBar';
 import { SaveToFolderModal } from './SaveToFolderModal';
-import { MOCK_SESSIONS } from './videos/mockData';
-import { VideoSession } from './videos/types';
-import { SessionTile } from './videos/SessionTile';
-import { SessionDetailView } from './videos/SessionDetailView';
 import { VIDEOS_DATA } from './videos/videoData';
 
 export { VIDEOS_DATA };
@@ -827,7 +823,7 @@ function VideoRow({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function VideosPage() {
   const { isDark } = useContext(ThemeContext);
-  const { open: openNewTranscript, videoSessions } = useNewTranscript();
+  const { open: openNewTranscript, pendingDownloads } = useNewTranscript();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'hybrid'>('grid');
@@ -845,11 +841,7 @@ export function VideosPage() {
   const ppBtnRef = useRef<HTMLButtonElement>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [ctaHovered, setCtaHovered] = useState(false);
-  const [videosTab, setVideosTab] = useState<'all' | 'sessions'>('all');
-  const [activeSession, setActiveSession] = useState<VideoSession | null>(null);
   const [listOpenMenuId, setListOpenMenuId] = useState<number | null>(null);
-
-  const allSessions = [...videoSessions, ...MOCK_SESSIONS];
 
   // Clear selection when switching to hybrid view
   useEffect(() => {
@@ -962,42 +954,21 @@ export function VideosPage() {
                 {filteredVideos.length} videos
               </span>
 
-              {/* Segmented toggle */}
-              <div
-                className="inline-flex items-center p-0.5 rounded-lg ml-4"
-                style={{ background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6', border: `1px solid ${border}` }}
-              >
-                <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-all"
+              {pendingDownloads > 0 && (
+                <div
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg ml-4"
                   style={{
-                    background: videosTab === 'all' ? (isDark ? '#2a2a2a' : '#ffffff') : 'transparent',
-                    color: videosTab === 'all' ? text : muted,
-                    fontWeight: videosTab === 'all' ? 500 : 400,
-                    boxShadow: videosTab === 'all' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+                    background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+                    border: `1px solid ${border}`,
                   }}
-                  onClick={() => { setVideosTab('all'); setActiveSession(null); }}
                 >
-                  <Video className="w-3 h-3" />
-                  All Videos
-                </button>
-                <button
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs transition-all"
-                  style={{
-                    background: videosTab === 'sessions' ? (isDark ? '#2a2a2a' : '#ffffff') : 'transparent',
-                    color: videosTab === 'sessions' ? text : muted,
-                    fontWeight: videosTab === 'sessions' ? 500 : 400,
-                    boxShadow: videosTab === 'sessions' ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
-                  }}
-                  onClick={() => setVideosTab('sessions')}
-                >
-                  <Layers className="w-3 h-3" />
-                  Sessions
-                </button>
-              </div>
+                  <Loader2 className="w-3 h-3 animate-spin" style={{ color: '#3b82f6' }} />
+                  <span className="text-xs" style={{ color: muted }}>{pendingDownloads} still downloading…</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {videosTab === 'all' ? (
           <>
           {/* Filter bar */}
           <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
@@ -1683,46 +1654,6 @@ export function VideosPage() {
             />
           )}
           </>
-          ) : activeSession ? (
-            <SessionDetailView session={activeSession} onBack={() => setActiveSession(null)} />
-          ) : (
-            /* Sessions grid */
-            <div className="flex-1 overflow-y-auto">
-              <div className="max-w-[1280px] mx-auto w-full px-6 py-5">
-                <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}>
-                  {/* CTA tile — start new download */}
-                  <div
-                    className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
-                    style={{
-                      border: `1.5px solid ${isDark ? '#00b8b233' : '#00b8b235'}`,
-                      background: `linear-gradient(180deg, rgba(0,184,178,0.06) 0%, ${bg} 100%)`,
-                    }}
-                    onClick={openNewTranscript}
-                  >
-                    <div className="flex items-center justify-center flex-1"
-                      style={{ background: 'rgba(0,184,178,0.04)', minHeight: 120 }}>
-                      <div className="flex items-center justify-center rounded-xl"
-                        style={{ width: 44, height: 44, background: 'rgba(0,184,178,0.08)' }}>
-                        <Download className="w-6 h-6" style={{ color: '#00b8b2' }} />
-                      </div>
-                    </div>
-                    <div className="px-3.5 py-3" style={{ borderTop: '1px solid rgba(0,184,178,0.15)' }}>
-                      <p className="text-xs font-semibold" style={{ color: text }}>Start a new download</p>
-                      <p className="text-[10px] mt-1" style={{ color: muted }}>Paste video links to download a new batch.</p>
-                    </div>
-                  </div>
-
-                  {allSessions.map(session => (
-                    <SessionTile
-                      key={session.id}
-                      session={session}
-                      onClick={() => setActiveSession(session)}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
         </main>
       </div>

@@ -10,6 +10,8 @@ interface NewTranscriptContextValue {
   setPendingVideoLinks: (links: string[]) => void;
   videoSessions: VideoSession[];
   addVideoSession: (session: VideoSession) => void;
+  pendingDownloads: number;
+  setPendingDownloads: (n: number) => void;
 }
 
 const NewTranscriptContext = createContext<NewTranscriptContextValue>({
@@ -21,6 +23,8 @@ const NewTranscriptContext = createContext<NewTranscriptContextValue>({
   setPendingVideoLinks: () => {},
   videoSessions: [],
   addVideoSession: () => {},
+  pendingDownloads: 0,
+  setPendingDownloads: () => {},
 });
 
 export function NewTranscriptProvider({ children }: { children: ReactNode }) {
@@ -28,6 +32,7 @@ export function NewTranscriptProvider({ children }: { children: ReactNode }) {
   const [initialTab, setInitialTab] = useState<string | null>(null);
   const [pendingVideoLinks, setPendingVideoLinks] = useState<string[]>([]);
   const [videoSessions, setVideoSessions] = useState<VideoSession[]>([]);
+  const [pendingDownloads, setPendingDownloads] = useState(0);
 
   const addVideoSession = (session: VideoSession) => {
     setVideoSessions(prev => [session, ...prev]);
@@ -43,6 +48,8 @@ export function NewTranscriptProvider({ children }: { children: ReactNode }) {
       setPendingVideoLinks,
       videoSessions,
       addVideoSession,
+      pendingDownloads,
+      setPendingDownloads,
     }}>
       {children}
     </NewTranscriptContext.Provider>

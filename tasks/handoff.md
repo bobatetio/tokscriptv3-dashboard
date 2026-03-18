@@ -1,21 +1,37 @@
-# Handoff — Reformat Video Card Dates Site-Wide
+# Handoff — BulkProcessingQueue Two-Zone Layout Redesign
 
 ## Status: DONE
 
-## What was done
-Created `formatCardDate()` utility and applied it to all date render sites across 3 files.
+## What Was Done
+Replaced the flat table layout in BulkProcessingQueue with a two-zone layout:
+1. **Completed Grid** (top) — Rich 9:16 content cards matching Singles grid view
+2. **Processing Queue** (bottom) — Compact rows with platform icons, URLs, inline progress bars, status pills
 
-### Files modified
-1. **`src/app/utils/formatDate.ts`** — NEW: shared `formatCardDate()` that converts date strings to `M/D/YY - H:MMAM/PM` (with time) or `M/D/YY` (without time)
-2. **`src/app/components/DashboardPage.tsx`** — Updated SINGLES mock data to include year+time; fixed `transcriptToDetailVideo`; applied `formatCardDate` at 8 render sites (Discover footer, Recent Transcripts, Singles hybrid/list/grid, Collections hybrid/list/grid)
-3. **`src/app/components/CreatorProfilePage.tsx`** — Applied `formatCardDate` at 2 render sites (grid card footer + list view Date column)
-4. **`src/app/components/VideosPage.tsx`** — Applied `formatCardDate` at grid card footer; replaced `toLocaleDateString`/`toLocaleTimeString` IIFE in list view with single `formatCardDate` call
+Also removed the 5th "Progress" stat card from DashboardPage — the growing grid + shrinking queue IS the progress indicator.
 
-## Build: clean (vite build passes)
+## Files Modified (2)
 
-## Verification
-- Videos grid: dates show `3/8/26 - 10:15AM` format ✓
-- Videos list: POSTED AT column shows same format ✓
-- Dashboard Recent Transcripts: `2/24/26 - 2:15PM` format ✓
-- Dashboard Singles grid: `2/5/26 - 1:45PM` format ✓
-- CreatorProfilePage grid: `2/18/26` format (no time in mock data) ✓
+### `src/app/components/BulkProcessingQueue.tsx` — FULL REWRITE
+- **Zone 1 (Completed Grid):** `repeat(auto-fill, minmax(195px, 1fr))` grid with cards matching Singles pattern — 9:16 thumbnails, gradient overlays, centered Play icon, VideoPlatformBadge, duration pill, creator avatar + verified badge, title, 2-line snippet, date + three-dot menu footer
+- **Zone 2 (Processing Queue):** "Queue" section header with inline progress bar, compact 40px rows in rounded bordered container — platform icon + URL + inline progress bar (80px, 3px, teal) + status pill + menu
+- **Removed:** SkeletonThumb, flat table structure, table header row, column-width layout
+- **Kept:** StatusPill, PlatformIconSVG, ImageWithFallback, menu system, formatDate, truncateUrl, keyframe animations, all props
+
+### `src/app/components/DashboardPage.tsx`
+- Removed `isProcessing`, `pct`, `remaining`, `estMins` variables
+- Removed conditional 5th "Progress" stat card push
+- Hardcoded `gridTemplateColumns: 'repeat(4, 1fr)'` (always 4 stat cards)
+- Simplified stat card renderer (removed Progress bar ternary)
+
+## Verified
+- vite build passes clean (zero errors)
+- Pro tier: scanning → batch creation → live two-zone queue
+- All 8 items start in Queue section with compact rows
+- 3 concurrent processing with teal inline progress bars
+- As videos complete → appear as grid cards above the queue
+- Grid grows, queue shrinks — layout communicates progress
+- Failed/unavailable stay in queue with error text + pills
+- When batch done → queue shows only terminal errors, grid shows completed cards
+- Toast notification: "Done — 6 ready, 2 failed."
+- 4 stat cards always (no 5th Progress card)
+- Grid cards: 9:16 thumbnails, gradient overlays, platform badges, avatars, titles, snippets, dates, menus

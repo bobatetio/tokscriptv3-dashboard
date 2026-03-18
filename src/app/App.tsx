@@ -25,13 +25,16 @@ import { UpgradeModal } from './components/UpgradeModal';
 import { PlanDevToggle } from './components/PlanDevToggle';
 import { NewTranscriptProvider } from './context/NewTranscriptContext';
 import NewTranscriptModal from './components/NewTranscriptModal';
+import { BulkProcessingProvider } from './context/BulkProcessingContext';
 
 function AppLayout() {
   return (
-    <NewTranscriptProvider>
-      <Outlet />
-      <NewTranscriptModal />
-    </NewTranscriptProvider>
+    <BulkProcessingProvider>
+      <NewTranscriptProvider>
+        <Outlet />
+        <NewTranscriptModal />
+      </NewTranscriptProvider>
+    </BulkProcessingProvider>
   );
 }
 

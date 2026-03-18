@@ -13,6 +13,8 @@ import { ThemeContext } from '../context/ThemeContext';
 import { FolderContext } from '../context/FolderContext';
 import { UserContext, FREE_LIMITS } from '../context/UserContext';
 import { useNewTranscript } from '../context/NewTranscriptContext';
+import { useBulkProcessing } from '../context/BulkProcessingContext';
+import { STATIC_BULK_SIDEBAR } from '../data/bulkData';
 import svgPathsLock from '../../imports/svg-ri7w7ruor2';
 import svgPathsLockLight from '../../imports/svg-hfbknm512l';
 import imgBannerBg from '../../assets/b3a148853965f0eea6c20b8748026b122bc3fc9c.png';
@@ -48,10 +50,6 @@ const COLLECTIONS = [
   { id: 103, name: 'Marketing Campaigns',   count: 5 },
 ];
 
-const BULK = [
-  { id: 301, name: 'Conference 2026 Batch', count: 6 },
-  { id: 302, name: 'Onboarding Videos',     count: 3 },
-];
 
 const SINGLES_COUNT = 20;
 const FAVOURITES_ID = 500;
@@ -75,6 +73,18 @@ export function AppSidebar({
   const { folders, createFolder } = useContext(FolderContext);
   const { plan, openUpgrade, transcriptionsUsed, transcriptionsLimit } = useContext(UserContext);
   const { open: openNewTranscript } = useNewTranscript();
+  const { bulkBatches } = useBulkProcessing();
+
+  // Merge live batches (from context) with static placeholder batches
+  const allSidebarBulk: { id: number; name: string; count: number; status?: string }[] = [
+    ...bulkBatches.map(b => ({
+      id: b.id,
+      name: b.name,
+      count: b.videos.length,
+      status: b.status,
+    })),
+    ...STATIC_BULK_SIDEBAR,
+  ];
 
   const [collectionsOpen, setCollectionsOpen] = useState(activeLibraryItem === 'collections');
   const [bulkOpen,        setBulkOpen]        = useState(activeLibraryItem === 'bulk');
@@ -545,7 +555,7 @@ export function AppSidebar({
                 </button>
                 {bulkOpen && (
                   <div className="ml-[12px] mr-1 mt-0.5 mb-0.5" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
-                    {BULK.map(b => (
+                    {allSidebarBulk.map(b => (
                       <button
                         key={b.id}
                         onClick={() => onSelectGroup ? onSelectGroup('bulk', b.id) : navigate('/dashboard', { state: { view: 'bulk', groupId: b.id } })}
@@ -559,6 +569,10 @@ export function AppSidebar({
                       >
                         <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.25)' : subtle }} />
                         <span className="truncate flex-1">{b.name}</span>
+                        {'status' in b && b.status === 'processing' && (
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                            style={{ background: '#00b8b2', animation: 'pulse 2s infinite' }} />
+                        )}
                         <span className="text-[10px] tabular-nums flex-shrink-0" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : muted }}>{b.count}</span>
                       </button>
                     ))}

@@ -37,6 +37,10 @@ import { useNewTranscript } from '../context/NewTranscriptContext';
 import { SaveToFolderModal } from './SaveToFolderModal';
 import { SelectionBar } from './SelectionBar';
 import { simulateVideoDownload, simulateCoverDownload, simulateZipDownload } from './videos/downloadUtils';
+import { useBulkProcessing } from '../context/BulkProcessingContext';
+import { BulkProcessingQueue } from './BulkProcessingQueue';
+import { STATIC_BULK, BULK_SNIPPETS } from '../data/bulkData';
+import type { BulkBatch } from '../context/BulkProcessingContext';
 
 // ─── Verified Creators ────────────────────────────────────────────────────────
 const VERIFIED_CREATORS = new Set([
@@ -183,27 +187,8 @@ const COLLECTIONS: GroupItem[] = [
   },
 ];
 
-const BULK: GroupItem[] = [
-  {
-    id: 301, name: 'Conference 2026 Batch', count: 6,
-    videos: [
-      { id: 401, title: 'Opening keynote',         duration: '1:56', date: 'Feb 10, 2026, 10:15 AM', thumbnail: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&q=80', source: '@keynoteking',  views: '1.7M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=keynoteking' },
-      { id: 402, title: 'Panel: Future of AI',     duration: '1:31', date: 'Feb 10, 2026, 2:30 PM', thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=80', source: '@aifuturist',   views: '4.2M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=aifuturist' },
-      { id: 403, title: 'Workshop – UX trends',    duration: '0:46', date: 'Feb 11, 2026, 4:45 PM', thumbnail: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=400&q=80', source: '@uxtrends',     views: '891K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=uxtrends' },
-      { id: 404, title: 'Startup pitch session',   duration: '1:14', date: 'Feb 11, 2026, 9:00 AM', thumbnail: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=400&q=80', source: '@startuplife',  views: '2.3M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=startuplife' },
-      { id: 405, title: 'Closing remarks',         duration: '0:33', date: 'Feb 11, 2026, 1:15 PM', thumbnail: 'https://images.unsplash.com/photo-1475721027785-f74eccf877e2?w=400&q=80', source: '@closingnotes', views: '556K', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=closingnotes' },
-      { id: 406, title: 'Networking highlight reel', duration: '1:49', date: 'Feb 12, 2026, 3:00 PM', thumbnail: 'https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=400&q=80', source: '@networkpro',   views: '1.1M', platform: 'YouTube', avatar: 'https://i.pravatar.cc/80?u=networkpro' },
-    ],
-  },
-  {
-    id: 302, name: 'Onboarding Videos', count: 3,
-    videos: [
-      { id: 407, title: 'Welcome & orientation', duration: '0:57', date: 'Jan 20, 2026, 7:30 PM', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', source: '@hrteam',    views: '445K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=hrteam' },
-      { id: 408, title: 'Platform walkthrough',  duration: '1:22', date: 'Jan 20, 2026, 11:00 AM', thumbnail: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&q=80', source: '@devops101', views: '338K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=devops101' },
-      { id: 409, title: 'Team intro session',    duration: '0:41', date: 'Jan 21, 2026, 5:15 PM', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=400&q=80', source: '@ceofounder', views: '201K', platform: 'Instagram', avatar: 'https://i.pravatar.cc/80?u=ceofounder' },
-    ],
-  },
-];
+// BULK static data is now sourced from bulkData.ts (STATIC_BULK).
+// ALL_BULK is computed inside DashboardPage() to merge live batches + static batches.
 
 const FAVOURITES_FOLDER_ID = 500;
 
@@ -1130,7 +1115,7 @@ function InlineDashboardOverview({
 
   const totalWords     = SINGLES.reduce((a, t) => a + t.words, 0);
   const totalColVideos   = COLLECTIONS.reduce((a, c) => a + c.count, 0);
-  const totalBulkVids    = BULK.reduce((a, b) => a + b.count, 0);
+  const totalBulkVids    = STATIC_BULK.reduce((a, b) => a + b.count, 0);
   const recentFive       = SINGLES.slice(0, 5);
   const totalSeconds     = SINGLES.reduce((a, t) => a + parseDuration(t.duration), 0);
   const audioProcessed   = `${Math.floor(totalSeconds / 60)}m ${totalSeconds % 60}s`;
@@ -1159,7 +1144,7 @@ function InlineDashboardOverview({
     },
     {
       label: 'Bulk Batches',
-      value: BULK.length,
+      value: STATIC_BULK.length,
       icon: <List className="w-3.5 h-3.5" />,
       change: '+25%',
       positive: true,
@@ -1336,6 +1321,7 @@ export function DashboardPage() {
   const { isDark, toggle } = useContext(ThemeContext);
   const { plan, openUpgrade } = useContext(UserContext);
   const { open: openNewTranscript } = useNewTranscript();
+  const { bulkBatches, activeBatchId, setActiveBatchId, retryVideo, removeVideo } = useBulkProcessing();
 
   const initialView = (): ViewState => {
     const s = (location.state as any);
@@ -1450,11 +1436,62 @@ export function DashboardPage() {
   const cardBg    = isDark ? '#141414' : '#f9fafb';
   const subtle    = isDark ? '#262626' : '#d1d5db';
 
+  // ── Live bulk groups (from context) merged with static data ───────────────────
+  const liveBulkGroups: GroupItem[] = bulkBatches.map((batch: BulkBatch) => ({
+    id: batch.id,
+    name: batch.name,
+    count: batch.videos.length,
+    videos: batch.videos.filter(v => v.status === 'completed').map(v => ({
+      id: v.id,
+      title: v.title,
+      duration: v.duration ?? '0:00',
+      date: new Date(batch.createdAt).toLocaleString(),
+      thumbnail: v.thumbnail ?? `https://picsum.photos/seed/${v.id}/400/600`,
+      source: v.creator ?? '',
+      views: '',
+      platform: v.platform,
+      avatar: v.avatar ?? '',
+    })),
+  }));
+  const ALL_BULK: GroupItem[] = [...liveBulkGroups, ...STATIC_BULK];
+
+  // Navigate to active batch when context signals one
+  useEffect(() => {
+    if (activeBatchId != null) {
+      if (view.category !== 'bulk' || view.groupId !== activeBatchId) {
+        setView({ category: 'bulk', groupId: activeBatchId });
+      }
+      // Clear activeBatchId so this doesn't re-fire on every re-render
+      setActiveBatchId(null);
+    }
+  }, [activeBatchId]);
+
+  // Toast notification when a batch finishes processing
+  const prevBatchStatusesRef = useRef<Record<number, string>>({});
+  useEffect(() => {
+    const prev = prevBatchStatusesRef.current;
+    for (const batch of bulkBatches) {
+      const prevStatus = prev[batch.id];
+      if (prevStatus === 'processing' && batch.status !== 'processing') {
+        const completed = batch.videos.filter(v => v.status === 'completed').length;
+        const failed = batch.videos.filter(v => v.status === 'failed' || v.status === 'unavailable').length;
+        if (batch.status === 'completed') {
+          showToast(`All done! ${completed} transcript${completed !== 1 ? 's' : ''} ready.`);
+        } else {
+          showToast(`Done — ${completed} ready, ${failed} failed.`);
+        }
+      }
+    }
+    const next: Record<number, string> = {};
+    for (const b of bulkBatches) next[b.id] = b.status;
+    prevBatchStatusesRef.current = next;
+  }, [bulkBatches]);
+
   // ── Derived ──────────────────────────────────────────────────────────────────
   const activeGroup =
     view.groupId != null && view.category !== 'dashboard'
       ? (view.category === 'collections' ? COLLECTIONS
-          : view.category === 'bulk' ? BULK
+          : view.category === 'bulk' ? ALL_BULK
           : view.category === 'profiles' ? PROFILE_GROUPS
           : folders
         ).find(g => g.id === view.groupId)
@@ -1512,7 +1549,7 @@ export function DashboardPage() {
         ...SINGLES,
         ...PROFILE_EXTRAS,
         ...COLLECTIONS.flatMap(g => g.videos),
-        ...BULK.flatMap(g => g.videos),
+        ...ALL_BULK.flatMap(g => g.videos),
         ...(PROFILE_GROUPS.flatMap(g => g.videos) as unknown as VideoItem[]),
         ...folders.filter(f => f.id !== FAVOURITES_FOLDER_ID).flatMap(f => f.videos),
       ];
@@ -1578,7 +1615,7 @@ export function DashboardPage() {
     }
 
     const allGroups = view.category === 'collections' ? COLLECTIONS
-      : view.category === 'bulk' ? BULK
+      : view.category === 'bulk' ? ALL_BULK
       : view.category === 'profiles' ? PROFILE_GROUPS
       : folders;
     let groups = [...allGroups] as GroupItem[];
@@ -2881,7 +2918,7 @@ export function DashboardPage() {
                 {groupSlideId !== null ? (() => {
                   const allGroupVids: VideoItem[] = [
                     ...COLLECTIONS.flatMap(g => g.videos),
-                    ...BULK.flatMap(g => g.videos),
+                    ...ALL_BULK.flatMap(g => g.videos),
                   ];
                   const gv = allGroupVids.find(v => v.id === groupSlideId) ?? allGroupVids[0];
                   const gvid: TranscriptDetailVideo = {
@@ -2969,15 +3006,49 @@ export function DashboardPage() {
               );
             })()}
             {/* Stat cards — inside a specific group */}
-            {!isGroups && view.groupId && (
-              <GroupStatCards
-                videos={items as VideoItem[]}
-                isDark={isDark}
-                border={border}
-                text={text}
-                muted={muted}
-              />
-            )}
+            {!isGroups && view.groupId && (() => {
+              const liveBatch = view.category === 'bulk'
+                ? bulkBatches.find(b => b.id === view.groupId)
+                : undefined;
+              if (liveBatch) {
+                const totalCount = liveBatch.videos.length;
+                const completedVids = liveBatch.videos.filter(v => v.status === 'completed');
+                const totalSecs = completedVids.reduce((s, v) => s + parseDuration(v.duration || '0:00'), 0);
+                const creators = new Set(completedVids.map(v => v.creator).filter(Boolean)).size;
+                const avgSecs = completedVids.length > 0 ? Math.round(totalSecs / completedVids.length) : 0;
+                const liveStats: { icon: React.ReactNode; label: string; value: React.ReactNode; sub: string }[] = [
+                  { icon: <Film className="w-3.5 h-3.5" />, label: 'Videos', value: totalCount, sub: 'in this batch' },
+                  { icon: <Clock className="w-3.5 h-3.5" />, label: 'Total Runtime', value: fmtRuntime(totalSecs), sub: `avg ${fmtRuntime(avgSecs)} each` },
+                  { icon: <Users className="w-3.5 h-3.5" />, label: 'Creators', value: creators, sub: 'unique sources' },
+                  { icon: <Eye className="w-3.5 h-3.5" />, label: 'Completed', value: completedVids.length, sub: `of ${totalCount} videos` },
+                ];
+
+                return (
+                  <div className="grid gap-3 mb-5" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+                    {liveStats.map(s => (
+                      <div key={s.label} className="flex flex-col px-4 pt-3 pb-3 rounded-xl"
+                        style={{ border: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.015)' : '#fafafa' }}>
+                        <div className="flex items-center gap-1.5 mb-1.5" style={{ color: muted }}>
+                          {s.icon}
+                          <span style={{ fontSize: '0.72rem', fontWeight: 500 }}>{s.label}</span>
+                        </div>
+                        <p style={{ color: text, fontWeight: 700, fontSize: '1.25rem', lineHeight: 1, letterSpacing: '-0.02em' }}>{s.value}</p>
+                        <p className="mt-1.5" style={{ color: muted, fontSize: '0.6875rem' }}>{s.sub}</p>
+                      </div>
+                    ))}
+                  </div>
+                );
+              }
+              return (
+                <GroupStatCards
+                  videos={items as VideoItem[]}
+                  isDark={isDark}
+                  border={border}
+                  text={text}
+                  muted={muted}
+                />
+              );
+            })()}
             {isGroups && (
               <div style={{ borderTop: `1px solid ${border}`, opacity: 0.5, marginTop: 26, marginBottom: 26 }} />
             )}
@@ -3012,7 +3083,7 @@ export function DashboardPage() {
                   }}
                   onClick={() => {
                     if (plan === 'free') {
-                      const existing = view.category === 'collections' ? COLLECTIONS.length : BULK.length;
+                      const existing = view.category === 'collections' ? COLLECTIONS.length : ALL_BULK.length;
                       if (existing >= 1) { openUpgrade(); return; }
                     }
                     openNewTranscript();
@@ -3116,11 +3187,16 @@ export function DashboardPage() {
 
                 {(items as GroupItem[]).map(g => {
                   const thumbs = g.videos.slice(0, 4).map(v => v.thumbnail ?? `https://picsum.photos/seed/${v.id}/400/300`);
+                  const isProcessing = bulkBatches.find(b => b.id === g.id && b.status === 'processing');
                   return (
                     <div
                       key={g.id}
                       className="rounded-2xl overflow-hidden flex flex-col cursor-pointer group transition-all"
-                      style={{ border: `1px solid ${border}`, background: isDark ? '#111111' : '#fafafa' }}
+                      style={{
+                        border: `1px solid ${isProcessing ? 'rgba(0,184,178,0.5)' : border}`,
+                        background: isDark ? '#111111' : '#fafafa',
+                        boxShadow: isProcessing ? '0 0 0 1px rgba(0,184,178,0.15)' : undefined,
+                      }}
                       onClick={() => selectGroup(view.category as 'collections' | 'bulk', g.id)}
                     >
                       {/* Ambient bg + fanned portrait thumbs */}
@@ -3166,11 +3242,29 @@ export function DashboardPage() {
                         </div>
                       </div>
 
+                      {/* Processing progress bar */}
+                      {isProcessing && (() => {
+                        const completed = isProcessing.videos.filter(v => v.status === 'completed').length;
+                        const total = isProcessing.videos.length;
+                        const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+                        return (
+                          <div className="px-3.5 pt-1">
+                            <div className="rounded-full overflow-hidden" style={{ height: 3, background: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#00b8b2', transition: 'width 0.5s ease' }} />
+                            </div>
+                          </div>
+                        );
+                      })()}
+
                       {/* Info row */}
                       <div className="px-3.5 pt-2.5 pb-3 flex items-center justify-between gap-2">
                         <div className="min-w-0">
                           <p className="text-xs truncate" style={{ color: text, fontWeight: 600 }}>{g.name}</p>
-                          <p className="text-[10px] mt-1" style={{ color: muted }}>{g.count} video{g.count !== 1 ? 's' : ''}</p>
+                          <p className="text-[10px] mt-1" style={{ color: isProcessing ? '#00b8b2' : muted }}>
+                            {isProcessing
+                              ? `Processing... ${isProcessing.videos.filter(v => v.status === 'completed').length}/${isProcessing.videos.length}`
+                              : `${g.count} video${g.count !== 1 ? 's' : ''}`}
+                          </p>
                         </div>
                         <span
                           className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] flex-shrink-0"
@@ -3191,8 +3285,27 @@ export function DashboardPage() {
 
               </div>
             ) : (
-              /* Video cards — identical to singles grid */
-              groupViewMode === 'list' ? (
+              /* Video cards — or BulkProcessingQueue for live batches */
+              (() => {
+                const liveBatch = view.category === 'bulk'
+                  ? bulkBatches.find(b => b.id === view.groupId)
+                  : undefined;
+                if (liveBatch) {
+                  return (
+                    <BulkProcessingQueue
+                      batch={liveBatch}
+                      onRetryVideo={(videoId) => retryVideo(liveBatch.id, videoId)}
+                      onRemoveVideo={(videoId) => removeVideo(liveBatch.id, videoId)}
+                      onClickVideo={(videoId) => setGroupSlideId(videoId)}
+                      showToast={showToast}
+                      onMoveToFolder={(videoId) => {
+                        // stub — just show toast for now
+                        showToast('Move to folder coming soon');
+                      }}
+                    />
+                  );
+                }
+                return groupViewMode === 'list' ? (
                 <div className="flex flex-col" style={{ borderRadius: 12, border: `1px solid ${border}`, overflow: 'hidden' }}>
                   {/* Table header */}
                   <div className="flex items-center px-4 py-2 text-[10px] uppercase tracking-wider flex-shrink-0" style={{ color: muted, borderBottom: `1px solid ${border}`, background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
@@ -3472,7 +3585,8 @@ export function DashboardPage() {
                     );
                   })}
                 </div>
-              )
+              );
+              })()
             )}
           </div>
           </div>
@@ -3482,7 +3596,7 @@ export function DashboardPage() {
           {groupSlideId !== null && groupViewMode !== 'hybrid' && (() => {
             const allGroupVids: VideoItem[] = [
               ...COLLECTIONS.flatMap(g => g.videos),
-              ...BULK.flatMap(g => g.videos),
+              ...ALL_BULK.flatMap(g => g.videos),
             ];
             const gv = allGroupVids.find(v => v.id === groupSlideId) ?? allGroupVids[0];
             const gvid: TranscriptDetailVideo = {
@@ -3973,7 +4087,7 @@ export function DashboardPage() {
               const allLookup: (Transcript | VideoItem)[] = [
                 ...SINGLES, ...PROFILE_EXTRAS,
                 ...COLLECTIONS.flatMap(g => g.videos),
-                ...BULK.flatMap(g => g.videos),
+                ...ALL_BULK.flatMap(g => g.videos),
                 ...(PROFILE_GROUPS.flatMap(g => g.videos) as unknown as VideoItem[]),
                 ...folders.filter(f => f.id !== FAVOURITES_FOLDER_ID).flatMap(f => f.videos),
               ];
@@ -4064,7 +4178,7 @@ export function DashboardPage() {
         const allLookup: (Transcript | VideoItem)[] = [
           ...SINGLES, ...PROFILE_EXTRAS,
           ...COLLECTIONS.flatMap(g => g.videos),
-          ...BULK.flatMap(g => g.videos),
+          ...ALL_BULK.flatMap(g => g.videos),
           ...(PROFILE_GROUPS.flatMap(g => g.videos) as unknown as VideoItem[]),
           ...folders.filter(f => f.id !== FAVOURITES_FOLDER_ID).flatMap(f => f.videos),
         ];

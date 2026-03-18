@@ -18,6 +18,11 @@
 - `formatRelativeTime(date)` in CreatorProfilePage formats dates as "just now", "Xm ago", "Xh ago", "Xd ago".
 - `ScanNewProfileModal` was removed from ProfilesPage — the CTA card now calls `useNewTranscript().open('profiles')` instead.
 - Video download utilities (`simulateVideoDownload`, `simulateCoverDownload`, `simulateZipDownload`) are in `src/app/components/videos/downloadUtils.ts`.
+- `BulkProcessingContext` is a SEPARATE context from `NewTranscriptContext` — lives at `src/app/context/BulkProcessingContext.tsx`. Contains simulation engine with throttled renders (max 4/sec) and sessionStorage persistence. Wraps OUTSIDE `NewTranscriptProvider` in `App.tsx`.
+- `inferPlatform(url)` is shared at `src/app/utils/inferPlatform.ts` — returns 'Unknown' for unrecognized URLs (not 'TikTok'). Imported by both `NewTranscriptModal` and `BulkProcessingContext`.
+- Static bulk mock data extracted to `src/app/data/bulkData.ts` — exports `STATIC_BULK`, `STATIC_BULK_SIDEBAR`, `BULK_SNIPPETS`. DashboardPage and AppSidebar both import from here (no more duplicate BULK consts).
+- `BulkProcessingQueue.tsx` replicates the DashboardPage list-view table layout exactly (same column widths, same row anatomy) with additional status-specific rendering for pending/downloading/transcribing/completed/failed/unavailable states.
+- Bulk scanning in NewTranscriptModal is gated behind `plan === 'pro'`. Free tier still goes to `/freeresult`.
 
 ## Grid Layout
 - All video card grids use simple `repeat(auto-fill, minmax(195px, 1fr))` (or 200px for collection folders). The 6-column cap comes from a `max-w-[1280px] mx-auto` container on the page content, NOT from a CSS calc formula. At 1280px, `auto-fill` with 195px min naturally gives 6 columns.

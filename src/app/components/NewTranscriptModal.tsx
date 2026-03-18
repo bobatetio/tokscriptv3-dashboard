@@ -6,6 +6,10 @@ import {
 import { ThemeContext } from '../context/ThemeContext';
 import { useNewTranscript } from '../context/NewTranscriptContext';
 import OutlineSearchMagnifer from '../../imports/OutlineSearchMagnifer';
+import { inferPlatform } from '../utils/inferPlatform';
+import { useBulkProcessing } from '../context/BulkProcessingContext';
+import type { BulkBatch } from '../context/BulkProcessingContext';
+import { useUser } from '../context/UserContext';
 
 // ─── New Transcription constants ─────────────────────────────────────────────
 const LANGUAGES = [
@@ -93,14 +97,6 @@ function extractHandle(url: string): string {
   return trimmed.replace(/[^a-zA-Z0-9_]/g, '').toLowerCase() || 'unknown';
 }
 
-function inferPlatform(url: string): string {
-  const lower = url.toLowerCase();
-  if (lower.includes('tiktok.com')) return 'TikTok';
-  if (lower.includes('youtube.com') || lower.includes('youtu.be')) return 'YouTube';
-  if (lower.includes('instagram.com')) return 'Instagram';
-  return 'TikTok';
-}
-
 function generateMockProfile(handle: string, platform: string) {
   const hash = handle.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const followers = [1200000, 542000, 89000, 2400000, 150000][(hash % 5)];
@@ -152,6 +148,14 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // ── Bulk scan state (transcripts tab) ────────────────────────────────────
+  const [bulkScanPhase, setBulkScanPhase] = useState<null | 'scanning' | 'done'>(null);
+  const [bulkScanProgress, setBulkScanProgress] = useState(0);
+  const [detectedPlatforms, setDetectedPlatforms] = useState<Record<string, number>>({});
+  const bulkScanTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { addBulkBatch, setActiveBatchId } = useBulkProcessing();
+  const { plan } = useUser();
+
   // ── Wizard state ──────────────────────────────────────────────────────────
   const [profilePhase, setProfilePhase] = useState<'scanning' | 'preview' | 'configure' | 'finalScan' | 'scanDone' | null>(null);
   const [profileProgress, setProfileProgress] = useState(0);
@@ -161,6 +165,15 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
   const [customTo, setCustomTo] = useState('');
   const [scanDoneOrigin, setScanDoneOrigin] = useState<'initial' | 'final'>('initial');
   const [mockProfile, setMockProfile] = useState<ReturnType<typeof generateMockProfile> | null>(null);
+
+  // ── Cleanup bulkScan timeout on unmount ───────────────────────────────────
+  React.useEffect(() => {
+    return () => {
+      if (bulkScanTimeoutRef.current) {
+        clearTimeout(bulkScanTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // ── scanDone transition effect ────────────────────────────────────────────
   React.useEffect(() => {
@@ -541,24 +554,80 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
               }}
             >
               {/* Input area */}
-              <div className="px-5 pt-4 pb-3">
-                <textarea
-                  ref={textareaRef}
-                  value={currentValue}
-                  onChange={(e) => {
-                    if (activeInputTab !== 'collections') {
-                      const ls = e.target.value.split('\n');
-                      if (ls.filter(l => l.trim()).length > MAX_LINKS) return;
-                    }
-                    setCurrentValue(e.target.value);
-                  }}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
-                  placeholder={placeholders[activeInputTab]}
-                  className="w-full resize-none bg-transparent text-sm outline-none leading-relaxed"
-                  style={{ color: isDark ? '#e3e3e3' : '#111111', height: 80, minHeight: 80, maxHeight: 80 }}
-                />
-              </div>
+              {bulkScanPhase && activeInputTab === 'transcripts' ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-4" style={{ minHeight: 180 }}>
+                  {/* Scanning animation */}
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center"
+                      style={{ background: 'rgba(0,184,178,0.1)' }}>
+                      <OutlineSearchMagnifer className="w-5 h-5" style={{ color: '#00b8b2' }} />
+                    </div>
+                    {bulkScanPhase === 'scanning' && (
+                      <div className="absolute inset-0 rounded-full border-2 border-transparent"
+                        style={{
+                          borderTopColor: '#00b8b2',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                    )}
+                    {bulkScanPhase === 'done' && (
+                      <div className="absolute -right-1 -bottom-1 w-5 h-5 rounded-full flex items-center justify-center"
+                        style={{ background: '#00b8b2' }}>
+                        <CheckCircle className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status text */}
+                  <div className="text-center">
+                    <p className="text-sm font-medium" style={{ color: text }}>
+                      {bulkScanPhase === 'scanning' ? 'Detecting videos...' : 'Ready!'}
+                    </p>
+                    <p className="text-xs mt-1" style={{ color: muted }}>
+                      {bulkScanPhase === 'scanning'
+                        ? `Scanning ${validLines.length} URL${validLines.length !== 1 ? 's' : ''}...`
+                        : `${validLines.length} video${validLines.length !== 1 ? 's' : ''} detected`}
+                    </p>
+                  </div>
+
+                  {/* Platform breakdown */}
+                  {Object.keys(detectedPlatforms).length > 0 && (
+                    <div className="flex items-center gap-2 flex-wrap justify-center">
+                      {Object.entries(detectedPlatforms).map(([platform, count]) => (
+                        <span key={platform} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px]"
+                          style={{ background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6', color: text }}>
+                          {count} {platform}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Progress bar */}
+                  <div className="w-48 h-1.5 rounded-full overflow-hidden"
+                    style={{ background: isDark ? 'rgba(255,255,255,0.06)' : '#e5e7eb' }}>
+                    <div className="h-full rounded-full transition-all duration-300"
+                      style={{ width: `${bulkScanProgress}%`, background: '#00b8b2' }} />
+                  </div>
+                </div>
+              ) : (
+                <div className="px-5 pt-4 pb-3">
+                  <textarea
+                    ref={textareaRef}
+                    value={currentValue}
+                    onChange={(e) => {
+                      if (activeInputTab !== 'collections') {
+                        const ls = e.target.value.split('\n');
+                        if (ls.filter(l => l.trim()).length > MAX_LINKS) return;
+                      }
+                      setCurrentValue(e.target.value);
+                    }}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={placeholders[activeInputTab]}
+                    className="w-full resize-none bg-transparent text-sm outline-none leading-relaxed"
+                    style={{ color: isDark ? '#e3e3e3' : '#111111', height: 80, minHeight: 80, maxHeight: 80 }}
+                  />
+                </div>
+              )}
 
               {/* Bottom bar — actions */}
               <div className="flex items-center justify-between px-4 py-3">
@@ -647,6 +716,64 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
                         }, 600);
                         return;
                       }
+                      if (activeInputTab === 'transcripts' && validLines.length > 0) {
+                        if (bulkScanPhase === 'scanning') return;
+                        // Free tier goes to freeresult
+                        if (plan === 'free') {
+                          navigate('/freeresult');
+                          return;
+                        }
+
+                        // Pro tier: in-modal scanning animation
+                        const platforms: Record<string, number> = {};
+                        validLines.forEach(url => {
+                          const p = inferPlatform(url);
+                          platforms[p] = (platforms[p] || 0) + 1;
+                        });
+                        setDetectedPlatforms(platforms);
+                        setBulkScanPhase('scanning');
+                        setBulkScanProgress(0);
+
+                        let p = 0;
+                        const interval = setInterval(() => {
+                          p += Math.random() * 18 + 8;
+                          if (p >= 100) {
+                            clearInterval(interval);
+                            setBulkScanProgress(100);
+                            setBulkScanPhase('done');
+
+                            bulkScanTimeoutRef.current = setTimeout(() => {
+                              const batchId = Date.now();
+                              const batch: BulkBatch = {
+                                id: batchId,
+                                name: `Batch — ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`,
+                                createdAt: batchId,
+                                status: 'processing',
+                                videos: validLines.map((url, i) => ({
+                                  id: batchId + i + 1,
+                                  url,
+                                  title: url.length > 50 ? url.slice(0, 47) + '...' : url,
+                                  platform: inferPlatform(url),
+                                  status: 'pending' as const,
+                                  progress: 0,
+                                })),
+                              };
+                              addBulkBatch(batch);
+                              setActiveBatchId(batchId);
+
+                              // Reset modal state
+                              setBulkScanPhase(null);
+                              setBulkScanProgress(0);
+                              setDetectedPlatforms({});
+                              close();
+                              navigate('/dashboard');
+                            }, 800);
+                          } else {
+                            setBulkScanProgress(Math.round(p));
+                          }
+                        }, 500);
+                        return;
+                      }
                       if (activeInputTab === 'videos' && validLines.length > 0) {
                         setPendingVideoLinks(validLines);
                         close();
@@ -656,9 +783,14 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
                       }
                     }}
                     className="flex items-center gap-1.5 px-4 h-8 rounded-xl transition-colors text-white text-xs font-medium flex-shrink-0"
-                    style={{ background: currentTab.color }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.85'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+                    style={{
+                      background: currentTab.color,
+                      ...(activeInputTab === 'transcripts' && bulkScanPhase === 'scanning'
+                        ? { opacity: 0.5, pointerEvents: 'none' as const }
+                        : {}),
+                    }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = activeInputTab === 'transcripts' && bulkScanPhase === 'scanning' ? '0.5' : '0.85'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = activeInputTab === 'transcripts' && bulkScanPhase === 'scanning' ? '0.5' : '1'; }}
                   >
                     {buttonIcons[activeInputTab]}
                     {buttonLabels[activeInputTab]}
