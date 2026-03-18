@@ -21,6 +21,7 @@ import AiEssentialsIconSet from '../../imports/AiEssentialsIconSet-72-2308';
 import ChromeLogo from '../../imports/Container';
 import OutlineSearchMagnifer from '../../imports/OutlineSearchMagnifer';
 import { ThemeContext } from '../context/ThemeContext';
+import { useExtensionModal } from '../context/ChromeExtensionModalContext';
 
 // ─── Header ───────────────────────────────────────────────────────────────────
 // v2: header centered on horizontal rule at y=68
@@ -1674,6 +1675,7 @@ function IntegrationsSection() {
 // ─── Chrome Extension ────────────────────────────────────────────────────────
 function ChromeExtensionSection() {
   const { isDark } = useContext(ThemeContext);
+  const { open: openExtModal } = useExtensionModal();
   const bg         = isDark ? '#111111' : '#f9fafb';
   const border     = isDark ? '#262626' : '#f3f4f6';
   const cardBg     = isDark ? '#141414' : '#ffffff';
@@ -1764,6 +1766,7 @@ function ChromeExtensionSection() {
               {/* CTA */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-2">
                 <button
+                  onClick={openExtModal}
                   className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl text-sm transition-opacity hover:opacity-80"
                   style={{ background: text, color: bg, fontWeight: 500 }}
                 >

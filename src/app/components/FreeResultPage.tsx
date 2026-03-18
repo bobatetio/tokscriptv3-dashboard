@@ -17,6 +17,7 @@ import { formatCardDate } from '../utils/formatDate';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { AppLogo } from './AppLogo';
 import Rd from '../../imports/Rd';
+import { useExtensionModal } from '../context/ChromeExtensionModalContext';
 
 // ── Mock data (reused from TranscriptResultPage) ──────────────────────────────
 const DEFAULT_VIDEO = {
@@ -99,6 +100,7 @@ export function FreeResultPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isDark, toggle } = useContext(ThemeContext);
+  const { open: openExtModal } = useExtensionModal();
   const [activeTab, setActiveTab]   = useState<'transcript' | 'caption' | 'analytics' | 'prompts'>('transcript');
   const [langOpen, setLangOpen]     = useState(false);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -247,7 +249,7 @@ export function FreeResultPage() {
         <div className="flex items-center gap-2">
           {/* Chrome extension */}
           <button
-            onClick={() => window.open('https://chrome.google.com/webstore', '_blank', 'noopener,noreferrer')}
+            onClick={openExtModal}
             className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs transition-colors flex-shrink-0"
             style={{
               color: isDark ? text : muted,

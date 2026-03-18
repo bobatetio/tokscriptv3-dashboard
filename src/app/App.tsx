@@ -26,14 +26,19 @@ import { PlanDevToggle } from './components/PlanDevToggle';
 import { NewTranscriptProvider } from './context/NewTranscriptContext';
 import NewTranscriptModal from './components/NewTranscriptModal';
 import { BulkProcessingProvider } from './context/BulkProcessingContext';
+import { ChromeExtensionModalProvider } from './context/ChromeExtensionModalContext';
+import ChromeExtensionModal from './components/ChromeExtensionModal';
 
 function AppLayout() {
   return (
     <BulkProcessingProvider>
-      <NewTranscriptProvider>
-        <Outlet />
-        <NewTranscriptModal />
-      </NewTranscriptProvider>
+      <ChromeExtensionModalProvider>
+        <NewTranscriptProvider>
+          <Outlet />
+          <NewTranscriptModal />
+          <ChromeExtensionModal />
+        </NewTranscriptProvider>
+      </ChromeExtensionModalProvider>
     </BulkProcessingProvider>
   );
 }

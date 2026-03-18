@@ -182,10 +182,10 @@ export function AppSidebar({
           </button>
         </div>
 
-        {/* + New Transcript button */}
+        {/* + New Scan button */}
         <div className="flex items-center justify-center pt-0 pb-2 flex-shrink-0">
           <button
-            title="New Transcript"
+            title="New Scan"
             onClick={openNewTranscript}
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
             style={{ background: isDark ? '#ffffff' : '#111111', color: isDark ? '#111111' : '#ffffff' }}
@@ -384,7 +384,7 @@ export function AppSidebar({
         )}
       </div>
 
-      {/* New Transcript button */}
+      {/* New Scan button */}
       <div className="px-3 pt-2 pb-3 flex-shrink-0">
         <button
           onClick={openNewTranscript}
@@ -398,7 +398,7 @@ export function AppSidebar({
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#ffffff' : '#111111'; }}
         >
           <Plus className="w-3.5 h-3.5" />
-          New Transcript
+          New Scan
         </button>
       </div>
 

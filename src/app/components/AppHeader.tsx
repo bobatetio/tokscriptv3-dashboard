@@ -4,6 +4,7 @@ import { ThemeContext } from '../context/ThemeContext';
 import { UserContext } from '../context/UserContext';
 import Rd from '../../imports/Rd';
 import { NotificationsDropdown } from './NotificationsDropdown';
+import { useExtensionModal } from '../context/ChromeExtensionModalContext';
 
 interface AppHeaderProps {
   leftSlot?: React.ReactNode;
@@ -14,6 +15,7 @@ export function AppHeader({ leftSlot }: AppHeaderProps) {
   const { plan, openUpgrade } = useContext(UserContext);
   const [notifOpen, setNotifOpen] = useState(false);
   const bellRef = useRef<HTMLButtonElement>(null);
+  const { open: openExtModal } = useExtensionModal();
 
   const muted   = isDark ? '#888888' : '#6b7280';
   const text    = isDark ? '#ffffff' : '#111111';
@@ -56,7 +58,7 @@ export function AppHeader({ leftSlot }: AppHeaderProps) {
 
         {/* Install Chrome Extension */}
         <button
-          onClick={() => window.open('https://chrome.google.com/webstore', '_blank', 'noopener,noreferrer')}
+          onClick={openExtModal}
           className="flex items-center gap-3 px-2.5 py-1.5 rounded-lg transition-colors flex-shrink-0"
           style={{
             color: isDark ? text : muted,
