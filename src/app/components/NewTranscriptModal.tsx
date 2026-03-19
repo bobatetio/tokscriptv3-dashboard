@@ -159,8 +159,8 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
   // ── Wizard state ──────────────────────────────────────────────────────────
   const [profilePhase, setProfilePhase] = useState<'scanning' | 'preview' | 'configure' | 'finalScan' | 'scanDone' | null>(null);
   const [profileProgress, setProfileProgress] = useState(0);
-  const [profileDateRange, setProfileDateRange] = useState('All content');
-  const [profileTypes, setProfileTypes] = useState({ videos: true, covers: true, data: true });
+  const [profileDateRange, setProfileDateRange] = useState('Last 30 days');
+  const [profileTypes, setProfileTypes] = useState({ videos: false, covers: false, data: false });
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
   const [scanDoneOrigin, setScanDoneOrigin] = useState<'initial' | 'final'>('initial');
@@ -314,45 +314,6 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
               </div>
             ) : profilePhase === 'configure' ? (
               <div className="flex flex-col gap-4">
-                {/* Date Range */}
-                <div>
-                  <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
-                  <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
-                  <div className="flex flex-wrap gap-2">
-                    {['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'All content', 'Custom'].map(range => {
-                      const isActive = profileDateRange === range;
-                      return (
-                        <button
-                          key={range}
-                          onClick={() => setProfileDateRange(range)}
-                          className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
-                          style={{
-                            background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                            color: isActive ? '#f59e0b' : muted,
-                            border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
-                            fontWeight: isActive ? 600 : 400,
-                          }}
-                        >
-                          {range}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {profileDateRange === 'Custom' && (
-                    <div className="flex items-center gap-2 mt-2.5">
-                      <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                        style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
-                      />
-                      <span className="text-[10px]" style={{ color: muted }}>to</span>
-                      <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                        style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
-                      />
-                    </div>
-                  )}
-                </div>
-
                 {/* Download Types */}
                 <div>
                   <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Download Types</p>
@@ -402,45 +363,82 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
 
-                {/* Start Scanning button */}
-                <div className="flex justify-end pt-1">
-                  <button
-                    onClick={() => {
-                      if (!profileTypes.videos && !profileTypes.covers && !profileTypes.data) return;
-                      setProfilePhase('finalScan');
-                      setProfileProgress(0);
-                      let p = 0;
-                      const interval = setInterval(() => {
-                        p += Math.random() * 12 + 4;
-                        if (p >= 100) {
-                          clearInterval(interval);
-                          setProfileProgress(100);
-                          setTimeout(() => {
-                            setScanDoneOrigin('final');
-                            setProfilePhase('scanDone');
-                          }, 500);
-                        } else {
-                          setProfileProgress(Math.round(p));
-                        }
-                      }, 500);
-                    }}
-                    disabled={!profileTypes.videos && !profileTypes.covers && !profileTypes.data}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
-                    style={{
-                      background: (profileTypes.videos || profileTypes.covers || profileTypes.data)
-                        ? '#f59e0b'
-                        : (isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'),
-                      color: (profileTypes.videos || profileTypes.covers || profileTypes.data)
-                        ? '#fff'
-                        : muted,
-                      fontWeight: 600,
-                      cursor: (profileTypes.videos || profileTypes.covers || profileTypes.data) ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    Start Scanning
-                  </button>
-                </div>
+                {/* Date Range — only when ≥1 type selected */}
+                {(profileTypes.videos || profileTypes.covers || profileTypes.data) && (
+                  <div>
+                    <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
+                    <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'All content', 'Custom'].map(range => {
+                        const isActive = profileDateRange === range;
+                        return (
+                          <button
+                            key={range}
+                            onClick={() => setProfileDateRange(range)}
+                            className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
+                            style={{
+                              background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                              color: isActive ? '#f59e0b' : muted,
+                              border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
+                              fontWeight: isActive ? 600 : 400,
+                            }}
+                          >
+                            {range}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {profileDateRange === 'Custom' && (
+                      <div className="flex items-center gap-2 mt-2.5">
+                        <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                          className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                          style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
+                        />
+                        <span className="text-[10px]" style={{ color: muted }}>to</span>
+                        <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                          className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                          style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Start Scanning — only when ≥1 type AND date range set */}
+                {(profileTypes.videos || profileTypes.covers || profileTypes.data) && profileDateRange && (
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={() => {
+                        setProfilePhase('finalScan');
+                        setProfileProgress(0);
+                        let p = 0;
+                        const interval = setInterval(() => {
+                          p += Math.random() * 12 + 4;
+                          if (p >= 100) {
+                            clearInterval(interval);
+                            setProfileProgress(100);
+                            setTimeout(() => {
+                              setScanDoneOrigin('final');
+                              setProfilePhase('scanDone');
+                            }, 500);
+                          } else {
+                            setProfileProgress(Math.round(p));
+                          }
+                        }, 500);
+                      }}
+                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+                      style={{
+                        background: '#f59e0b',
+                        color: '#fff',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      Start Scanning
+                    </button>
+                  </div>
+                )}
               </div>
             ) : profilePhase === 'scanDone' ? (
               <div className="flex flex-col items-center gap-4 py-8">

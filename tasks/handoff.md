@@ -1,37 +1,24 @@
-# Handoff — Chrome Extension Install Modal
+# Handoff — Creator Profile Download Panel Redesign
 
 ## Status: DONE
 
 ## What Was Done
-Created a Chrome Extension install modal that replaces raw `window.open()` calls. Mounted once in AppLayout via context provider (same pattern as NewTranscriptModal).
+Replaced the 3 separate download mini-cards + floating rescan row with a single unified Downloads panel in `CreatorProfilePage.tsx`.
 
-## Files Created (2)
-
-### `src/app/context/ChromeExtensionModalContext.tsx` — NEW
-Minimal context with `isOpen`/`open`/`close` + `useExtensionModal()` hook.
-
-### `src/app/components/ChromeExtensionModal.tsx` — NEW
-Modal matching NewTranscriptModal shell: blurred backdrop, maxWidth 680, rounded-2xl, same shadows. Content: centered header, two-column card (browser mockup left + 3 numbered steps right), teal CTA "Add to Chrome — it's free", browser compat pills. Escape key + scroll lock + backdrop click to close.
-
-## Files Modified (4)
-
-### `src/app/App.tsx`
-Wrapped AppLayout with `ChromeExtensionModalProvider`, mounted `<ChromeExtensionModal />` alongside `<NewTranscriptModal />`.
-
-### `src/app/components/AppHeader.tsx`
-Replaced `window.open(webstore)` with `useExtensionModal().open()`.
-
-### `src/app/components/FreeResultPage.tsx`
-Same — replaced `window.open(webstore)` with `useExtensionModal().open()`.
-
-### `src/app/components/LandingPage.tsx`
-Wired dead "Add to Chrome" button in ChromeExtensionSection with `onClick={openExtModal}`.
+## Files Modified
+### `src/app/components/CreatorProfilePage.tsx`
+- Lines 1136–1229: Replaced `{scanStatus === 'complete' && (<>...</>)}` block
+- New unified panel: `rounded-2xl` card, 340px wide, `cardBg` background, border
+- Panel header: "Downloads" label (left) + RescanChip (right) showing `RefreshCw` icon + relative timestamp
+- Three stacked rows (Videos, Covers, Data) — icon + label + stats + compact amber Download button
+- Post-download timestamp moved inline after each row's download button
+- Rescan chip has amber hover tint, onClick → `onRescan()`
 
 ## Verified
-- vite build passes (zero errors)
-- Dashboard: "Install Chrome Extension" → modal opens
-- FreeResultPage: "Install Extension" → modal opens
-- LandingPage: "Add to Chrome" button wired (code verified)
-- Escape key closes modal
-- Dark mode: all theme tokens switch correctly
-- Modal matches NewTranscriptModal visual language (same sizing, backdrop, shadows)
+- `vite build` passes (zero errors)
+- Screenshot: panel renders correctly on `/profile/@tokcast`
+- All 3 rows visible with proper icon/label/stats/button layout
+- Rescan chip in header (not floating separately)
+
+## Next Steps
+- None. Task complete.

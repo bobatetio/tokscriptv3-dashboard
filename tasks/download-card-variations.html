@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Download Card Variations — TokScript</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    background: #0a0a0a;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    color: #fff;
+    padding: 48px 40px;
+    min-height: 100vh;
+  }
+
+  /* ── shared tokens ── */
+  :root {
+    --border: #1f1f1f;
+    --border2: #262626;
+    --card: #111111;
+    --card2: #141414;
+    --text: #ffffff;
+    --muted: #888888;
+    --muted2: #666666;
+    --amber: #f59e0b;
+    --amber-bg: rgba(245,158,11,0.12);
+    --amber-bg2: rgba(245,158,11,0.06);
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted2);
+    margin-bottom: 12px;
+  }
+
+  .variation-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .variation-desc {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .variation-block {
+    margin-bottom: 56px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0;
+  }
+
+  /* ── icon svgs ── */
+  .icon { display: inline-flex; align-items: center; justify-content: center; }
+
+  /* ── reusable amber dl button ── */
+  .dl-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.15s;
+  }
+  .dl-btn:hover { opacity: 0.75; }
+
+  .dl-btn-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--amber);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.15s;
+    padding: 7px 10px;
+  }
+  .dl-btn-block:hover { background: var(--amber-bg2); }
+
+  .rescan-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 4px 8px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .rescan-chip:hover { background: var(--amber-bg); color: var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- ─────────────── PAGE HEADER ─────────────── -->
+<div style="margin-bottom:48px">
+  <p style="font-size:11px;color:#555;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;margin-bottom:8px">TokScript — Download Cards</p>
+  <h1 style="font-size:24px;font-weight:700;color:#fff;margin:0 0 6px">10 Design Variations</h1>
+  <p style="font-size:13px;color:#666;margin:0">Each variation fixes: stats on ONE line + rescan chip anchored to the cards. Pick your favorite.</p>
+  <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap">
+    <span style="font-size:11px;background:#1a1a1a;color:#f59e0b;padding:4px 10px;border-radius:6px;border:1px solid #2a2a2a">347 Videos · 2.3 GB</span>
+    <span style="font-size:11px;background:#1a1a1a;color:#888;padding:4px 10px;border-radius:6px;border:1px solid #2a2a2a">347 Covers · 340 MB</span>
+    <span style="font-size:11px;background:#1a1a1a;color:#888;padding:4px 10px;border-radius:6px;border:1px solid #2a2a2a">1 Data · 12 MB</span>
+    <span style="font-size:11px;background:#1a1a1a;color:#888;padding:4px 10px;border-radius:6px;border:1px solid #2a2a2a">↻ Scanned 2d ago</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V1 — Unified Panel with Header Bar
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V1 — Unified Panel with Header Bar</div>
+  <div class="variation-desc">Single bordered panel. Header strip: "Downloads" left + rescan right. Three equal columns share the space, each with centered icon → label → stats (one line) → download footer.</div>
+
+  <div style="display:inline-block;border:1px solid var(--border2);border-radius:16px;overflow:hidden;background:var(--card);min-width:420px">
+    <!-- Header strip -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border2)">
+      <span style="font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.03em">Downloads</span>
+      <button class="rescan-chip" style="font-size:10px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Scanned 2d ago
+      </button>
+    </div>
+    <!-- 3 columns -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+      <!-- Videos -->
+      <div style="display:flex;flex-col;border-right:1px solid var(--border2)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 12px 10px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+          <span style="font-size:10px;color:var(--muted)">347 files · 2.3 GB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Covers -->
+      <div style="display:flex;flex-col;border-right:1px solid var(--border2)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 12px 10px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+          <span style="font-size:10px;color:var(--muted)">347 files · 340 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Data -->
+      <div style="display:flex;flex-col">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 12px 10px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+          <span style="font-size:10px;color:var(--muted)">1 file · 12 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V2 — Leading Rescan Chip + Individual Cards
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V2 — Leading Rescan Chip + Individual Cards</div>
+  <div class="variation-desc">Rescan pill is the LEFTMOST element in the row — before the 3 cards. All elements vertically centered. Cards: icon + label + "347 files · 2.3 GB" + Download link.</div>
+
+  <div style="display:flex;align-items:center;gap:10px">
+    <!-- Rescan pill — leftmost -->
+    <button class="rescan-chip" style="border:1px solid var(--border2);background:var(--card)">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      2d ago
+    </button>
+
+    <!-- Videos card -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:110px">
+      <div style="display:flex;align-items:center;gap:5px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+      </div>
+      <span style="font-size:10px;color:var(--muted)">347 files · 2.3 GB</span>
+      <button class="dl-btn" style="margin-top:2px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+
+    <!-- Covers card -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:110px">
+      <div style="display:flex;align-items:center;gap:5px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+      </div>
+      <span style="font-size:10px;color:var(--muted)">347 files · 340 MB</span>
+      <button class="dl-btn" style="margin-top:2px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+
+    <!-- Data card -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 14px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:110px">
+      <div style="display:flex;align-items:center;gap:5px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+      </div>
+      <span style="font-size:10px;color:var(--muted)">1 file · 12 MB</span>
+      <button class="dl-btn" style="margin-top:2px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V3 — Compact Horizontal List Strips
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V3 — Compact Horizontal List Strips</div>
+  <div class="variation-desc">3 horizontal rows in one bordered container. Each row: icon · label · count · size (flex fill) · Download button. Rescan icon-button in top-right corner of the container.</div>
+
+  <div style="border:1px solid var(--border2);border-radius:14px;background:var(--card);overflow:hidden;display:inline-block;min-width:360px">
+    <!-- Top-right rescan -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px 8px 14px;border-bottom:1px solid var(--border2)">
+      <span style="font-size:10px;font-weight:600;letter-spacing:0.04em;color:var(--muted2);text-transform:uppercase">Downloads</span>
+      <button class="rescan-chip" style="padding:2px 6px;font-size:9.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        2d ago
+      </button>
+    </div>
+    <!-- Videos row -->
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text);min-width:50px">Videos</span>
+      <span style="font-size:11px;color:var(--muted);flex:1">347 files · 2.3 GB</span>
+      <button class="dl-btn">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+    <div style="height:1px;background:var(--border);margin:0 14px"></div>
+    <!-- Covers row -->
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text);min-width:50px">Covers</span>
+      <span style="font-size:11px;color:var(--muted);flex:1">347 files · 340 MB</span>
+      <button class="dl-btn">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+    <div style="height:1px;background:var(--border);margin:0 14px"></div>
+    <!-- Data row -->
+    <div style="display:flex;align-items:center;gap:8px;padding:10px 14px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text);min-width:50px">Data</span>
+      <span style="font-size:11px;color:var(--muted);flex:1">1 file · 12 MB</span>
+      <button class="dl-btn">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V4 — Standard Cards + Centered Rescan Below
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V4 — Standard Cards + Centered Rescan Below</div>
+  <div class="variation-desc">3 individual bordered cards side by side. Stats on ONE line. "↻ Scanned 2d ago" is centered below all 3 cards — like a caption, not floating.</div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;align-items:center">
+    <div style="display:flex;align-items:stretch;gap:10px">
+      <!-- Videos -->
+      <div style="display:flex;flex-direction:column;border:1px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--card);min-width:120px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 12px 8px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+          <span style="font-size:10px;color:var(--muted)">347 files · 2.3 GB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Covers -->
+      <div style="display:flex;flex-direction:column;border:1px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--card);min-width:120px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 12px 8px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+          <span style="font-size:10px;color:var(--muted)">347 files · 340 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Data -->
+      <div style="display:flex;flex-direction:column;border:1px solid var(--border2);border-radius:12px;overflow:hidden;background:var(--card);min-width:120px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 12px 8px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+          <span style="font-size:10px;color:var(--muted)">1 file · 12 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2)">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+    </div>
+    <!-- Centered rescan below -->
+    <button class="rescan-chip">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      Scanned 2d ago
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V5 — Borderless Ambient Pill Row
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V5 — Borderless Ambient Pill Row</div>
+  <div class="variation-desc">No bordered cards. Three tinted pill chips in a row, each: icon · label · count · size · Download. Thin separator, then rescan pill as 4th element.</div>
+
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+    <!-- Videos pill -->
+    <div style="display:inline-flex;align-items:center;gap:7px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+      <span style="font-size:10.5px;color:var(--muted)">347 files · 2.3 GB</span>
+      <span style="width:1px;height:12px;background:var(--border2)"></span>
+      <button class="dl-btn" style="font-size:10.5px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- Covers pill -->
+    <div style="display:inline-flex;align-items:center;gap:7px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+      <span style="font-size:10.5px;color:var(--muted)">347 files · 340 MB</span>
+      <span style="width:1px;height:12px;background:var(--border2)"></span>
+      <button class="dl-btn" style="font-size:10.5px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- Data pill -->
+    <div style="display:inline-flex;align-items:center;gap:7px;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:10px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+      <span style="font-size:10.5px;color:var(--muted)">1 file · 12 MB</span>
+      <span style="width:1px;height:12px;background:var(--border2)"></span>
+      <button class="dl-btn" style="font-size:10.5px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- thin separator -->
+    <div style="width:1px;height:24px;background:var(--border2);margin:0 2px"></div>
+    <!-- rescan pill -->
+    <button class="rescan-chip" style="background:rgba(255,255,255,0.04);border-radius:10px;padding:8px 12px">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      2d ago
+    </button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V6 — Left-Aligned Media-Row Cards + Header Rescan
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V6 — Left-Aligned Media-Row Cards + Header Rescan</div>
+  <div class="variation-desc">Horizontal card rows stacked vertically. Each: icon left → label + stats fill → Download right. Rescan is a small header above the whole group.</div>
+
+  <div style="display:flex;flex-direction:column;gap:0px">
+    <!-- Header rescan above -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <button class="rescan-chip" style="padding:2px 0;font-size:10px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Last scanned 2 days ago
+      </button>
+      <span style="font-size:10px;color:#444">·</span>
+      <button style="font-size:10px;color:var(--amber);background:none;border:none;cursor:pointer;padding:0;font-weight:500">↻ Rescan</button>
+    </div>
+
+    <!-- Card rows container -->
+    <div style="border:1px solid var(--border2);border-radius:14px;overflow:hidden;background:var(--card);display:inline-block;min-width:340px">
+      <!-- Videos row -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text);min-width:46px">Videos</span>
+        <span style="font-size:11px;color:var(--muted);flex:1">347 files · 2.3 GB</span>
+        <button class="dl-btn">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+      <div style="height:1px;background:var(--border);margin:0 14px"></div>
+      <!-- Covers row -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text);min-width:46px">Covers</span>
+        <span style="font-size:11px;color:var(--muted);flex:1">347 files · 340 MB</span>
+        <button class="dl-btn">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+      <div style="height:1px;background:var(--border);margin:0 14px"></div>
+      <!-- Data row -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text);min-width:46px">Data</span>
+        <span style="font-size:11px;color:var(--muted);flex:1">1 file · 12 MB</span>
+        <button class="dl-btn">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V7 — Two-Row Stat + Action Split
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V7 — Two-Row Stat + Action Split</div>
+  <div class="variation-desc">Row 1: 3 stat chips (icon + label + count · size). Row 2: aligned Download buttons under each, plus rescan appended inline after the third.</div>
+
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <!-- Row 1: stat chips -->
+    <div style="display:flex;gap:8px">
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border2);border-radius:999px;background:var(--card)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+        <span style="font-size:10px;color:var(--muted)">347 · 2.3 GB</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border2);border-radius:999px;background:var(--card)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+        <span style="font-size:10px;color:var(--muted)">347 · 340 MB</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--border2);border-radius:999px;background:var(--card)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+        <span style="font-size:10px;color:var(--muted)">1 · 12 MB</span>
+      </div>
+    </div>
+    <!-- Row 2: download buttons + rescan -->
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="dl-btn" style="padding:5px 12px;border:1px solid var(--border2);border-radius:8px;font-size:10.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="dl-btn" style="padding:5px 12px;border:1px solid var(--border2);border-radius:8px;font-size:10.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="dl-btn" style="padding:5px 12px;border:1px solid var(--border2);border-radius:8px;font-size:10.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+      <button class="rescan-chip">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        2d ago
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V8 — Compact Metric Cards (stats prominent)
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V8 — Compact Metric Cards (stats prominent)</div>
+  <div class="variation-desc">3 cards: icon + count LARGE + label small + size small + Download footer. Thin header strip above all 3: "Downloads · ↻ Scanned 2d ago".</div>
+
+  <div style="display:inline-block;border:1px solid var(--border2);border-radius:16px;overflow:hidden;background:var(--card)">
+    <!-- Thin header strip -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border2)">
+      <span style="font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted2)">Downloads</span>
+      <button class="rescan-chip" style="padding:2px 6px;font-size:9.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Scanned 2d ago
+      </button>
+    </div>
+    <!-- 3 metric card columns -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr">
+      <!-- Videos -->
+      <div style="border-right:1px solid var(--border2)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 12px 10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+          <span style="font-size:22px;font-weight:700;color:var(--text);line-height:1.1;margin-top:4px">347</span>
+          <span style="font-size:10px;font-weight:500;color:var(--muted)">videos</span>
+          <span style="font-size:9.5px;color:var(--muted2)">2.3 GB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2);font-size:10.5px">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Covers -->
+      <div style="border-right:1px solid var(--border2)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 12px 10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span style="font-size:22px;font-weight:700;color:var(--text);line-height:1.1;margin-top:4px">347</span>
+          <span style="font-size:10px;font-weight:500;color:var(--muted)">covers</span>
+          <span style="font-size:9.5px;color:var(--muted2)">340 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2);font-size:10.5px">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+      <!-- Data -->
+      <div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:16px 12px 10px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span style="font-size:22px;font-weight:700;color:var(--text);line-height:1.1;margin-top:4px">1</span>
+          <span style="font-size:10px;font-weight:500;color:var(--muted)">file</span>
+          <span style="font-size:9.5px;color:var(--muted2)">12 MB</span>
+        </div>
+        <div class="dl-btn-block" style="border-top:1px solid var(--border2);font-size:10.5px">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V9 — Clean Table Grid (minimal)
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V9 — Clean Table Grid (minimal)</div>
+  <div class="variation-desc">One compact table-style card with thin column dividers. Headers → Stats → Actions. Rescan in footer bar, left-aligned.</div>
+
+  <div style="display:inline-block;border:1px solid var(--border2);border-radius:14px;overflow:hidden;background:var(--card);min-width:380px">
+    <!-- Column headers -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border2)">
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;border-right:1px solid var(--border2)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px;border-right:1px solid var(--border2)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 8px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+      </div>
+    </div>
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border2)">
+      <div style="text-align:center;padding:8px;border-right:1px solid var(--border2)">
+        <span style="font-size:10.5px;color:var(--muted)">347 files · 2.3 GB</span>
+      </div>
+      <div style="text-align:center;padding:8px;border-right:1px solid var(--border2)">
+        <span style="font-size:10.5px;color:var(--muted)">347 files · 340 MB</span>
+      </div>
+      <div style="text-align:center;padding:8px">
+        <span style="font-size:10.5px;color:var(--muted)">1 file · 12 MB</span>
+      </div>
+    </div>
+    <!-- Actions row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border2)">
+      <div class="dl-btn-block" style="border-right:1px solid var(--border2)">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </div>
+      <div class="dl-btn-block" style="border-right:1px solid var(--border2)">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </div>
+      <div class="dl-btn-block">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </div>
+    </div>
+    <!-- Footer rescan -->
+    <div style="padding:6px 14px">
+      <button class="rescan-chip" style="padding:3px 0;font-size:9.5px">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        Scanned 2d ago
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     V10 — Icon-Badge Stack + Rescan Inline
+═══════════════════════════════════════════════ -->
+<div class="variation-block">
+  <div class="variation-title">V10 — Icon-Badge Stack + Rescan Inline</div>
+  <div class="variation-desc">Very compact. 3 icon badge columns: large icon → count → label → size → Download link below. Rescan chip inline to RIGHT of the third badge.</div>
+
+  <div style="display:flex;align-items:flex-start;gap:8px">
+    <!-- Videos badge -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 12px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:80px">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>
+      </div>
+      <span style="font-size:16px;font-weight:700;color:var(--text);margin-top:4px;line-height:1">347</span>
+      <span style="font-size:9.5px;color:var(--muted)">videos</span>
+      <span style="font-size:9px;color:var(--muted2)">2.3 GB</span>
+      <button class="dl-btn" style="margin-top:4px;font-size:10px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- Covers badge -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 12px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:80px">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <span style="font-size:16px;font-weight:700;color:var(--text);margin-top:4px;line-height:1">347</span>
+      <span style="font-size:9.5px;color:var(--muted)">covers</span>
+      <span style="font-size:9px;color:var(--muted2)">340 MB</span>
+      <button class="dl-btn" style="margin-top:4px;font-size:10px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- Data badge -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 12px;border:1px solid var(--border2);border-radius:12px;background:var(--card);min-width:80px">
+      <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <span style="font-size:16px;font-weight:700;color:var(--text);margin-top:4px;line-height:1">1</span>
+      <span style="font-size:9.5px;color:var(--muted)">file</span>
+      <span style="font-size:9px;color:var(--muted2)">12 MB</span>
+      <button class="dl-btn" style="margin-top:4px;font-size:10px">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        ↓
+      </button>
+    </div>
+    <!-- Rescan inline right of last badge -->
+    <div style="display:flex;flex-direction:column;justify-content:center;padding-top:2px;align-self:center">
+      <button class="rescan-chip" style="border:1px solid var(--border2);border-radius:10px;padding:6px 10px">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        2d ago
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─────────────── FOOTER ─────────────── -->
+<div style="margin-top:32px;padding-top:24px;border-top:1px solid #1a1a1a">
+  <p style="font-size:11px;color:#444;margin:0">Tell me which variation to implement. I'll update <code style="font-size:10px;background:#181818;padding:1px 4px;border-radius:3px;color:#666">CreatorProfilePage.tsx</code> and optionally the selection cards in the modals.</p>
+</div>
+
+</body>
+</html>

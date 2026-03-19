@@ -686,14 +686,15 @@ function ScanWizardModal({
   const inputBg = isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb';
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [dateRange, setDateRange] = useState('All content');
-  const [types, setTypes] = useState({ videos: true, covers: true, data: true });
+  const [dateRange, setDateRange] = useState('Last 30 days');
+  const [types, setTypes] = useState({ videos: false, covers: false, data: false });
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
 
   const DATE_RANGES = ['Last 7 days', 'Last 14 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'Last 1 year', 'All content', 'Custom'];
 
-  const canStart = types.videos || types.covers || types.data;
+  const canProceed = types.videos || types.covers || types.data;
+  const canStart = canProceed && !!dateRange;
 
   return (
     <div
@@ -730,50 +731,6 @@ function ScanWizardModal({
         {/* Body */}
         <div className="px-5 py-5 flex flex-col gap-4">
           {step === 1 && (
-            <>
-              <div>
-                <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
-                <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {DATE_RANGES.map(dr => {
-                  const isActive = dateRange === dr;
-                  return (
-                    <button
-                      key={dr}
-                      onClick={() => setDateRange(dr)}
-                      className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
-                      style={{
-                        background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                        color: isActive ? '#f59e0b' : muted,
-                        border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
-                        fontWeight: isActive ? 600 : 400,
-                      }}
-                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
-                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
-                    >
-                      {dr}
-                    </button>
-                  );
-                })}
-              </div>
-              {dateRange === 'Custom' && (
-                <div className="flex items-center gap-2 mt-2.5">
-                  <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
-                  />
-                  <span className="text-[10px]" style={{ color: muted }}>to</span>
-                  <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
-                  />
-                </div>
-              )}
-            </>
-          )}
-
-          {step === 2 && (
             <>
               <div>
                 <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Download Types</p>
@@ -822,6 +779,50 @@ function ScanWizardModal({
               </div>
             </>
           )}
+
+          {step === 2 && (
+            <>
+              <div>
+                <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
+                <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {DATE_RANGES.map(dr => {
+                  const isActive = dateRange === dr;
+                  return (
+                    <button
+                      key={dr}
+                      onClick={() => setDateRange(dr)}
+                      className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                        color: isActive ? '#f59e0b' : muted,
+                        border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+                    >
+                      {dr}
+                    </button>
+                  );
+                })}
+              </div>
+              {dateRange === 'Custom' && (
+                <div className="flex items-center gap-2 mt-2.5">
+                  <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
+                  />
+                  <span className="text-[10px]" style={{ color: muted }}>to</span>
+                  <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                    className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
+                    style={{ background: inputBg, border: `1px solid ${border}`, color: text }}
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
 
         {/* Footer */}
@@ -838,9 +839,15 @@ function ScanWizardModal({
                 Cancel
               </button>
               <button
-                onClick={() => setStep(2)}
+                onClick={() => { if (canProceed) setStep(2); }}
+                disabled={!canProceed}
                 className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
-                style={{ background: '#f59e0b', color: '#fff', fontWeight: 600 }}
+                style={{
+                  background: canProceed ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'),
+                  color: canProceed ? '#fff' : muted,
+                  fontWeight: 600,
+                  cursor: canProceed ? 'pointer' : 'not-allowed',
+                }}
               >
                 Next
                 <ArrowRight className="w-3 h-3" />
@@ -1127,100 +1134,104 @@ function CreatorHeader({
           )}
 
           {scanStatus === 'complete' && (
-            <>
-              {/* Download cards */}
-              {[
-                ...(scanConfig?.types.videos !== false ? [{
-                  key: 'videos',
-                  icon: <Film className="w-3.5 h-3.5" />,
-                  label: 'Videos',
-                  count: `${videoCount} files`,
-                  size: '2.3 GB',
-                }] : []),
-                ...(scanConfig?.types.covers !== false ? [{
-                  key: 'covers',
-                  icon: <Image className="w-3.5 h-3.5" />,
-                  label: 'Covers',
-                  count: `${videoCount} files`,
-                  size: '340 MB',
-                }] : []),
-                ...(scanConfig?.types.data !== false ? [{
-                  key: 'data',
-                  icon: <FileText className="w-3.5 h-3.5" />,
-                  label: 'Data',
-                  count: '1 file',
-                  size: '12 MB',
-                }] : []),
-              ].map(card => {
-                const state = downloadStates[card.key] || 'idle';
-                return (
-                  <div
-                    key={card.key}
-                    className="flex flex-col rounded-xl overflow-hidden"
-                    style={{
-                      border: `1px solid ${border}`,
-                      background: 'transparent',
-                      minWidth: 130,
-                    }}
-                  >
-                    {/* Card top */}
-                    <div className="px-3 pt-3 pb-2 flex flex-col gap-1">
-                      <div className="flex items-center gap-1.5">
-                        <span style={{ color: muted }}>{card.icon}</span>
-                        <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{card.label}</span>
-                      </div>
-                      <p className="text-[10.5px]" style={{ color: muted }}>{card.count}</p>
-                      <p className="text-[10.5px]" style={{ color: muted }}>{card.size}</p>
-                    </div>
-                    {/* Download button */}
-                    <button
-                      onClick={() => onDownload(card.key as 'videos' | 'covers' | 'data')}
-                      disabled={state === 'downloading'}
-                      className="flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] transition-all"
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              {/* 3 cards side by side */}
+              <div className="flex items-stretch gap-2.5">
+                {[
+                  ...(scanConfig?.types.videos !== false ? [{
+                    key: 'videos' as const,
+                    icon: <Film className="w-4 h-4" />,
+                    label: 'Videos',
+                    count: videoCount,
+                    size: '2.3 GB',
+                  }] : []),
+                  ...(scanConfig?.types.covers !== false ? [{
+                    key: 'covers' as const,
+                    icon: <Image className="w-4 h-4" />,
+                    label: 'Covers',
+                    count: videoCount,
+                    size: '340 MB',
+                  }] : []),
+                  ...(scanConfig?.types.data !== false ? [{
+                    key: 'data' as const,
+                    icon: <FileText className="w-4 h-4" />,
+                    label: 'Data',
+                    count: 1,
+                    size: '12 MB',
+                  }] : []),
+                ].map(card => {
+                  const state = downloadStates[card.key] || 'idle';
+                  return (
+                    <div
+                      key={card.key}
+                      className="flex flex-col rounded-xl overflow-hidden"
                       style={{
-                        borderTop: `1px solid ${border}`,
-                        background: state === 'done'
-                          ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)')
-                          : state === 'downloading'
-                            ? (isDark ? 'rgba(255,255,255,0.03)' : '#f9fafb')
-                            : 'transparent',
-                        color: state === 'done' ? '#f59e0b' : state === 'downloading' ? muted : '#f59e0b',
-                        fontWeight: 600,
-                        cursor: state === 'downloading' ? 'wait' : 'pointer',
+                        border: `1px solid ${border}`,
+                        background: 'transparent',
+                        minWidth: 130,
                       }}
-                      onMouseEnter={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.04)'; }}
-                      onMouseLeave={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                     >
-                      {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                      {state === 'done' && <CheckCheck className="w-3 h-3" />}
-                      {state === 'idle' && <Download className="w-3 h-3" />}
-                      {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
-                    </button>
-                    {downloadedAt[card.key] && (
-                      <div className="px-3 pb-1.5">
-                        <p className="text-[9.5px]" style={{ color: '#f59e0b' }}>Downloaded {formatRelativeTime(downloadedAt[card.key]!)}</p>
+                      {/* Top: centered icon + label + stats */}
+                      <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
+                        <span style={{ color: muted }}>{card.icon}</span>
+                        <span className="text-[11px] font-semibold" style={{ color: text }}>{card.label}</span>
+                        <span className="text-[10px]" style={{ color: muted }}>{card.count} {card.count === 1 ? 'file' : 'files'} · {card.size}</span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-              {/* Scanned timestamp + rescan link */}
+                      {/* Bottom: download action */}
+                      <button
+                        onClick={() => onDownload(card.key)}
+                        disabled={state === 'downloading'}
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] transition-all"
+                        style={{
+                          borderTop: `1px solid ${border}`,
+                          background: state === 'done'
+                            ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)')
+                            : 'transparent',
+                          color: state === 'downloading' ? muted : '#f59e0b',
+                          fontWeight: 600,
+                          cursor: state === 'downloading' ? 'wait' : 'pointer',
+                        }}
+                        onMouseEnter={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.04)'; }}
+                        onMouseLeave={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+                      >
+                        {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                        {state === 'done' && <CheckCheck className="w-3 h-3" />}
+                        {state === 'idle' && <Download className="w-3 h-3" />}
+                        {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
+                      </button>
+                      {/* Post-download timestamp */}
+                      {downloadedAt[card.key] && (
+                        <div className="px-3 pb-1.5">
+                          <p className="text-[9.5px] text-center" style={{ color: '#f59e0b' }}>
+                            ↓ {formatRelativeTime(downloadedAt[card.key]!)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Rescan chip below, right-aligned */}
               {lastScannedAt && (
-                <div className="flex items-center gap-1 text-[10px] mt-1" style={{ color: muted }}>
+                <button
+                  onClick={onRescan}
+                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] transition-all"
+                  style={{ color: muted, background: 'transparent' }}
+                  title="Rescan"
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.1)';
+                    (e.currentTarget as HTMLButtonElement).style.color = '#f59e0b';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                    (e.currentTarget as HTMLButtonElement).style.color = muted;
+                  }}
+                >
+                  <RefreshCw className="w-3 h-3" />
                   <span>Scanned {formatRelativeTime(lastScannedAt)}</span>
-                  <span>·</span>
-                  <button
-                    onClick={onRescan}
-                    className="transition-colors"
-                    style={{ color: '#f59e0b', fontWeight: 500 }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'underline'; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.textDecoration = 'none'; }}
-                  >
-                    Rescan
-                  </button>
-                </div>
+                </button>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
