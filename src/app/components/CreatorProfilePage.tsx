@@ -670,6 +670,24 @@ function VideoRow({
   );
 }
 
+// ─── Date range availability helpers ─────────────────────────────────────────
+const RANGE_ORDER: Record<string, number> = {
+  'Last 7 days': 1,
+  'Last 14 days': 2,
+  'Last 30 days': 3,
+  'Last 3 months': 4,
+  'Last 6 months': 5,
+  'Last 1 year': 6,
+  'All content': 7,
+};
+
+function isRangeAvailable(requested: string, scanned: string): boolean {
+  const reqOrder = RANGE_ORDER[requested];
+  const scanOrder = RANGE_ORDER[scanned];
+  if (!reqOrder || !scanOrder) return false; // Custom → treat as needs scan
+  return reqOrder <= scanOrder;
+}
+
 // ─── Scan Wizard Modal ────────────────────────────────────────────────────────
 function ScanWizardModal({
   isDark, border, text, muted, hoverBg, onClose, onStart,
@@ -880,6 +898,256 @@ function ScanWizardModal({
               </button>
             </>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Profile Download Modal ───────────────────────────────────────────────────
+function ProfileDownloadModal({
+  isDark, border, text, muted, hoverBg,
+  onClose, onDownload, onScanAndDownload,
+  initialType, scanConfig, profileHandle, profilePlatform, profileAvatar, lastScannedAt,
+}: {
+  isDark: boolean;
+  border: string;
+  text: string;
+  muted: string;
+  hoverBg: string;
+  onClose: () => void;
+  onDownload: (config: { types: { videos: boolean; covers: boolean; data: boolean }; dateRange: string; dataFormat?: string }) => void;
+  onScanAndDownload: (config: { types: { videos: boolean; covers: boolean; data: boolean }; dateRange: string }) => void;
+  initialType: 'videos' | 'covers' | 'data';
+  scanConfig: { dateRange: string; types: { videos: boolean; covers: boolean; data: boolean } };
+  profileHandle: string;
+  profilePlatform: string;
+  profileAvatar: string;
+  lastScannedAt: Date | null;
+}) {
+  const bg = isDark ? '#141414' : '#ffffff';
+
+  const [types, setTypes] = useState<{ videos: boolean; covers: boolean; data: boolean }>(() => ({
+    videos: initialType === 'videos',
+    covers: initialType === 'covers',
+    data: initialType === 'data',
+  }));
+  const [dateRange, setDateRange] = useState(scanConfig.dateRange);
+  const [dataFormat, setDataFormat] = useState('JSON');
+
+  const DATE_RANGES = ['Last 7 days', 'Last 14 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'Last 1 year', 'All content', 'Custom'];
+  const DATA_FORMATS = ['JSON', 'CSV', 'TXT'];
+
+  const anyTypeChecked = types.videos || types.covers || types.data;
+  const needsScan = !isRangeAvailable(dateRange, scanConfig.dateRange);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="relative rounded-2xl overflow-hidden flex flex-col"
+        style={{ width: 480, background: bg, border: `1px solid ${border}`, boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-3.5" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+              <ImageWithFallback src={profileAvatar} alt={profileHandle} className="w-full h-full object-cover object-top" />
+            </div>
+            <span className="text-[12px]" style={{ color: text, fontWeight: 600 }}>{profileHandle}</span>
+            <PlatformBadge platform={profilePlatform} isDark={isDark} />
+          </div>
+          <div className="flex items-center gap-2">
+            {lastScannedAt && (
+              <span
+                className="text-[10px] rounded-full px-2 py-0.5"
+                style={{
+                  background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
+                  border: `1px solid ${border}`,
+                  color: muted,
+                }}
+              >
+                Scanned {formatRelativeTime(lastScannedAt)}
+              </span>
+            )}
+            <button
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all"
+              style={{ color: muted, background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6' }}
+              onClick={onClose}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-5 flex flex-col gap-4">
+          {/* Section A: Download Types */}
+          <div>
+            <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Download Types</p>
+            <p className="text-[11px] mb-3" style={{ color: muted }}>Select content to include.</p>
+            <div className="grid grid-cols-3 gap-2.5">
+              {([
+                { key: 'videos' as const, label: 'Videos', desc: 'MP4 video files', icon: <Film className="w-4 h-4" /> },
+                { key: 'covers' as const, label: 'Cover Images', desc: 'PNG thumbnails', icon: <Image className="w-4 h-4" /> },
+                { key: 'data' as const, label: 'Data', desc: 'Metadata & transcripts', icon: <FileText className="w-4 h-4" /> },
+              ]).map(item => {
+                const checked = types[item.key];
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setTypes(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                    className="flex flex-col rounded-xl overflow-hidden text-center"
+                    style={{
+                      border: `1px solid ${checked ? 'rgba(245,158,11,0.3)' : border}`,
+                      background: checked
+                        ? (isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)')
+                        : 'transparent',
+                    }}
+                  >
+                    <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
+                      <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
+                      <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
+                      <span className="text-[10px]" style={{ color: muted }}>{item.desc}</span>
+                    </div>
+                    <div
+                      className="flex items-center justify-center py-2"
+                      style={{ borderTop: `1px solid ${checked ? 'rgba(245,158,11,0.2)' : border}` }}
+                    >
+                      <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
+                        style={{
+                          background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
+                          border: `1.5px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
+                        }}
+                      >
+                        {checked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section B: Date Range */}
+          {anyTypeChecked && (
+            <div>
+              <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
+              <p className="text-[11px] mb-3" style={{ color: muted }}>Choose time period.</p>
+              <div className="flex flex-wrap gap-2">
+                {DATE_RANGES.map(dr => {
+                  const isActive = dateRange === dr;
+                  const available = isRangeAvailable(dr, scanConfig.dateRange);
+                  const activeBorderColor = !available && isActive ? 'rgba(245,158,11,0.5)' : 'rgba(245,158,11,0.3)';
+                  return (
+                    <button
+                      key={dr}
+                      onClick={() => setDateRange(dr)}
+                      className="flex items-center px-3 py-1.5 rounded-lg text-[11px] transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                        color: isActive ? '#f59e0b' : muted,
+                        border: `1px solid ${isActive ? activeBorderColor : border}`,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+                    >
+                      {dr}
+                      {!available && <RefreshCw className="w-2.5 h-2.5 ml-0.5" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Section C: Data Format */}
+          {types.data && (
+            <div>
+              <p className="text-[12px] mb-2" style={{ color: text, fontWeight: 600 }}>Export Format</p>
+              <div className="flex gap-2">
+                {DATA_FORMATS.map(f => {
+                  const isActive = dataFormat === f;
+                  return (
+                    <button
+                      key={f}
+                      onClick={() => setDataFormat(f)}
+                      className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
+                      style={{
+                        background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                        color: isActive ? '#f59e0b' : muted,
+                        border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'; }}
+                    >
+                      {f}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderTop: `1px solid ${border}` }}>
+          <button
+            onClick={onClose}
+            className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
+            style={{ color: muted, background: 'transparent', fontWeight: 500 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+          >
+            Cancel
+          </button>
+          <div className="flex flex-col items-end gap-1">
+            {needsScan ? (
+              <>
+                <button
+                  onClick={() => { if (anyTypeChecked) onScanAndDownload({ types, dateRange }); }}
+                  disabled={!anyTypeChecked}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+                  style={{
+                    background: '#f59e0b',
+                    color: '#fff',
+                    fontWeight: 600,
+                    opacity: anyTypeChecked ? 1 : 0.4,
+                    cursor: anyTypeChecked ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  Scan & Download
+                </button>
+                <span className="text-[10px]" style={{ color: muted }}>
+                  Content beyond {scanConfig.dateRange} requires scanning first.
+                </span>
+              </>
+            ) : (
+              <button
+                onClick={() => { if (anyTypeChecked) onDownload({ types, dateRange, dataFormat: types.data ? dataFormat : undefined }); }}
+                disabled={!anyTypeChecked}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
+                style={{
+                  background: '#f59e0b',
+                  color: '#fff',
+                  fontWeight: 600,
+                  opacity: anyTypeChecked ? 1 : 0.4,
+                  cursor: anyTypeChecked ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -1134,103 +1402,109 @@ function CreatorHeader({
           )}
 
           {scanStatus === 'complete' && (
-            <div className="flex flex-col items-center gap-2 flex-shrink-0">
-              {/* 3 cards side by side */}
-              <div className="flex items-stretch gap-2.5">
-                {[
-                  ...(scanConfig?.types.videos !== false ? [{
-                    key: 'videos' as const,
-                    icon: <Film className="w-4 h-4" />,
-                    label: 'Videos',
-                    count: videoCount,
-                    size: '2.3 GB',
-                  }] : []),
-                  ...(scanConfig?.types.covers !== false ? [{
-                    key: 'covers' as const,
-                    icon: <Image className="w-4 h-4" />,
-                    label: 'Covers',
-                    count: videoCount,
-                    size: '340 MB',
-                  }] : []),
-                  ...(scanConfig?.types.data !== false ? [{
-                    key: 'data' as const,
-                    icon: <FileText className="w-4 h-4" />,
-                    label: 'Data',
-                    count: 1,
-                    size: '12 MB',
-                  }] : []),
-                ].map(card => {
-                  const state = downloadStates[card.key] || 'idle';
-                  return (
-                    <div
-                      key={card.key}
-                      className="flex flex-col rounded-xl overflow-hidden"
+            <div
+              className="flex items-stretch flex-shrink-0 overflow-hidden"
+              style={{ border: `1px solid ${border}`, borderRadius: 14 }}
+            >
+              {/* Rescan section */}
+              {lastScannedAt && (
+                <div
+                  className="flex items-center justify-center px-4"
+                  style={{ borderRight: `1px solid ${border}` }}
+                >
+                  <button
+                    onClick={onRescan}
+                    className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px]"
+                    style={{ border: `1px solid ${border}`, color: muted, background: 'transparent', whiteSpace: 'nowrap' }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'rgba(245,158,11,0.12)';
+                      e.currentTarget.style.color = '#f59e0b';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = muted;
+                    }}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Scanned {formatRelativeTime(lastScannedAt)}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 3 download card sections with vertical dividers */}
+              {[
+                ...(scanConfig?.types.videos !== false ? [{
+                  key: 'videos' as const,
+                  icon: <Film className="w-5 h-5" />,
+                  label: 'Videos',
+                  count: videoCount,
+                  size: '2.3 GB',
+                }] : []),
+                ...(scanConfig?.types.covers !== false ? [{
+                  key: 'covers' as const,
+                  icon: <Image className="w-5 h-5" />,
+                  label: 'Covers',
+                  count: videoCount,
+                  size: '340 MB',
+                }] : []),
+                ...(scanConfig?.types.data !== false ? [{
+                  key: 'data' as const,
+                  icon: <FileText className="w-5 h-5" />,
+                  label: 'Data',
+                  count: 1,
+                  size: '12 MB',
+                }] : []),
+              ].map((card, i, arr) => {
+                const state = downloadStates[card.key] || 'idle';
+                const isLast = i === arr.length - 1;
+                return (
+                  <div
+                    key={card.key}
+                    className="flex flex-col items-center justify-center text-center"
+                    style={{
+                      borderRight: isLast ? 'none' : `1px solid ${border}`,
+                      minWidth: 110,
+                      padding: '12px 16px',
+                      transition: 'background .15s',
+                      cursor: 'default',
+                    }}
+                    onMouseEnter={e => {
+                      (e.currentTarget as HTMLDivElement).style.background = isDark ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.03)';
+                    }}
+                    onMouseLeave={e => {
+                      (e.currentTarget as HTMLDivElement).style.background = 'transparent';
+                    }}
+                  >
+                    <div style={{ color: '#f59e0b', marginBottom: 5 }}>{card.icon}</div>
+                    <p style={{ fontSize: '0.72rem', fontWeight: 700, color: text }}>{card.label}</p>
+                    <p className="text-[10px]" style={{ color: muted, marginTop: 2 }}>{card.count} · {card.size}</p>
+                    <button
+                      onClick={() => onDownload(card.key)}
+                      disabled={state === 'downloading'}
+                      className="flex items-center gap-1 text-[11px] mt-1.5"
                       style={{
-                        border: `1px solid ${border}`,
+                        color: state === 'downloading' ? muted : '#f59e0b',
+                        fontWeight: 600,
                         background: 'transparent',
-                        minWidth: 130,
+                        border: 'none',
+                        padding: 0,
+                        cursor: state === 'downloading' ? 'wait' : 'pointer',
+                        opacity: state === 'downloading' ? 0.6 : 1,
                       }}
                     >
-                      {/* Top: centered icon + label + stats */}
-                      <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
-                        <span style={{ color: muted }}>{card.icon}</span>
-                        <span className="text-[11px] font-semibold" style={{ color: text }}>{card.label}</span>
-                        <span className="text-[10px]" style={{ color: muted }}>{card.count} {card.count === 1 ? 'file' : 'files'} · {card.size}</span>
-                      </div>
-                      {/* Bottom: download action */}
-                      <button
-                        onClick={() => onDownload(card.key)}
-                        disabled={state === 'downloading'}
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] transition-all"
-                        style={{
-                          borderTop: `1px solid ${border}`,
-                          background: state === 'done'
-                            ? (isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)')
-                            : 'transparent',
-                          color: state === 'downloading' ? muted : '#f59e0b',
-                          fontWeight: 600,
-                          cursor: state === 'downloading' ? 'wait' : 'pointer',
-                        }}
-                        onMouseEnter={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(245,158,11,0.08)' : 'rgba(245,158,11,0.04)'; }}
-                        onMouseLeave={e => { if (state === 'idle') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-                      >
-                        {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                        {state === 'done' && <CheckCheck className="w-3 h-3" />}
-                        {state === 'idle' && <Download className="w-3 h-3" />}
-                        {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
-                      </button>
-                      {/* Post-download timestamp */}
-                      {downloadedAt[card.key] && (
-                        <div className="px-3 pb-1.5">
-                          <p className="text-[9.5px] text-center" style={{ color: '#f59e0b' }}>
-                            ↓ {formatRelativeTime(downloadedAt[card.key]!)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-              {/* Rescan chip below, right-aligned */}
-              {lastScannedAt && (
-                <button
-                  onClick={onRescan}
-                  className="flex items-center gap-1 rounded-full px-2 py-1 text-[10px] transition-all"
-                  style={{ color: muted, background: 'transparent' }}
-                  title="Rescan"
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'rgba(245,158,11,0.1)';
-                    (e.currentTarget as HTMLButtonElement).style.color = '#f59e0b';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                    (e.currentTarget as HTMLButtonElement).style.color = muted;
-                  }}
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  <span>Scanned {formatRelativeTime(lastScannedAt)}</span>
-                </button>
-              )}
+                      {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
+                      {state === 'done' && <CheckCheck className="w-3 h-3" />}
+                      {state === 'idle' && <Download className="w-3 h-3" />}
+                      {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
+                    </button>
+                    {downloadedAt[card.key] && (
+                      <p className="text-[9.5px] mt-0.5" style={{ color: '#f59e0b' }}>
+                        ↓ {formatRelativeTime(downloadedAt[card.key]!)}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -1288,6 +1562,8 @@ export function CreatorProfilePage() {
   const [showScanWizard, setShowScanWizard] = useState(false);
   const [showFormatPicker, setShowFormatPicker] = useState(false);
   const [selectedDataFormat, setSelectedDataFormat] = useState('JSON');
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [downloadModalType, setDownloadModalType] = useState<'videos' | 'covers' | 'data'>('videos');
 
   function startScan(config: { dateRange: string; types: { videos: boolean; covers: boolean; data: boolean } }) {
     setScanConfig(config);
@@ -1314,18 +1590,28 @@ export function CreatorProfilePage() {
   }
 
   function handleDownload(type: 'videos' | 'covers' | 'data') {
-    if (type === 'data') {
-      setShowFormatPicker(true);
-      return;
-    }
-    setDownloadStates(prev => ({ ...prev, [type]: 'downloading' }));
-    setTimeout(() => {
-      setDownloadStates(prev => ({ ...prev, [type]: 'done' }));
-      setDownloadedAt(prev => ({ ...prev, [type]: new Date() }));
+    setDownloadModalType(type);
+    setShowDownloadModal(true);
+  }
+
+  function handleModalDownload(config: { types: { videos: boolean; covers: boolean; data: boolean }; dateRange: string; dataFormat?: string }) {
+    setShowDownloadModal(false);
+    const typesToDownload = Object.entries(config.types).filter(([_, v]) => v).map(([k]) => k);
+    for (const type of typesToDownload) {
+      setDownloadStates(prev => ({ ...prev, [type]: 'downloading' }));
       setTimeout(() => {
-        setDownloadStates(prev => ({ ...prev, [type]: 'idle' }));
-      }, 3000);
-    }, 2000);
+        setDownloadStates(prev => ({ ...prev, [type]: 'done' }));
+        setDownloadedAt(prev => ({ ...prev, [type]: new Date() }));
+        setTimeout(() => {
+          setDownloadStates(prev => ({ ...prev, [type]: 'idle' }));
+        }, 3000);
+      }, 2000);
+    }
+  }
+
+  function handleScanAndDownload(config: { types: { videos: boolean; covers: boolean; data: boolean }; dateRange: string }) {
+    setShowDownloadModal(false);
+    startScan({ dateRange: config.dateRange, types: config.types });
   }
 
   function handleDataDownload() {
@@ -2215,6 +2501,26 @@ export function CreatorProfilePage() {
           onSelectFormat={setSelectedDataFormat}
           onDownload={handleDataDownload}
           onClose={() => setShowFormatPicker(false)}
+        />
+      )}
+
+      {/* Download Modal */}
+      {showDownloadModal && scanConfig && (
+        <ProfileDownloadModal
+          isDark={isDark}
+          border={border}
+          text={text}
+          muted={muted}
+          hoverBg={hoverBg}
+          onClose={() => setShowDownloadModal(false)}
+          onDownload={handleModalDownload}
+          onScanAndDownload={handleScanAndDownload}
+          initialType={downloadModalType}
+          scanConfig={scanConfig}
+          profileHandle={handle}
+          profilePlatform={profile.platforms[0] || 'YouTube'}
+          profileAvatar={profile.avatar}
+          lastScannedAt={lastScannedAt}
         />
       )}
 
