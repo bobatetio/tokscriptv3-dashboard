@@ -765,7 +765,7 @@ function ScanWizardModal({
                     <button
                       key={item.key}
                       onClick={() => setTypes(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
-                      className="flex flex-col rounded-xl overflow-hidden text-center"
+                      className="relative flex flex-col rounded-xl overflow-hidden text-center"
                       style={{
                         border: `1px solid ${checked ? 'rgba(245,158,11,0.3)' : border}`,
                         background: checked
@@ -773,23 +773,22 @@ function ScanWizardModal({
                           : 'transparent',
                       }}
                     >
-                      <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
+                      <div
+                        className="absolute top-3 left-3 flex items-center justify-center flex-shrink-0"
+                        style={{
+                          width: 16, height: 16, borderRadius: '50%',
+                          border: `2px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.2)' : '#e5e7eb')}`,
+                          background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb'),
+                          boxShadow: checked ? '0 0 0 3px rgba(245,158,11,0.15)' : 'inset 0 1px 2px rgba(0,0,0,0.06)',
+                          transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                        }}
+                      >
+                        {checked && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff', boxShadow: '0 1px 2px rgba(0,0,0,0.2)' }} />}
+                      </div>
+                      <div className="px-3 pt-3 pb-3 flex flex-col items-center gap-1">
                         <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
                         <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
                         <span className="text-[10px]" style={{ color: muted }}>{item.desc}</span>
-                      </div>
-                      <div
-                        className="flex items-center justify-center py-2"
-                        style={{ borderTop: `1px solid ${checked ? 'rgba(245,158,11,0.2)' : border}` }}
-                      >
-                        <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
-                          style={{
-                            background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
-                            border: `1.5px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
-                          }}
-                        >
-                          {checked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                        </div>
                       </div>
                     </button>
                   );
@@ -1002,7 +1001,7 @@ function ProfileDownloadModal({
                   <button
                     key={item.key}
                     onClick={() => setTypes(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
-                    className="flex flex-col rounded-xl overflow-hidden text-center"
+                    className="relative flex flex-col rounded-xl overflow-hidden text-center"
                     style={{
                       border: `1px solid ${checked ? 'rgba(245,158,11,0.3)' : border}`,
                       background: checked
@@ -1010,23 +1009,37 @@ function ProfileDownloadModal({
                         : 'transparent',
                     }}
                   >
+                    {/* Top-left radio indicator */}
+                    <div
+                      className="absolute top-3 left-3 flex items-center justify-center flex-shrink-0"
+                      style={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        border: `2px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.2)' : '#e5e7eb')}`,
+                        background: checked
+                          ? '#f59e0b'
+                          : (isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb'),
+                        boxShadow: checked
+                          ? '0 0 0 3px rgba(245,158,11,0.15)'
+                          : 'inset 0 1px 2px rgba(0,0,0,0.06)',
+                        transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                      }}
+                    >
+                      {checked && (
+                        <div style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: '50%',
+                          background: '#fff',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
+                        }} />
+                      )}
+                    </div>
                     <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
                       <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
                       <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
                       <span className="text-[10px]" style={{ color: muted }}>{item.desc}</span>
-                    </div>
-                    <div
-                      className="flex items-center justify-center py-2"
-                      style={{ borderTop: `1px solid ${checked ? 'rgba(245,158,11,0.2)' : border}` }}
-                    >
-                      <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
-                        style={{
-                          background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
-                          border: `1.5px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
-                        }}
-                      >
-                        {checked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                      </div>
                     </div>
                   </button>
                 );
@@ -1294,7 +1307,7 @@ function CreatorHeader({
         className="py-5"
         style={{ background: isDark ? '#0d0d0d' : '#ffffff' }}
       >
-      <div className="max-w-[1280px] mx-auto flex items-start gap-5 px-6">
+      <div className="max-w-[1280px] mx-auto flex items-center gap-5 px-6">
         {/* Avatar */}
         <div
           className="flex-shrink-0 rounded-full overflow-hidden"
@@ -1403,108 +1416,105 @@ function CreatorHeader({
 
           {scanStatus === 'complete' && (
             <div
-              className="flex items-stretch flex-shrink-0 overflow-hidden"
-              style={{ border: `1px solid ${border}`, borderRadius: 14 }}
+              className="flex-shrink-0 overflow-hidden"
+              style={{
+                background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(245,245,245,0.7)',
+                border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(229,231,235,0.6)'}`,
+                borderRadius: 21,
+                padding: '14px 12px 10px',
+                minWidth: 380,
+              }}
             >
-              {/* Rescan section */}
-              {lastScannedAt && (
-                <div
-                  className="flex items-center justify-center px-4"
-                  style={{ borderRight: `1px solid ${border}` }}
-                >
-                  <button
-                    onClick={onRescan}
-                    className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px]"
-                    style={{ border: `1px solid ${border}`, color: muted, background: 'transparent', whiteSpace: 'nowrap' }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = 'rgba(245,158,11,0.12)';
-                      e.currentTarget.style.color = '#f59e0b';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = muted;
-                    }}
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    <span>Scanned {formatRelativeTime(lastScannedAt)}</span>
-                  </button>
-                </div>
-              )}
+              {/* Title */}
+              <p className="text-center text-[10px] mb-2.5" style={{ color: muted, fontWeight: 500 }}>
+                Profile download options
+              </p>
 
-              {/* 3 download card sections with vertical dividers */}
-              {[
-                ...(scanConfig?.types.videos !== false ? [{
-                  key: 'videos' as const,
-                  icon: <Film className="w-5 h-5" />,
-                  label: 'Videos',
-                  count: videoCount,
-                  size: '2.3 GB',
-                }] : []),
-                ...(scanConfig?.types.covers !== false ? [{
-                  key: 'covers' as const,
-                  icon: <Image className="w-5 h-5" />,
-                  label: 'Covers',
-                  count: videoCount,
-                  size: '340 MB',
-                }] : []),
-                ...(scanConfig?.types.data !== false ? [{
-                  key: 'data' as const,
-                  icon: <FileText className="w-5 h-5" />,
-                  label: 'Data',
-                  count: 1,
-                  size: '12 MB',
-                }] : []),
-              ].map((card, i, arr) => {
-                const state = downloadStates[card.key] || 'idle';
-                const isLast = i === arr.length - 1;
-                return (
-                  <div
-                    key={card.key}
-                    className="flex flex-col items-center justify-center text-center"
-                    style={{
-                      borderRight: isLast ? 'none' : `1px solid ${border}`,
-                      minWidth: 110,
-                      padding: '12px 16px',
-                      transition: 'background .15s',
-                      cursor: 'default',
-                    }}
-                    onMouseEnter={e => {
-                      (e.currentTarget as HTMLDivElement).style.background = isDark ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.03)';
-                    }}
-                    onMouseLeave={e => {
-                      (e.currentTarget as HTMLDivElement).style.background = 'transparent';
-                    }}
-                  >
-                    <div style={{ color: '#f59e0b', marginBottom: 5 }}>{card.icon}</div>
-                    <p style={{ fontSize: '0.72rem', fontWeight: 700, color: text }}>{card.label}</p>
-                    <p className="text-[10px]" style={{ color: muted, marginTop: 2 }}>{card.count} · {card.size}</p>
+              {/* 3 cards */}
+              <div className="flex gap-2">
+                {[
+                  ...(scanConfig?.types.videos !== false ? [{
+                    key: 'videos' as const,
+                    icon: <Film className="w-4 h-4" />,
+                    label: 'Videos',
+                  }] : []),
+                  ...(scanConfig?.types.covers !== false ? [{
+                    key: 'covers' as const,
+                    icon: <Image className="w-4 h-4" />,
+                    label: 'Cover Images',
+                  }] : []),
+                  ...(scanConfig?.types.data !== false ? [{
+                    key: 'data' as const,
+                    icon: <FileText className="w-4 h-4" />,
+                    label: 'Profile Data',
+                  }] : []),
+                ].map(card => {
+                  const state = downloadStates[card.key] || 'idle';
+                  return (
                     <button
+                      key={card.key}
                       onClick={() => onDownload(card.key)}
                       disabled={state === 'downloading'}
-                      className="flex items-center gap-1 text-[11px] mt-1.5"
+                      className="flex flex-col items-center justify-center gap-2 text-center transition-all flex-1"
                       style={{
-                        color: state === 'downloading' ? muted : '#f59e0b',
-                        fontWeight: 600,
-                        background: 'transparent',
-                        border: 'none',
-                        padding: 0,
+                        minWidth: 80,
+                        height: 84,
+                        background: isDark ? 'rgba(255,255,255,0.06)' : '#ffffff',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(229,231,235,0.5)'}`,
+                        borderRadius: 16,
                         cursor: state === 'downloading' ? 'wait' : 'pointer',
                         opacity: state === 'downloading' ? 0.6 : 1,
                       }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)';
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(245,158,11,0.3)';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.06)' : '#ffffff';
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(229,231,235,0.5)';
+                      }}
                     >
-                      {state === 'downloading' && <Loader2 className="w-3 h-3 animate-spin" />}
-                      {state === 'done' && <CheckCheck className="w-3 h-3" />}
-                      {state === 'idle' && <Download className="w-3 h-3" />}
-                      {state === 'downloading' ? 'Downloading...' : state === 'done' ? 'Downloaded' : 'Download'}
+                      {/* Icon container */}
+                      <div
+                        className="flex items-center justify-center flex-shrink-0"
+                        style={{
+                          width: 27,
+                          height: 27,
+                          borderRadius: 13,
+                          background: isDark ? 'rgba(255,255,255,0.08)' : '#f9f9f9',
+                          color: state === 'done' ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.6)' : '#6b7280'),
+                        }}
+                      >
+                        {state === 'done' ? <CheckCheck className="w-4 h-4" /> : state === 'downloading' ? <Loader2 className="w-4 h-4 animate-spin" /> : card.icon}
+                      </div>
+                      {/* Label */}
+                      <span className="text-[11px] leading-tight" style={{ color: isDark ? 'rgba(255,255,255,0.85)' : '#111111', fontWeight: 500 }}>
+                        {card.label}
+                      </span>
                     </button>
-                    {downloadedAt[card.key] && (
-                      <p className="text-[9.5px] mt-0.5" style={{ color: '#f59e0b' }}>
-                        ↓ {formatRelativeTime(downloadedAt[card.key]!)}
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* Footer: scanned time */}
+              {lastScannedAt && (
+                <div className="flex items-center justify-center gap-1.5 mt-2">
+                  <RefreshCw className="w-2.5 h-2.5 flex-shrink-0" style={{ color: muted }} />
+                  <p className="text-[10px]" style={{ color: muted }}>
+                    Scanned {formatRelativeTime(lastScannedAt)}
+                    {' · '}
+                    <button
+                      onClick={onRescan}
+                      className="underline decoration-dotted"
+                      style={{ color: muted, background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 'inherit' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = text; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = muted; }}
+                    >
+                      Refresh now
+                    </button>
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>

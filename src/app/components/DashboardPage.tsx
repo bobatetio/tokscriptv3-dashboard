@@ -890,7 +890,7 @@ function ThisMonthPanel({
 function FirstTimeDashboardOverview({ onNewTranscript }: { onNewTranscript: () => void }) {
   const { isDark } = useContext(ThemeContext);
 
-  const bg       = isDark ? '#0d0d0d' : '#ffffff';
+  const bg       = isDark ? '#0a0a0a' : '#ffffff';
   const border   = isDark ? '#262626' : '#e5e7eb';
   const text     = isDark ? '#ffffff' : '#111827';
   const muted    = isDark ? '#888888' : '#6b7280';
@@ -1106,7 +1106,7 @@ function InlineDashboardOverview({
   const { isDark } = useContext(ThemeContext);
   const { plan, openUpgrade } = useContext(UserContext);
 
-  const bg      = isDark ? '#0d0d0d' : '#ffffff';
+  const bg      = isDark ? '#0a0a0a' : '#ffffff';
   const border  = isDark ? '#262626' : '#e5e7eb';
   const text    = isDark ? '#ffffff' : '#111827';
   const muted   = isDark ? '#888888' : '#6b7280';
@@ -1428,7 +1428,7 @@ export function DashboardPage() {
   };
 
   // Colours
-  const bg      = isDark ? '#0d0d0d' : '#ffffff';
+  const bg      = isDark ? '#0a0a0a' : '#ffffff';
   const border  = isDark ? '#262626' : '#e5e7eb';
   const text      = isDark ? '#ffffff' : '#111827';
   const muted     = isDark ? '#888888' : '#6b7280';
@@ -3078,109 +3078,41 @@ export function DashboardPage() {
                 <div
                   className="rounded-2xl overflow-hidden flex flex-col cursor-pointer transition-all"
                   style={{
-                    border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.13)'}`,
-                    background: isDark ? '#141414' : '#ffffff',
+                    border: `1.5px solid ${view.category === 'collections' ? '#8b5cf635' : '#00b8b235'}`,
+                    background: view.category === 'collections'
+                      ? `linear-gradient(180deg, ${isDark ? '#8b5cf622' : '#8b5cf614'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`
+                      : `linear-gradient(180deg, ${isDark ? '#00b8b222' : '#00b8b214'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`,
                   }}
                   onClick={() => {
                     if (plan === 'free') {
                       const existing = view.category === 'collections' ? COLLECTIONS.length : ALL_BULK.length;
                       if (existing >= 1) { openUpgrade(); return; }
                     }
-                    openNewTranscript();
+                    openNewTranscript(view.category === 'collections' ? 'collections' : 'transcripts');
                     setSelectedTranscriptId(null);
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#1a1a1a' : '#f5f5f5'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? '#141414' : '#ffffff'; }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLDivElement).style.background = view.category === 'collections'
+                      ? `linear-gradient(180deg, ${isDark ? '#8b5cf633' : '#8b5cf622'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`
+                      : `linear-gradient(180deg, ${isDark ? '#00b8b233' : '#00b8b222'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`;
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLDivElement).style.background = view.category === 'collections'
+                      ? `linear-gradient(180deg, ${isDark ? '#8b5cf622' : '#8b5cf614'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`
+                      : `linear-gradient(180deg, ${isDark ? '#00b8b222' : '#00b8b214'} 0%, ${isDark ? '#0d0d0d' : '#ffffff'} 100%)`;
+                  }}
                 >
                   {/* Illustration area */}
                   <div
-                    className="flex items-center justify-center flex-shrink-0 overflow-hidden"
-                    style={{ height: 120, background: isDark ? 'rgba(255,255,255,0.03)' : '#f9f9f9' }}
+                    className="flex flex-col items-center justify-center gap-2.5 flex-1 overflow-hidden"
+                    style={{ background: view.category === 'collections' ? (isDark ? 'rgba(139,92,246,0.04)' : '#8b5cf608') : (isDark ? 'rgba(0,184,178,0.04)' : '#00b8b208') }}
                   >
-                    <div className="relative" style={{ width: 61, height: 61 }}>
-                      <div className="absolute" style={{ inset: '18.31% 6.06% 2.18% 8%' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 52.4265 48.501">
-                          <path d={svgNewCta.p3e3aac00} fill={isDark ? '#333' : '#C6C6C6'} />
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '1.78% 11.19% 27.05% 13.13%' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 46.1608 43.417">
-                          <path d={svgNewCta.p19cf2500} fill={isDark ? '#2a2a2a' : '#F9F9F9'} />
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '1.78% 11.8% 27.66% 13.13%' }}>
-                        <div className="absolute" style={{ inset: '0 1.88% 2.01% 0' }}>
-                          <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 44.9267 42.183">
-                            <path d={svgNewCta.p39cffb80} fill={isDark ? 'rgba(255,255,255,0.04)' : 'url(#ctaGrad1)'} />
-                            <defs>
-                              <linearGradient gradientUnits="userSpaceOnUse" id="ctaGrad1" x1="24.5" x2="-6.1175" y1="23.1255" y2="-7.49225">
-                                <stop stopColor="white" />
-                              </linearGradient>
-                            </defs>
-                          </svg>
-                        </div>
-                      </div>
-                      <div
-                        className="absolute flex items-center justify-center rounded-[9px]"
-                        style={{
-                          inset: '12.21% 27.97% 45.69% 29.92%',
-                          background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                          border: `0.642px solid ${isDark ? '#444' : '#e5e7eb'}`,
-                        }}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 12.8421 12.8421" fill="none">
-                          <path d="M2.6778 6.42183H10.169" stroke={isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.07018" />
-                          <path d="M6.42257 2.67706V10.1683" stroke={isDark ? 'rgba(255,255,255,0.45)' : '#6B7280'} strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.07018" />
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '39.08% 55.64% 48.08% 31.53%' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 7.82775 7.828">
-                          <path d="M0 0L7.82775 7.828H0V0Z" fill="url(#ctaFold)" />
-                          <defs>
-                            <linearGradient gradientUnits="userSpaceOnUse" id="ctaFold" x1="5.17175" x2="-4.29" y1="9.084" y2="-0.377503">
-                              <stop stopColor="#C2CECE" stopOpacity="0" />
-                              <stop offset="0.179" stopColor="#AFBCBC" stopOpacity="0.179" />
-                              <stop offset="1" stopColor="#5B6A6A" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '18.31% 6.06% 47.03% 88.81%' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 3.13275 21.1437">
-                          <path d={svgNewCta.p23535e00} fill={isDark ? '#444' : '#C6C6C6'} />
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '37.36% 0 1.78% 0' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 61.0002 37.1273">
-                          <path d={svgNewCta.p19345310} fill={isDark ? 'url(#ctaTrayDark)' : 'url(#ctaTray)'} />
-                          <defs>
-                            <linearGradient gradientUnits="userSpaceOnUse" id="ctaTray" x1="30.5" x2="30.5" y1="0" y2="37.1273">
-                              <stop stopColor="#EEF0F4" />
-                              <stop offset="0.927" stopColor="#E4E4E4" />
-                            </linearGradient>
-                            <linearGradient gradientUnits="userSpaceOnUse" id="ctaTrayDark" x1="30.5" x2="30.5" y1="0" y2="37.1273">
-                              <stop stopColor="#2a2a2a" />
-                              <stop offset="0.927" stopColor="#222" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
-                      </div>
-                      <div className="absolute" style={{ inset: '72.29% 17.59% 19.25% 19.53%' }}>
-                        <svg className="absolute block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 38.3583 5.16475">
-                          <path d={svgNewCta.p1aed67f2} fill={isDark ? '#444' : '#D5D5D5'} />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-                  {/* Text */}
-                  <div className="px-3.5 pt-2.5 pb-3">
+                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="50" height="50" rx="25" fill={view.category === 'collections' ? '#8b5cf6' : '#00b8b2'}/>
+                      <path d="M18 25H32M25 32L25 18" stroke="white" strokeWidth="2.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                     <p className="text-xs" style={{ color: text, fontWeight: 600 }}>
-                      {view.category === 'collections' ? 'Add New Collection' : 'Start a new bulk'}
-                    </p>
-                    <p className="text-[10px] mt-1 leading-snug" style={{ color: muted }}>
-                      {view.category === 'collections'
-                        ? 'Download TikTok Collections in 1 click'
-                        : 'Process multiple videos together in one batch.'}
+                      {view.category === 'collections' ? 'Scan new collection' : 'Scan new bulk'}
                     </p>
                   </div>
                 </div>

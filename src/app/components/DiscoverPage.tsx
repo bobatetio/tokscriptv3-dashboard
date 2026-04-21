@@ -836,7 +836,7 @@ export function DiscoverPage() {
           <div className="max-w-[1280px] mx-auto w-full px-6 pt-6 pb-5">
             <div className="flex items-start justify-between gap-4">
               <div>
-                
+
                 <h1 style={{ color: text, fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
                   Recently scanned transcripts
                 </h1>

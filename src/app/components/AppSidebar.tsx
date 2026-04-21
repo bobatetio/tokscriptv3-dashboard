@@ -2,7 +2,7 @@
  * AppSidebar – universal left navigation used across ALL logged-in pages.
  */
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useLocation } from 'react-router';
 import {
   Plus, LayoutDashboard, BookOpen, Compass,
   ChevronRight, ChevronDown, Settings, HelpCircle, LogOut, Folder, Zap,
@@ -69,10 +69,19 @@ export function AppSidebar({
   favouritesCount,
 }: AppSidebarProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDark } = useContext(ThemeContext);
   const { folders, createFolder } = useContext(FolderContext);
   const { plan, openUpgrade, transcriptionsUsed, transcriptionsLimit } = useContext(UserContext);
   const { open: openNewTranscript } = useNewTranscript();
+
+  function openNewScan() {
+    const path = location.pathname;
+    if (path.startsWith('/profiles') || path.startsWith('/profile/')) return openNewTranscript('profiles');
+    if (path.startsWith('/videos')) return openNewTranscript('videos');
+    if (path.startsWith('/collections')) return openNewTranscript('collections');
+    openNewTranscript();
+  }
   const { bulkBatches } = useBulkProcessing();
 
   // Merge live batches (from context) with static placeholder batches
@@ -136,7 +145,7 @@ export function AppSidebar({
 
   // ── Library item active helpers ────────────────────────────────────────────
   const isLibActive  = (item: LibraryItem) => activeLibraryItem === item;
-  const libBg        = (item: LibraryItem) => isLibActive(item) ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent';
+  const libBg        = (item: LibraryItem) => isLibActive(item) ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : 'transparent';
   const libColor     = (item: LibraryItem) => isLibActive(item) ? text : (isDark ? 'rgba(255,255,255,0.55)' : muted);
   const libIconColor = (item: LibraryItem) => isLibActive(item) ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.45)' : muted);
   const isGroupActive = (id: number) => activeGroupId === id;
@@ -186,7 +195,8 @@ export function AppSidebar({
         <div className="flex items-center justify-center pt-0 pb-2 flex-shrink-0">
           <button
             title="New Scan"
-            onClick={openNewTranscript}
+            onClick={openNewScan}
+            data-tour="new-scan"
             className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
             style={{ background: isDark ? '#ffffff' : '#111111', color: isDark ? '#111111' : '#ffffff' }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? '#e5e5e5' : '#333'; }}
@@ -212,6 +222,7 @@ export function AppSidebar({
           <button
             title="Prompt Base"
             onClick={() => navigate('/prompt-base')}
+            data-tour="prompt-base"
             className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
             style={{ background: navBg('prompt-base') }}
             onMouseEnter={e => { if (!isActive('prompt-base')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
@@ -237,6 +248,7 @@ export function AppSidebar({
           <button
             title="Singles"
             onClick={onSelectSingles ?? (() => navigate('/dashboard', { state: { view: 'singles' } }))}
+            data-tour="singles"
             className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
             style={{ background: libBg('singles') }}
             onMouseEnter={e => { if (!isLibActive('singles')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
@@ -280,6 +292,7 @@ export function AppSidebar({
           <button
             title="Profiles"
             onClick={() => navigate('/profiles')}
+            data-tour="profiles"
             className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors flex-shrink-0"
             style={{ background: isActive('profiles') ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent' }}
             onMouseEnter={e => { if (!isActive('profiles')) (e.currentTarget as HTMLButtonElement).style.background = hoverBg; }}
@@ -387,7 +400,8 @@ export function AppSidebar({
       {/* New Scan button */}
       <div className="px-3 pt-2 pb-3 flex-shrink-0">
         <button
-          onClick={openNewTranscript}
+          onClick={openNewScan}
+          data-tour="new-scan"
           className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-xs transition-all"
           style={{
             border: '1px solid transparent',
@@ -414,7 +428,7 @@ export function AppSidebar({
             Menu
           </p>
         </div>
-        <div className="px-2">
+        <div className="px-2 flex flex-col gap-1">
           <button onClick={goToDash} className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left"
             style={{ height: 38, background: navBg('dashboard'), color: navColor('dashboard') }}
             onMouseEnter={e => { if (!isActive('dashboard')) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
@@ -423,7 +437,7 @@ export function AppSidebar({
             <span className="flex-1 truncate">Dashboard</span>
           </button>
 
-          <button onClick={() => navigate('/prompt-base')} className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left"
+          <button onClick={() => navigate('/prompt-base')} data-tour="prompt-base" className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left"
             style={{ height: 38, background: navBg('prompt-base'), color: navColor('prompt-base') }}
             onMouseEnter={e => { if (!isActive('prompt-base')) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
             onMouseLeave={e => { if (!isActive('prompt-base')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
@@ -449,7 +463,7 @@ export function AppSidebar({
       </div>
 
       {/* Scrollable nav body */}
-      <div className="flex-1 overflow-y-auto pb-2 px-2">
+      <div className="flex-1 overflow-y-auto pb-2 px-2 space-y-1">
 
         {/* ── Transcripts (collapsible parent) ── */}
         <div>
@@ -458,13 +472,13 @@ export function AppSidebar({
             className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left relative overflow-hidden"
             style={{
               height: 38,
-              background: (activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent',
+              background: (activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? (isDark ? 'rgba(0,184,178,0.12)' : 'rgba(0,184,178,0.08)') : 'transparent',
               color: (activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? text : (isDark ? 'rgba(255,255,255,0.55)' : muted),
             }}
             onMouseEnter={e => { if (!activeLibraryItem) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
             onMouseLeave={e => { if (!activeLibraryItem) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
           >
-            <span className="absolute left-0 rounded-r-full" style={{ top: 6, bottom: 6, width: 3, background: `linear-gradient(to bottom, transparent, ${(activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? '#00b8b290' : '#00b8b260'}, transparent)` }} />
+            <span className="absolute left-0 rounded-r-sm" style={{ top: 8, bottom: 8, width: 3, background: (activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? '#00b8b2' : 'transparent' }} />
             <FileText className="w-[18px] h-[18px] flex-shrink-0" style={{ color: (activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.45)' : muted) }} strokeWidth={(activeLibraryItem && !['favourites'].includes(activeLibraryItem)) ? 2 : 1.75} />
             <span className="flex-1 truncate">Transcripts</span>
             <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${transcriptsOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} style={{ color: isDark ? 'rgba(255,255,255,0.3)' : muted }} />
@@ -472,11 +486,12 @@ export function AppSidebar({
 
           {/* Nested children: Singles, Collections, Bulks */}
           {transcriptsOpen && (
-            <div className="ml-[26px]" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
+            <div className="ml-[26px] mt-1 pl-2 flex flex-col gap-1" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
 
               {/* Singles */}
               <button
                 onClick={onSelectSingles ?? (() => navigate('/dashboard', { state: { view: 'singles' } }))}
+                data-tour="singles"
                 className="w-full flex items-center gap-2.5 pl-3 pr-2 rounded-md text-xs transition-all text-left"
                 style={{ height: 38, background: libBg('singles'), color: libColor('singles') }}
                 onMouseEnter={e => { if (!isLibActive('singles')) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
@@ -512,7 +527,7 @@ export function AppSidebar({
                   <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${collectionsOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} style={{ color: isDark ? 'rgba(255,255,255,0.3)' : muted }} />
                 </button>
                 {collectionsOpen && (
-                  <div className="ml-[12px] mr-1 mt-0.5 mb-0.5" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
+                  <div className="ml-[12px] pl-2 mr-1 mt-0.5 mb-0.5" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
                     {COLLECTIONS.map(col => (
                       <button
                         key={col.id}
@@ -554,7 +569,7 @@ export function AppSidebar({
                   <ChevronRight className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${bulkOpen ? 'rotate-90' : ''}`} strokeWidth={2.5} style={{ color: isDark ? 'rgba(255,255,255,0.3)' : muted }} />
                 </button>
                 {bulkOpen && (
-                  <div className="ml-[12px] mr-1 mt-0.5 mb-0.5" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
+                  <div className="ml-[12px] pl-2 mr-1 mt-0.5 mb-0.5" style={{ borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : border}` }}>
                     {allSidebarBulk.map(b => (
                       <button
                         key={b.id}
@@ -585,11 +600,11 @@ export function AppSidebar({
         </div>
 
         {/* Profiles */}
-        <button onClick={() => navigate('/profiles')} className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left relative overflow-hidden"
-          style={{ height: 38, background: isActive('profiles') ? (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)') : 'transparent', color: isActive('profiles') ? text : (isDark ? 'rgba(255,255,255,0.55)' : muted) }}
+        <button onClick={() => navigate('/profiles')} data-tour="profiles" className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left relative overflow-hidden"
+          style={{ height: 38, background: isActive('profiles') ? (isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.08)') : 'transparent', color: isActive('profiles') ? text : (isDark ? 'rgba(255,255,255,0.55)' : muted) }}
           onMouseEnter={e => { if (!isActive('profiles')) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
           onMouseLeave={e => { if (!isActive('profiles')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
-          <span className="absolute left-0 rounded-r-full" style={{ top: 6, bottom: 6, width: 3, background: `linear-gradient(to bottom, transparent, ${isActive('profiles') ? '#f59e0b90' : '#f59e0b60'}, transparent)` }} />
+          <span className="absolute left-0 rounded-r-sm" style={{ top: 8, bottom: 8, width: 3, background: isActive('profiles') ? '#f59e0b' : 'transparent' }} />
           <svg width="18" height="18" viewBox="0 0 18 22" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" style={{ color: isActive('profiles') ? (isDark ? '#ffffff' : '#111111') : (isDark ? 'rgba(255,255,255,0.45)' : muted) }}>
             <path d="M16 20C16 17.2386 13.7614 15 11 15H7C4.23858 15 2 17.2386 2 20M17 5.8V16.2C17 17.8802 17 18.7202 16.673 19.362C16.3854 19.9265 15.9265 20.3854 15.362 20.673C14.7202 21 13.8802 21 12.2 21H5.8C4.11984 21 3.27976 21 2.63803 20.673C2.07354 20.3854 1.6146 19.9265 1.32698 19.362C1 18.7202 1 17.8802 1 16.2V5.8C1 4.11984 1 3.27976 1.32698 2.63803C1.6146 2.07354 2.07354 1.6146 2.63803 1.32698C3.27976 1 4.11984 1 5.8 1H12.2C13.8802 1 14.7202 1 15.362 1.32698C15.9265 1.6146 16.3854 2.07354 16.673 2.63803C17 3.27976 17 4.11984 17 5.8ZM11.5532 9C11.5532 10.4101 10.4101 11.5532 9 11.5532C7.58989 11.5532 6.44678 10.4101 6.44678 9C6.44678 7.58989 7.58989 6.44678 9 6.44678C10.4101 6.44678 11.5532 7.58989 11.5532 9Z" stroke="currentColor" strokeWidth={isActive('profiles') ? 2 : 1.75} strokeLinecap="round" />
           </svg>
@@ -598,10 +613,10 @@ export function AppSidebar({
 
         {/* Videos */}
         <button onClick={() => navigate('/videos')} className="w-full flex items-center gap-2.5 px-3 rounded-md text-xs transition-all text-left relative overflow-hidden"
-          style={{ height: 38, background: navBg('videos'), color: navColor('videos') }}
+          style={{ height: 38, background: isActive('videos') ? (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(59,130,246,0.08)') : 'transparent', color: navColor('videos') }}
           onMouseEnter={e => { if (!isActive('videos')) (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'; }}
           onMouseLeave={e => { if (!isActive('videos')) (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}>
-          <span className="absolute left-0 rounded-r-full" style={{ top: 6, bottom: 6, width: 3, background: `linear-gradient(to bottom, transparent, ${isActive('videos') ? '#3b82f690' : '#3b82f660'}, transparent)` }} />
+          <span className="absolute left-0 rounded-r-sm" style={{ top: 8, bottom: 8, width: 3, background: isActive('videos') ? '#3b82f6' : 'transparent' }} />
           <Video className="w-[18px] h-[18px] flex-shrink-0" style={{ color: navIcon('videos') }} strokeWidth={isActive('videos') ? 2 : 1.75} />
           <span className="flex-1 truncate">Videos</span>
         </button>
@@ -636,7 +651,7 @@ export function AppSidebar({
           </div>
 
           {foldersOpen && (
-            <div>
+            <div className="flex flex-col gap-1">
               {(plan === 'free' ? folders.slice(0, FREE_LIMITS.folders) : folders).map((f) => {
                 const isFavourites = f.id === FAVOURITES_ID;
                 const isActiveFolder = activeFolderId === f.id ||

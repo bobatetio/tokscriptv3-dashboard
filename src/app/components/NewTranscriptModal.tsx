@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  FileText, Video, Layers, User, Link2, Sparkles, Download, FolderInput, Users, Globe, ChevronDown, Play, X, CheckCircle, Film, Image as ImageIcon, ArrowRight,
+  FileText, Video, Layers, User, Link2, Sparkles, Download, FolderInput, Users, Globe, ChevronDown, Play, X, CheckCircle, Film, Image as ImageIcon, ArrowRight, Heart,
 } from 'lucide-react';
 import { ThemeContext } from '../context/ThemeContext';
 import { useNewTranscript } from '../context/NewTranscriptContext';
@@ -102,6 +102,7 @@ function generateMockProfile(handle: string, platform: string) {
   const followers = [1200000, 542000, 89000, 2400000, 150000][(hash % 5)];
   const following = [340, 1200, 890, 520, 2100][(hash % 5)];
   const videoCount = [214, 347, 89, 1205, 56][(hash % 5)];
+  const likes = [2400000, 890000, 145000, 8700000, 320000][(hash % 5)];
   const displayNames = ['Creator', 'Digital Creator', 'Content Studio', 'Official', 'Media'];
   return {
     handle: `@${handle}`,
@@ -110,13 +111,26 @@ function generateMockProfile(handle: string, platform: string) {
     followers,
     following,
     videoCount,
+    likes,
     bio: `${displayNames[hash % 5]} | ${platform} creator`,
     verified: hash % 3 === 0,
-    avatarUrl: `https://placehold.co/80x80/f59e0b/fff?text=${handle.charAt(0).toUpperCase()}`,
+    avatarUrl: `https://placehold.co/88x88/f59e0b/fff?text=${handle.charAt(0).toUpperCase()}`,
     recentThumbs: [
-      `https://placehold.co/120x160/1a1a1a/666?text=1`,
-      `https://placehold.co/120x160/1a1a1a/666?text=2`,
-      `https://placehold.co/120x160/1a1a1a/666?text=3`,
+      [
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=534&fit=crop&q=80',
+      ][(hash % 3)],
+      [
+        'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=300&h=534&fit=crop&q=80',
+      ][(hash % 3)],
+      [
+        'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&h=534&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=300&h=534&fit=crop&q=80',
+      ][(hash % 3)],
     ],
   };
 }
@@ -157,13 +171,13 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
   const { plan } = useUser();
 
   // ── Wizard state ──────────────────────────────────────────────────────────
-  const [profilePhase, setProfilePhase] = useState<'scanning' | 'preview' | 'configure' | 'finalScan' | 'scanDone' | null>(null);
+  const [profilePhase, setProfilePhase] = useState<'scanning' | 'preview' | 'configure' | 'finalScan' | 'scanDone' | 'downloadPreview' | 'confirmDownload' | 'downloadProcessing' | null>(null);
   const [profileProgress, setProfileProgress] = useState(0);
   const [profileDateRange, setProfileDateRange] = useState('Last 30 days');
   const [profileTypes, setProfileTypes] = useState({ videos: false, covers: false, data: false });
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
-  const [scanDoneOrigin, setScanDoneOrigin] = useState<'initial' | 'final'>('initial');
+  const [scanDoneOrigin, setScanDoneOrigin] = useState<'initial' | 'preview' | 'final'>('initial');
   const [mockProfile, setMockProfile] = useState<ReturnType<typeof generateMockProfile> | null>(null);
 
   // ── Cleanup bulkScan timeout on unmount ───────────────────────────────────
@@ -181,6 +195,8 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
       const timer = setTimeout(() => {
         if (scanDoneOrigin === 'initial') {
           setProfilePhase('preview');
+        } else if (scanDoneOrigin === 'preview') {
+          setProfilePhase('configure');
         } else {
           const handle = extractHandle(lines[0]);
           const platform = inferPlatform(lines[0]);
@@ -279,83 +295,130 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
 
       {/* ── Conditional: Wizard or Normal Content ─────────────────────── */}
       {profilePhase && activeInputTab === 'profiles' ? (
-        /* Wizard content — matches ScanWizardModal pattern from CreatorProfilePage */
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-2xl flex flex-col gap-0">
+          {/* ── Cream card ── */}
           <div
-            className="rounded-2xl p-6"
+            className="overflow-hidden"
             style={{
-              background: `linear-gradient(180deg, #f59e0b14 0%, ${pageBg} 100%)`,
-              border: `1px solid #f59e0b35`,
+              background: isDark ? '#1a1200' : '#fffcf3',
+              borderRadius: 16,
+              border: `1px solid ${isDark ? 'rgba(245,158,11,0.12)' : 'rgba(0,0,0,0.06)'}`,
             }}
           >
-            {(profilePhase === 'scanning' || profilePhase === 'finalScan') ? (
-              <div className="flex flex-col items-center gap-4 py-8">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : '#f3f4f6' }}>
-                  <svg className="w-5 h-5 animate-spin" style={{ color: '#f59e0b' }} viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2.5" strokeDasharray="40 20" />
-                  </svg>
-                </div>
-                <p className="text-sm" style={{ color: text, fontWeight: 600 }}>
-                  {profilePhase === 'finalScan' ? 'Scanning content...' : 'Scanning profiles...'}
-                </p>
-                <div className="w-full max-w-xs">
-                  <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${profileProgress}%`,
-                        background: '#f59e0b',
-                        transition: 'width 0.4s ease',
-                      }}
-                    />
+            {/* Profile header — shown in preview + scanning + scanDone */}
+            {mockProfile && (profilePhase === 'preview' || profilePhase === 'scanning' || profilePhase === 'finalScan' || profilePhase === 'scanDone' || profilePhase === 'configure' || profilePhase === 'downloadPreview' || profilePhase === 'confirmDownload' || profilePhase === 'downloadProcessing') && (
+              <div className="flex items-start gap-5 px-6 pt-5 pb-5">
+                {/* Avatar 88px with dark border + platform badge */}
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={mockProfile.avatarUrl}
+                    alt={mockProfile.handle}
+                    className="rounded-full"
+                    style={{ width: 88, height: 88, border: '3px solid #27272a', objectFit: 'cover' }}
+                  />
+                  <div
+                    className="absolute flex items-center justify-center rounded-full p-[3px]"
+                    style={{ width: 24, height: 24, background: '#000', border: '1px solid #27272a', bottom: 3, right: 6 }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+                      <path d="M19.6 1h-3.4v14.6a3 3 0 0 1-3 2.9 3 3 0 0 1-3-3 3 3 0 0 1 3-3c.3 0 .5 0 .8.1V9c-.2 0-.5-.1-.8-.1a6.7 6.7 0 0 0-6.7 6.7 6.7 6.7 0 0 0 6.7 6.7 6.7 6.7 0 0 0 6.7-6.7V8.8a9.1 9.1 0 0 0 5.3 1.7V7.1A5.1 5.1 0 0 1 19.6 1z" />
+                    </svg>
                   </div>
-                  <p className="text-xs text-center mt-2" style={{ color: muted }}>{profileProgress}%</p>
+                </div>
+
+                {/* Info */}
+                <div className="flex flex-col gap-[4px] min-w-0 pt-1">
+                  <div className="flex items-center gap-2">
+                    <span style={{ color: isDark ? '#f9fafb' : '#111827', fontWeight: 700, fontSize: 18.4, letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                      {mockProfile.displayName}
+                    </span>
+                    {mockProfile.verified && (
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                    )}
+                  </div>
+                  <span style={{ color: muted, fontSize: 11 }}>{mockProfile.handle}</span>
+                  <span style={{ color: muted, fontSize: 12, lineHeight: 1.65, marginTop: 2 }}>{mockProfile.bio}</span>
+                  <div className="flex items-center gap-5 mt-1">
+                    {[
+                      { icon: <Users className="w-3 h-3" />, val: formatCount(mockProfile.followers), label: 'Followers' },
+                      { icon: <Video className="w-3 h-3" />, val: formatCount(mockProfile.videoCount), label: 'Videos' },
+                      { icon: <Heart className="w-3 h-3" />, val: formatCount(mockProfile.likes), label: 'Likes' },
+                    ].map(s => (
+                      <div key={s.label} className="flex items-center gap-1.5" style={{ fontSize: 11 }}>
+                        <span style={{ color: '#f59e0b' }}>{s.icon}</span>
+                        <span style={{ color: isDark ? '#f9fafb' : '#111827', fontWeight: 700 }}>{s.val}</span>
+                        <span style={{ color: muted }}>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {(profilePhase === 'scanning' || profilePhase === 'finalScan') ? (
+              /* ── Scanning state ── */
+              <div className="px-6 pb-6">
+                <div
+                  className="flex flex-col items-center gap-3 py-10 px-6 rounded-2xl"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}
+                >
+                  {/* Amber spinner */}
+                  <svg className="w-9 h-9 animate-spin mb-1" style={{ color: '#f59e0b' }} viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" strokeLinecap="round" />
+                  </svg>
+                  <p style={{ color: isDark ? '#f9fafb' : '#111', fontWeight: 700, fontSize: 14 }}>
+                    {profilePhase === 'finalScan' ? 'Scanning Profile' : 'Scanning Profile'}
+                  </p>
+                  <p style={{ color: muted, fontSize: 13 }}>This might take a moment</p>
+                  <div className="w-full mt-1" style={{ position: 'relative', height: 5, borderRadius: 20, background: isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb' }}>
+                    <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', borderRadius: 20, background: '#f59e0b', width: `${profileProgress}%`, transition: 'width 0.4s ease' }} />
+                  </div>
+                  <p style={{ color: isDark ? '#f9fafb' : '#111', fontWeight: 700, fontSize: 14 }}>{profileProgress}%</p>
                 </div>
               </div>
             ) : profilePhase === 'configure' ? (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-5 px-6 pt-4 pb-6">
                 {/* Download Types */}
                 <div>
-                  <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Download Types</p>
-                  <p className="text-[11px] mb-3" style={{ color: muted }}>Select what content to scan and download.</p>
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <p className="text-[13px] mb-1" style={{ color: text, fontWeight: 700 }}>Download Types</p>
+                  <p className="text-[12px] mb-4" style={{ color: muted }}>Select what content to scan and download.</p>
+                  <div className="grid grid-cols-3 gap-3">
                     {([
-                      { key: 'videos' as const, label: 'Videos', desc: 'MP4 video files', icon: <Film className="w-4 h-4" /> },
-                      { key: 'covers' as const, label: 'Cover Images', desc: 'PNG thumbnails', icon: <ImageIcon className="w-4 h-4" /> },
-                      { key: 'data' as const, label: 'Data', desc: 'Metadata & transcripts', icon: <FileText className="w-4 h-4" /> },
+                      { key: 'videos' as const, label: 'Videos', desc: 'MP4 video files', icon: <Film className="w-5 h-5" /> },
+                      { key: 'covers' as const, label: 'Cover Images', desc: 'PNG thumbnails', icon: <ImageIcon className="w-5 h-5" /> },
+                      { key: 'data' as const, label: 'Data', desc: 'Metadata & transcripts', icon: <FileText className="w-5 h-5" /> },
                     ]).map(item => {
                       const checked = profileTypes[item.key];
                       return (
                         <button
                           key={item.key}
                           onClick={() => setProfileTypes(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
-                          className="flex flex-col rounded-xl overflow-hidden text-center"
+                          className="relative flex flex-col rounded-2xl overflow-hidden text-center"
                           style={{
-                            border: `1px solid ${checked ? 'rgba(245,158,11,0.3)' : border}`,
+                            border: `1px solid ${checked ? 'rgba(245,158,11,0.35)' : border}`,
                             background: checked
-                              ? (isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)')
-                              : 'transparent',
+                              ? (isDark ? 'rgba(245,158,11,0.07)' : 'rgba(245,158,11,0.05)')
+                              : (isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'),
+                            transition: 'border-color 0.15s, background 0.15s',
                           }}
                         >
-                          {/* Top: icon + label + desc */}
-                          <div className="px-3 pt-3 pb-2 flex flex-col items-center gap-1">
-                            <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
-                            <span className="text-[11px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
-                            <span className="text-[10px]" style={{ color: muted }}>{item.desc}</span>
-                          </div>
-                          {/* Bottom: checkbox indicator */}
                           <div
-                            className="flex items-center justify-center py-2"
-                            style={{ borderTop: `1px solid ${checked ? 'rgba(245,158,11,0.2)' : border}` }}
+                            className="absolute top-3 left-3 flex items-center justify-center flex-shrink-0"
+                            style={{
+                              width: 16, height: 16, borderRadius: '50%',
+                              border: `2px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.2)' : '#d1d5db')}`,
+                              background: checked ? '#f59e0b' : 'transparent',
+                              transition: 'border-color 0.15s, background 0.15s',
+                            }}
                           >
-                            <div className="w-3.5 h-3.5 rounded flex items-center justify-center"
-                              style={{
-                                background: checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.08)' : '#f3f4f6'),
-                                border: `1.5px solid ${checked ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.18)' : '#d1d5db')}`,
-                              }}
-                            >
-                              {checked && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5L4 7L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                            </div>
+                            {checked && <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff' }} />}
+                          </div>
+                          <div className="px-4 pt-8 pb-4 flex flex-col items-center gap-1.5">
+                            <span style={{ color: checked ? '#f59e0b' : muted }}>{item.icon}</span>
+                            <span className="text-[12px]" style={{ color: text, fontWeight: 600 }}>{item.label}</span>
+                            <span className="text-[11px]" style={{ color: muted }}>{item.desc}</span>
                           </div>
                         </button>
                       );
@@ -363,181 +426,286 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
                   </div>
                 </div>
 
-                {/* Date Range — only when ≥1 type selected */}
-                {(profileTypes.videos || profileTypes.covers || profileTypes.data) && (
-                  <div>
-                    <p className="text-[12px] mb-1" style={{ color: text, fontWeight: 600 }}>Date Range</p>
-                    <p className="text-[11px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'All content', 'Custom'].map(range => {
-                        const isActive = profileDateRange === range;
-                        return (
-                          <button
-                            key={range}
-                            onClick={() => setProfileDateRange(range)}
-                            className="px-3 py-1.5 rounded-lg text-[11px] transition-all"
-                            style={{
-                              background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
-                              color: isActive ? '#f59e0b' : muted,
-                              border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
-                              fontWeight: isActive ? 600 : 400,
-                            }}
-                          >
-                            {range}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {profileDateRange === 'Custom' && (
-                      <div className="flex items-center gap-2 mt-2.5">
-                        <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
-                          className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                          style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
-                        />
-                        <span className="text-[10px]" style={{ color: muted }}>to</span>
-                        <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
-                          className="px-2.5 py-1.5 rounded-lg text-[11px] outline-none"
-                          style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Start Scanning — only when ≥1 type AND date range set */}
-                {(profileTypes.videos || profileTypes.covers || profileTypes.data) && profileDateRange && (
-                  <div className="flex justify-end pt-1">
-                    <button
-                      onClick={() => {
-                        setProfilePhase('finalScan');
-                        setProfileProgress(0);
-                        let p = 0;
-                        const interval = setInterval(() => {
-                          p += Math.random() * 12 + 4;
-                          if (p >= 100) {
-                            clearInterval(interval);
-                            setProfileProgress(100);
-                            setTimeout(() => {
-                              setScanDoneOrigin('final');
-                              setProfilePhase('scanDone');
-                            }, 500);
-                          } else {
-                            setProfileProgress(Math.round(p));
-                          }
-                        }, 500);
-                      }}
-                      className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
-                      style={{
-                        background: '#f59e0b',
-                        color: '#fff',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      <Sparkles className="w-3 h-3" />
-                      Start Scanning
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : profilePhase === 'scanDone' ? (
-              <div className="flex flex-col items-center gap-4 py-8">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.08)' }}>
-                  <CheckCircle className="w-5 h-5" style={{ color: '#f59e0b' }} />
-                </div>
-                <p className="text-sm" style={{ color: text, fontWeight: 600 }}>Scan complete!</p>
-                <div className="w-full max-w-xs">
-                  <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                    <div className="h-full rounded-full" style={{ width: '100%', background: '#f59e0b' }} />
-                  </div>
-                </div>
-              </div>
-            ) : profilePhase === 'preview' && mockProfile ? (
-              <div className="flex flex-col gap-4">
-                {/* Profile card */}
-                <div
-                  className="rounded-xl p-4"
-                  style={{
-                    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                    border: `1px solid ${border}`,
-                  }}
-                >
-                  {/* Top row: avatar + identity */}
-                  <div className="flex items-start gap-3 mb-3">
-                    <img
-                      src={mockProfile.avatarUrl}
-                      alt={mockProfile.handle}
-                      className="rounded-full flex-shrink-0"
-                      style={{
-                        width: 56, height: 56,
-                        border: '2px solid rgba(245,158,11,0.3)',
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm" style={{ color: text, fontWeight: 600 }}>{mockProfile.handle}</span>
-                        {mockProfile.verified && <CheckCircle className="w-3.5 h-3.5" style={{ color: '#f59e0b' }} />}
-                        <span
-                          className="ml-auto text-[10px] px-2 py-0.5 rounded-full"
+                {/* Date Range — always visible */}
+                <div>
+                  <p className="text-[13px] mb-1" style={{ color: text, fontWeight: 700 }}>Date Range</p>
+                  <p className="text-[12px] mb-3" style={{ color: muted }}>Choose how far back to scan this profile's content.</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Last 7 days', 'Last 30 days', 'Last 3 months', 'Last 6 months', 'All content', 'Custom'].map(range => {
+                      const isActive = profileDateRange === range;
+                      return (
+                        <button
+                          key={range}
+                          onClick={() => setProfileDateRange(range)}
+                          className="px-3 py-1.5 rounded-lg text-[12px] transition-all"
                           style={{
-                            background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                            color: muted,
-                            border: `1px solid ${border}`,
+                            background: isActive ? (isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6'),
+                            color: isActive ? '#f59e0b' : muted,
+                            border: `1px solid ${isActive ? 'rgba(245,158,11,0.3)' : border}`,
+                            fontWeight: isActive ? 600 : 400,
                           }}
                         >
-                          {mockProfile.platform}
-                        </span>
-                      </div>
-                      <p className="text-[11px] mt-0.5" style={{ color: muted }}>{mockProfile.displayName}</p>
-                      <p className="text-[11px] mt-1" style={{ color: muted, lineHeight: 1.5 }}>{mockProfile.bio}</p>
-                    </div>
+                          {range}
+                        </button>
+                      );
+                    })}
                   </div>
-
-                  {/* Stats row */}
-                  <div className="flex items-center gap-4 mb-4">
-                    {[
-                      { label: 'followers', val: formatCount(mockProfile.followers) },
-                      { label: 'following', val: formatCount(mockProfile.following) },
-                      { label: 'videos', val: formatCount(mockProfile.videoCount) },
-                    ].map(s => (
-                      <div key={s.label} className="flex items-center gap-1 text-[11px]">
-                        <span style={{ color: text, fontWeight: 600 }}>{s.val}</span>
-                        <span style={{ color: muted }}>{s.label}</span>
+                  {profileDateRange === 'Custom' && (
+                    <div className="flex items-center gap-2 mt-3">
+                      <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)}
+                        className="px-3 py-2 rounded-lg text-[12px] outline-none"
+                        style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
+                      />
+                      <span className="text-[11px]" style={{ color: muted }}>to</span>
+                      <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)}
+                        className="px-3 py-2 rounded-lg text-[12px] outline-none"
+                        style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#f9fafb', border: `1px solid ${border}`, color: text }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : profilePhase === 'downloadPreview' ? (
+              <div className="px-6 pb-6">
+                <div className="flex flex-col items-center rounded-2xl overflow-hidden py-5 px-6"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
+                  <p className="text-[14px] text-center mb-4" style={{ color: muted, fontWeight: 500 }}>You Are About To Download:</p>
+                  {/* Download detail cards — one per selected type */}
+                  <div className="flex flex-row justify-center gap-2.5 w-full">
+                    {([
+                      { key: 'videos', label: 'Videos', size: '14.2 GB', count: '150 Files' },
+                      { key: 'covers', label: 'Cover Images', size: '1.8 GB', count: '150 Files' },
+                      { key: 'data', label: 'Profile Data', size: '24 MB', count: '150 Records' },
+                    ] as const).filter(item => profileTypes[item.key]).map(item => (
+                      <div key={item.key} className="rounded-2xl px-4 py-4 min-w-0"
+                        style={{ width: 'calc((100% - 20px) / 3)', background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(107,114,128,0.05)' }}>
+                        <div className="flex flex-col gap-1 mb-3">
+                          <span className="whitespace-nowrap" style={{ color: text, fontWeight: 700, fontSize: 13 }}>{item.label}</span>
+                          <span className="px-2 py-0.5 rounded-lg text-[10px] whitespace-nowrap w-fit"
+                            style={{ background: isDark ? 'rgba(255,255,255,0.08)' : '#f5f5f5', border: `1px solid ${isDark ? 'rgba(255,255,255,0.12)' : '#d0d0d0'}`, color: muted }}>
+                            .Zip Archive
+                          </span>
+                        </div>
+                        <div style={{ height: 1, background: isDark ? 'rgba(255,255,255,0.08)' : '#e5e7eb', marginBottom: 12 }} />
+                        <div className="flex gap-6">
+                          <div>
+                            <p className="text-[10px] tracking-[0.5px] uppercase mb-1" style={{ color: muted, fontWeight: 700 }}>Size</p>
+                            <p className="text-[12px]" style={{ color: '#9ca3af', fontWeight: 500 }}>{item.size}</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] tracking-[0.5px] uppercase mb-1" style={{ color: muted, fontWeight: 700 }}>Count</p>
+                            <p className="text-[12px]" style={{ color: '#9ca3af', fontWeight: 500 }}>{item.count}</p>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
-
-                  {/* Recent videos */}
-                  <div>
-                    <p className="text-[11px] mb-2" style={{ color: muted, fontWeight: 500 }}>Recent Videos</p>
-                    <div className="flex gap-2">
-                      {mockProfile.recentThumbs.map((thumb, i) => (
-                        <div
-                          key={i}
-                          className="rounded-lg overflow-hidden flex-shrink-0"
-                          style={{ width: 80, height: 112, background: isDark ? 'rgba(255,255,255,0.04)' : '#f3f4f6' }}
-                        >
-                          <img src={thumb} alt="" className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
+                  {/* Info note */}
+                  <div className="flex items-start gap-2 mt-4 px-1">
+                    <svg viewBox="0 0 13 13" style={{ width: 13, height: 13, flexShrink: 0, marginTop: 2, color: muted }} fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <circle cx="6.5" cy="6.5" r="5.5" /><line x1="6.5" y1="5.5" x2="6.5" y2="9" /><circle cx="6.5" cy="4" r="0.5" fill="currentColor" stroke="none"/>
+                    </svg>
+                    <p className="text-[12px]" style={{ color: muted }}>
+                      This download may take minutes to hours. You'll receive an email notification when complete.
+                    </p>
                   </div>
                 </div>
-
-                {/* Continue button */}
-                <div className="flex justify-end">
+              </div>
+            ) : profilePhase === 'confirmDownload' ? (
+              <div className="px-6 pb-6">
+                <div className="flex flex-col items-center gap-5 rounded-2xl py-8 px-6"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
+                  <div className="text-center flex flex-col gap-1">
+                    <p style={{ color: text, fontWeight: 700, fontSize: 14 }}>Confirm Download</p>
+                    <p style={{ color: muted, fontSize: 13, lineHeight: '1.5' }}>Are you sure? This action cannot be undone and may incur processing costs.</p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setProfilePhase('downloadPreview')}
+                      className="flex items-center justify-center text-[12px]"
+                      style={{ width: 172, height: 32, borderRadius: 14, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,17,17,0.08)', color: text, fontWeight: 500 }}
+                    >Cancel</button>
+                    <button
+                      onClick={() => setProfilePhase('downloadProcessing')}
+                      className="flex items-center justify-center text-[12px]"
+                      style={{ width: 172, height: 32, borderRadius: 14, background: '#eeb900', color: '#fff', fontWeight: 500 }}
+                    >Yes, Download</button>
+                  </div>
+                </div>
+              </div>
+            ) : profilePhase === 'downloadProcessing' ? (
+              <div className="px-6 pb-6">
+                <div className="flex flex-col items-center gap-4 rounded-2xl py-8 px-6"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}>
+                  <svg className="w-9 h-9 animate-spin" style={{ color: '#f59e0b' }} viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeDasharray="40 20" strokeLinecap="round" />
+                  </svg>
+                  <div className="text-center flex flex-col gap-1">
+                    <p style={{ color: text, fontWeight: 700, fontSize: 14 }}>Your download is processing</p>
+                    <p style={{ color: muted, fontSize: 13, lineHeight: '1.5' }}>This can take minutes to hours. You'll receive an email notification when complete.</p>
+                  </div>
                   <button
-                    onClick={() => setProfilePhase('configure')}
-                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] transition-all"
-                    style={{ background: '#f59e0b', color: '#fff', fontWeight: 600 }}
+                    onClick={() => { close(); navigate('/profiles'); }}
+                    className="flex items-center justify-center px-4 h-8 rounded-2xl text-[12px] transition-opacity"
+                    style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,17,17,0.08)', color: text, fontWeight: 500, width: 232 }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.7'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
                   >
-                    Continue
-                    <ArrowRight className="w-3 h-3" />
+                    Back to Profiles
                   </button>
+                </div>
+              </div>
+            ) : profilePhase === 'scanDone' ? (
+              <div className="px-6 pb-6">
+                <div
+                  className="flex flex-col items-center gap-3 py-10 px-6 rounded-2xl"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff', border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}` }}
+                >
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.08)' }}>
+                    <CheckCircle className="w-5 h-5" style={{ color: '#f59e0b' }} />
+                  </div>
+                  <p style={{ color: isDark ? '#f9fafb' : '#111', fontWeight: 700, fontSize: 14 }}>Scan complete!</p>
+                  <div className="w-full" style={{ height: 5, borderRadius: 20, background: '#f59e0b' }} />
+                  <p style={{ color: isDark ? '#f9fafb' : '#111', fontWeight: 700, fontSize: 14 }}>100%</p>
+                </div>
+              </div>
+            ) : profilePhase === 'preview' && mockProfile ? (
+              /* ── Preview: ghost + thumbnails in one flex row, equal gap, overflow hidden ── */
+              <div style={{ height: 242, marginBottom: 20, overflow: 'hidden' }}>
+                <div className="flex items-center justify-center gap-3" style={{ height: '100%' }}>
+                  {/* Left ghost card — transparent on outer left, solid near thumbnails */}
+                  <div className="flex-shrink-0 rounded-2xl" style={{
+                    width: 136, height: 242,
+                    background: isDark
+                      ? 'linear-gradient(to right, transparent 0%, transparent 55%, rgba(55,42,12,0.95) 100%)'
+                      : 'linear-gradient(to right, rgba(253,248,236,0) 0%, rgba(253,248,236,0) 55%, rgb(211,202,170) 100%)',
+                  }} />
+
+                  {/* Real thumbnails with play button + dark bottom fade */}
+                  {mockProfile.recentThumbs.map((thumb, i) => (
+                    <div
+                      key={i}
+                      className="relative flex-shrink-0 overflow-hidden"
+                      style={{ width: 136, height: 242, borderRadius: 16, background: isDark ? '#2a2a2a' : '#9ca3af' }}
+                    >
+                      <img src={thumb} alt="" className="w-full h-full object-cover" />
+                      {/* Dark bottom fade */}
+                      <div className="absolute inset-0 pointer-events-none" style={{
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 40%, transparent 70%)',
+                        borderRadius: 16,
+                      }} />
+                      {/* Play button */}
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div style={{
+                          width: 36, height: 36, borderRadius: '50%',
+                          background: 'rgba(255,255,255,0.88)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          backdropFilter: 'blur(4px)',
+                        }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="#111" style={{ marginLeft: 2 }}>
+                            <polygon points="5,3 19,12 5,21" />
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Right ghost card — solid near thumbnails, transparent on outer right */}
+                  <div className="flex-shrink-0 rounded-2xl" style={{
+                    width: 136, height: 242,
+                    background: isDark
+                      ? 'linear-gradient(to left, transparent 0%, transparent 55%, rgba(55,42,12,0.95) 100%)'
+                      : 'linear-gradient(to left, rgba(253,248,236,0) 0%, rgba(253,248,236,0) 55%, rgb(211,202,170) 100%)',
+                  }} />
                 </div>
               </div>
             ) : null}
           </div>
+
+          {/* ── Footer button — configure phase ── */}
+          {profilePhase === 'configure' && (profileTypes.videos || profileTypes.covers || profileTypes.data) && (
+            <div className="flex items-center justify-center mt-4">
+              <button
+                onClick={() => setProfilePhase('downloadPreview')}
+                className="flex items-center justify-center text-[12px] transition-opacity"
+                style={{ width: 172, height: 32, borderRadius: 14, background: '#eeb900', color: '#fff', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.88'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+              >
+                Preview Downloads
+              </button>
+            </div>
+          )}
+
+          {/* ── Footer buttons — downloadPreview phase ── */}
+          {profilePhase === 'downloadPreview' && (
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <button
+                onClick={() => setProfilePhase('configure')}
+                className="flex items-center justify-center text-[12px]"
+                style={{ width: 172, height: 32, borderRadius: 14, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,17,17,0.08)', color: text, fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+              >Cancel</button>
+              <button
+                onClick={() => setProfilePhase('confirmDownload')}
+                className="flex items-center justify-center text-[12px] transition-opacity"
+                style={{ width: 172, height: 32, borderRadius: 14, background: '#eeb900', color: '#fff', fontWeight: 500, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.88'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+              >Proceed to Download</button>
+            </div>
+          )}
+
+          {/* ── Footer buttons — preview only, Figma exact: w-172 h-32 rounded-[14px] ── */}
+          {profilePhase === 'preview' && mockProfile && (
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <button
+                onClick={() => { setProfilePhase(null); setMockProfile(null); }}
+                className="flex items-center justify-center text-[12px] transition-colors"
+                style={{
+                  width: 172, height: 32, borderRadius: 14,
+                  background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,17,17,0.08)',
+                  color: isDark ? '#e5e7eb' : '#111',
+                  fontWeight: 500,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.13)' : 'rgba(17,17,17,0.13)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(17,17,17,0.08)'; }}
+              >
+                Enter Different Profile
+              </button>
+              <button
+                onClick={() => {
+                  setScanDoneOrigin('preview');
+                  setProfilePhase('scanning');
+                  setProfileProgress(0);
+                  let p = 0;
+                  const iv = setInterval(() => {
+                    p += Math.random() * 12 + 4;
+                    if (p >= 100) {
+                      clearInterval(iv);
+                      setProfileProgress(100);
+                      setTimeout(() => setProfilePhase('scanDone'), 500);
+                    } else {
+                      setProfileProgress(Math.round(p));
+                    }
+                  }, 500);
+                }}
+                className="flex items-center justify-center text-[12px] transition-opacity"
+                style={{
+                  width: 172, height: 32, borderRadius: 14,
+                  background: '#eeb900',
+                  color: '#fff',
+                  fontWeight: 500,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.88'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1'; }}
+              >
+                Confirm Your Profile
+              </button>
+            </div>
+          )}
+
         </div>
       ) : (
         <>
@@ -696,22 +864,7 @@ function InlineNewTranscriptionView({ onBack }: { onBack: () => void }) {
                         const handle = extractHandle(lines[0]);
                         const platform = inferPlatform(lines[0]);
                         setMockProfile(generateMockProfile(handle, platform));
-                        setProfilePhase('scanning');
-                        setProfileProgress(0);
-                        let p = 0;
-                        const interval = setInterval(() => {
-                          p += Math.random() * 15 + 5;
-                          if (p >= 100) {
-                            clearInterval(interval);
-                            setProfileProgress(100);
-                            setTimeout(() => {
-                              setScanDoneOrigin('initial');
-                              setProfilePhase('scanDone');
-                            }, 500);
-                          } else {
-                            setProfileProgress(Math.round(p));
-                          }
-                        }, 600);
+                        setProfilePhase('preview');
                         return;
                       }
                       if (activeInputTab === 'transcripts' && validLines.length > 0) {

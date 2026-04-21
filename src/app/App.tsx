@@ -28,15 +28,20 @@ import NewTranscriptModal from './components/NewTranscriptModal';
 import { BulkProcessingProvider } from './context/BulkProcessingContext';
 import { ChromeExtensionModalProvider } from './context/ChromeExtensionModalContext';
 import ChromeExtensionModal from './components/ChromeExtensionModal';
+import { TourProvider } from './context/TourContext';
+import { TourGuide } from './components/TourGuide';
 
 function AppLayout() {
   return (
     <BulkProcessingProvider>
       <ChromeExtensionModalProvider>
         <NewTranscriptProvider>
-          <Outlet />
-          <NewTranscriptModal />
-          <ChromeExtensionModal />
+          <TourProvider>
+            <Outlet />
+            <NewTranscriptModal />
+            <ChromeExtensionModal />
+            <TourGuide />
+          </TourProvider>
         </NewTranscriptProvider>
       </ChromeExtensionModalProvider>
     </BulkProcessingProvider>

@@ -944,28 +944,21 @@ export function VideosPage() {
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
-          {/* Title bar */}
-          <div className="flex items-center px-6 py-3 flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
-            <div className="flex items-center gap-3">
-              <Video className="w-4 h-4 flex-shrink-0" style={{ color: muted }} />
-              <span className="text-sm" style={{ color: text, fontWeight: 600 }}>Videos</span>
-              <span className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6', color: muted }}>
-                {filteredVideos.length} videos
-              </span>
-
-              {pendingDownloads > 0 && (
-                <div
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg ml-4"
-                  style={{
-                    background: isDark ? 'rgba(255,255,255,0.05)' : '#f3f4f6',
-                    border: `1px solid ${border}`,
-                  }}
-                >
-                  <Loader2 className="w-3 h-3 animate-spin" style={{ color: '#3b82f6' }} />
-                  <span className="text-xs" style={{ color: muted }}>{pendingDownloads} still downloading…</span>
-                </div>
-              )}
+          {/* ── Page Header ─────────────────────────────────────────────── */}
+          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+            <div className="max-w-[1280px] mx-auto w-full px-6 pt-5 pb-4">
+              <h1 style={{ color: text, fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                Videos
+              </h1>
+              <p className="mt-1 text-xs" style={{ color: muted, lineHeight: 1.6 }}>
+                Your video library — {filteredVideos.length} video{filteredVideos.length !== 1 ? 's' : ''}
+                {pendingDownloads > 0 && (
+                  <span className="inline-flex items-center gap-1 ml-3">
+                    <Loader2 className="w-3 h-3 animate-spin" style={{ color: '#3b82f6' }} />
+                    <span>{pendingDownloads} still downloading…</span>
+                  </span>
+                )}
+              </p>
             </div>
           </div>
 
@@ -1422,22 +1415,17 @@ export function VideosPage() {
                           ? `linear-gradient(180deg, #3b82f622 0%, ${bg} 100%)`
                           : `linear-gradient(180deg, #3b82f614 0%, ${bg} 100%)`,
                       }}
-                      onClick={openNewTranscript}
+                      onClick={() => openNewTranscript('videos')}
                       onMouseEnter={() => setCtaHovered(true)}
                       onMouseLeave={() => setCtaHovered(false)}
                     >
-                      <div className="flex items-center justify-center flex-1"
+                      <div className="flex flex-col items-center justify-center gap-2.5 flex-1"
                         style={{ background: isDark ? 'rgba(59,130,246,0.04)' : '#3b82f608', minHeight: 180 }}>
-                        <div className="flex items-center justify-center rounded-xl"
-                          style={{ width: 44, height: 44, background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)' }}>
-                          <Download className="w-6 h-6" style={{ color: '#3b82f6' }} />
-                        </div>
-                      </div>
-                      <div className="px-3.5 py-3" style={{ borderTop: '1px solid #3b82f620' }}>
-                        <p className="text-xs" style={{ color: text, fontWeight: 600 }}>Download new videos</p>
-                        <p className="text-[10px] mt-1" style={{ color: muted, lineHeight: 1.5 }}>
-                          Paste video links to download and save to your library.
-                        </p>
+                        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <rect width="50" height="50" rx="25" fill="#3b82f6"/>
+                          <path d="M18 25H32M25 32L25 18" stroke="white" strokeWidth="2.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <p className="text-xs" style={{ color: text, fontWeight: 600 }}>Scan new video</p>
                       </div>
                     </div>
 

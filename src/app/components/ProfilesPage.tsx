@@ -543,26 +543,21 @@ export function ProfilesPage() {
         <AppHeader />
 
         <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-          {/* Title bar */}
-          <div
-            className="flex items-center px-6 py-3 flex-shrink-0"
-            style={{ borderBottom: `1px solid ${border}` }}
-          >
-            <div className="flex items-center gap-3">
-              <Users className="w-4 h-4 flex-shrink-0" style={{ color: muted }} />
-              <span className="text-sm" style={{ color: text, fontWeight: 600 }}>Profiles</span>
-              <span
-                className="text-xs px-2 py-0.5 rounded-full"
-                style={{ background: isDark ? 'rgba(255,255,255,0.07)' : '#f3f4f6', color: muted }}
-              >
-                {filteredProfiles.length} creators
-              </span>
+          {/* ── Page Header ─────────────────────────────────────────────── */}
+          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
+            <div className="max-w-[1280px] mx-auto w-full px-6 pt-5 pb-4">
+              <h1 style={{ color: text, fontWeight: 700, fontSize: '1.5rem', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+                Profiles
+              </h1>
+              <p className="mt-1 text-xs" style={{ color: muted, lineHeight: 1.6 }}>
+                Your saved creator profiles — {filteredProfiles.length} creator{filteredProfiles.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
 
           {/* ── Unified Filter Bar ───────────────────────────────────── */}
-          <div className="flex-shrink-0" style={{ borderBottom: `1px solid ${border}` }}>
-          <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 px-6 py-3">
+          <div className="flex-shrink-0 px-6" style={{ borderBottom: `1px solid ${border}` }}>
+          <div className="max-w-[1280px] mx-auto w-full flex items-center gap-2 py-3">
 
             {/* Search */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs flex-shrink-0"
@@ -871,22 +866,14 @@ export function ProfilesPage() {
               >
                 {/* Illustration */}
                 <div
-                  className="flex items-center justify-center flex-1"
+                  className="flex flex-col items-center justify-center gap-2.5 flex-1"
                   style={{ background: isDark ? 'rgba(245,158,11,0.04)' : '#f59e0b08' }}
                 >
-                  <div style={{ width: 44, height: 44 }}>
-                    <ContainerUserPlus />
-                  </div>
-                </div>
-                {/* Text */}
-                <div
-                  className="px-3.5 py-3"
-                  style={{ borderTop: '1px solid #f59e0b20' }}
-                >
-                  <p className="text-xs" style={{ color: text, fontWeight: 600 }}>Scan a new profile</p>
-                  <p className="text-[10px] mt-1" style={{ color: muted, lineHeight: 1.5 }}>
-                    Add a creator's channel to track their latest videos and transcripts.
-                  </p>
+                  <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="50" height="50" rx="25" fill="#f59e0b"/>
+                    <path d="M18 25H32M25 32L25 18" stroke="white" strokeWidth="2.33333" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <p className="text-xs" style={{ color: text, fontWeight: 600 }}>Scan new profile</p>
                 </div>
               </div>
 
