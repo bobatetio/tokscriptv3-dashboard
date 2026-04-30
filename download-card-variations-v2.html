@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download Card Variations V2 — 20 Designs</title>
+<style>
+:root {
+  --amber: #f59e0b;
+  --amber-12: rgba(245,158,11,0.12);
+  --amber-06: rgba(245,158,11,0.06);
+  --amber-04: rgba(245,158,11,0.04);
+  --amber-03: rgba(245,158,11,0.03);
+  --amber-30: rgba(245,158,11,0.30);
+  --amber-35: rgba(245,158,11,0.35);
+}
+[data-theme="dark"] {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --border: #2a2a2a;
+  --text: #f0f0f0;
+  --muted: #888;
+  --card: #1a1a1a;
+  --card-hover: rgba(245,158,11,0.05);
+  --tip-bg: #1e1e1e;
+  --tip-text: #e5e7eb;
+  --tip-caret: #1e1e1e;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.4);
+  --shadow-md: 0 2px 12px rgba(0,0,0,0.4);
+  --shadow-amber: 0 2px 12px rgba(245,158,11,0.10);
+  --sep: #2a2a2a;
+}
+[data-theme="light"] {
+  --bg: #f4f4f5;
+  --surface: #fff;
+  --border: #e4e4e4;
+  --text: #111;
+  --muted: #6b7280;
+  --card: #fff;
+  --card-hover: rgba(245,158,11,0.03);
+  --tip-bg: #111827;
+  --tip-text: #fff;
+  --tip-caret: #111827;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
+  --shadow-md: 0 2px 12px rgba(0,0,0,0.09);
+  --shadow-amber: 0 2px 12px rgba(245,158,11,0.10);
+  --sep: #e4e4e4;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);padding:48px 32px 100px;transition:background .2s,color .2s}
+button{font-family:inherit;cursor:pointer}
+
+/* Theme toggle */
+#tbtn{position:fixed;top:16px;right:16px;padding:5px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:11px;transition:all .15s;z-index:200}
+#tbtn:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Page header */
+h1{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:52px}
+
+/* Group headers */
+.grp{margin:56px 0 20px;font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* Variation wrapper */
+.v{margin-bottom:32px}
+.vl{font-size:10.5px;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.vn{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(245,158,11,0.12);color:var(--amber);font-size:8.5px;font-weight:700;flex-shrink:0}
+
+/* Demo shell */
+.shell{display:inline-flex;align-items:center;padding:14px 18px;background:var(--surface);border-radius:14px;border:1px solid var(--border)}
+.shell.flex-col{flex-direction:column;align-items:flex-start}
+
+/* ─── Rescan chip (shared) ─── */
+.rs{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;transition:all .15s;white-space:nowrap;position:relative}
+.rs:hover{background:var(--amber-12);color:var(--amber);border-color:var(--amber-30)}
+.rs::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--tip-bg);color:var(--tip-text);font-size:10px;line-height:1.4;padding:6px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 2px 10px rgba(0,0,0,0.35);z-index:99}
+.rs::before{content:'';position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--tip-caret);pointer-events:none;opacity:0;transition:opacity .15s;z-index:100}
+.rs:hover::after,.rs:hover::before{opacity:1}
+
+/* ─── DL buttons ─── */
+.blink{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;color:var(--amber);background:none;border:none;padding:0}
+.blink:hover{opacity:.75}
+.bpill{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#fff;background:var(--amber);border:none;padding:4px 11px;border-radius:20px}
+.bpill:hover{opacity:.85}
+.boutl{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:var(--amber);background:transparent;border:1px solid var(--amber-30);padding:3px 10px;border-radius:20px}
+.boutl:hover{background:var(--amber-12)}
+
+/* ─── Base card ─── */
+.dc{border-radius:12px;border:1px solid var(--border);background:var(--card);transition:border-color .15s,background .15s}
+.dc:hover{border-color:var(--amber-35);background:var(--card-hover)}
+
+/* SVG icons */
+.ico{display:inline-block;vertical-align:middle;flex-shrink:0}
+
+</style>
+</head>
+<body>
+
+<button id="tbtn" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark';this.textContent=document.documentElement.dataset.theme==='dark'?'☀ Light':'☾ Dark'">☀ Light</button>
+
+<h1>Download Card Variations V2 — 20 Designs</h1>
+
+<!-- SVG defs for icons -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="ico-film" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/>
+  </symbol>
+  <symbol id="ico-img" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+  </symbol>
+  <symbol id="ico-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+  </symbol>
+  <symbol id="ico-dl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+  </symbol>
+  <symbol id="ico-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+  </symbol>
+</svg>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP A -->
+<p class="grp">Group A — Modal Card Mirror</p>
+
+<!-- V1 -->
+<div class="v">
+<div class="vl"><span class="vn">1</span> Configure-Step Clone — icon top, desc, footer download strip</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:2px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <!-- Videos -->
+      <div class="dc" style="width:112px;overflow:hidden">
+        <div style="padding:12px 14px 10px;text-align:center">
+          <div style="width:30px;height:30px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:var(--amber)">
+            <svg class="ico" width="14" height="14"><use href="#ico-film"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Videos</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">MP4 videos</p>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:7px 14px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;color:var(--muted)">214 · 2.3 GB</span>
+          <button class="blink" style="font-size:10px">
+            <svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download
+          </button>
+        </div>
+      </div>
+      <!-- Covers -->
+      <div class="dc" style="width:112px;overflow:hidden">
+        <div style="padding:12px 14px 10px;text-align:center">
+          <div style="width:30px;height:30px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:var(--amber)">
+            <svg class="ico" width="14" height="14"><use href="#ico-img"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Covers</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">PNG thumbnails</p>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:7px 14px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;color:var(--muted)">214 · 340 MB</span>
+          <button class="blink" style="font-size:10px">
+            <svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download
+          </button>
+        </div>
+      </div>
+      <!-- Data -->
+      <div class="dc" style="width:112px;overflow:hidden">
+        <div style="padding:12px 14px 10px;text-align:center">
+          <div style="width:30px;height:30px;border-radius:8px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;color:var(--amber)">
+            <svg class="ico" width="14" height="14"><use href="#ico-file"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Data</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">Metadata &amp; JSON</p>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:7px 14px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:9px;color:var(--muted)">1 · 12 MB</span>
+          <button class="blink" style="font-size:10px">
+            <svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V2 -->
+<div class="v">
+<div class="vl"><span class="vn">2</span> Warm Ambient Cards — always-on amber tint bg, no border at rest</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:2px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div style="min-width:130px;border-radius:12px;background:rgba(245,158,11,0.05);border:1px solid transparent;padding:12px 14px;text-align:center;transition:all .15s;cursor:default;display:flex;flex-direction:column;justify-content:space-between;min-height:88px" onmouseenter="this.style.borderColor='rgba(245,158,11,0.3)';this.style.background='rgba(245,158,11,0.09)'" onmouseleave="this.style.borderColor='transparent';this.style.background='rgba(245,158,11,0.05)'">
+        <div>
+          <div style="color:var(--amber);margin-bottom:7px"><svg class="ico" width="16" height="16"><use href="#ico-film"/></svg></div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Videos</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">3,000 · 32.45 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="min-width:130px;border-radius:12px;background:rgba(245,158,11,0.05);border:1px solid transparent;padding:12px 14px;text-align:center;transition:all .15s;cursor:default;display:flex;flex-direction:column;justify-content:space-between;min-height:88px" onmouseenter="this.style.borderColor='rgba(245,158,11,0.3)';this.style.background='rgba(245,158,11,0.09)'" onmouseleave="this.style.borderColor='transparent';this.style.background='rgba(245,158,11,0.05)'">
+        <div>
+          <div style="color:var(--amber);margin-bottom:7px"><svg class="ico" width="16" height="16"><use href="#ico-img"/></svg></div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Covers</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">3,000 · 24.8 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="min-width:130px;border-radius:12px;background:rgba(245,158,11,0.05);border:1px solid transparent;padding:12px 14px;text-align:center;transition:all .15s;cursor:default;display:flex;flex-direction:column;justify-content:space-between;min-height:88px" onmouseenter="this.style.borderColor='rgba(245,158,11,0.3)';this.style.background='rgba(245,158,11,0.09)'" onmouseleave="this.style.borderColor='transparent';this.style.background='rgba(245,158,11,0.05)'">
+        <div>
+          <div style="color:var(--amber);margin-bottom:7px"><svg class="ico" width="16" height="16"><use href="#ico-file"/></svg></div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Data</p>
+          <p style="font-size:9.5px;color:var(--muted);margin-top:2px">1 · 12 MB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="10" height="10"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V3 -->
+<div class="v">
+<div class="vl"><span class="vn">3</span> Amber Pill Download Button — solid amber pill CTA, bold and clear</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:2px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div class="dc" style="min-width:130px;padding:12px 14px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="13" height="13"><use href="#ico-film"/></svg>
+            <span style="font-size:11.5px;font-weight:700;color:var(--text)">Videos</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 32.45 GB</p>
+        </div>
+        <button class="bpill" style="justify-content:center;margin-top:6px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="min-width:130px;padding:12px 14px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="13" height="13"><use href="#ico-img"/></svg>
+            <span style="font-size:11.5px;font-weight:700;color:var(--text)">Covers</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 24.8 GB</p>
+        </div>
+        <button class="bpill" style="justify-content:center;margin-top:6px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="min-width:130px;padding:12px 14px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="13" height="13"><use href="#ico-file"/></svg>
+            <span style="font-size:11.5px;font-weight:700;color:var(--text)">Data</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">1 · 12 MB</p>
+        </div>
+        <button class="bpill" style="justify-content:center;margin-top:6px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP B -->
+<p class="grp">Group B — Unified Container</p>
+
+<!-- V4 -->
+<div class="v">
+<div class="vl"><span class="vn">4</span> Single Bordered Panel — one rounded-2xl container, vertical dividers</div>
+<div class="shell">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="border:1px solid var(--border);border-radius:14px;display:flex;overflow:hidden;background:var(--card)">
+      <div style="padding:12px 16px;text-align:center;min-width:120px">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-film"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Videos</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">3,000 · 32.45 GB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:var(--border);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;min-width:120px">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-img"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Covers</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">3,000 · 24.8 GB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:var(--border);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;min-width:120px">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-file"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Data</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">1 · 12 MB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V5 -->
+<div class="v">
+<div class="vl"><span class="vn">5</span> Raised Panel + Amber Crown — amber shadow glow + 2px amber top border accent</div>
+<div class="shell">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="border:1px solid var(--border);border-top:2px solid var(--amber);border-radius:14px;display:flex;overflow:hidden;background:var(--card);box-shadow:0 2px 16px rgba(245,158,11,0.12)">
+      <div style="padding:12px 16px;text-align:center;min-width:120px" onmouseenter="this.style.background='rgba(245,158,11,0.05)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-film"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Videos</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">3,000 · 32.45 GB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:var(--border);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;min-width:120px" onmouseenter="this.style.background='rgba(245,158,11,0.05)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-img"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Covers</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">3,000 · 24.8 GB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:var(--border);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;min-width:120px" onmouseenter="this.style.background='rgba(245,158,11,0.05)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber);margin-bottom:6px"><svg class="ico" width="14" height="14"><use href="#ico-file"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Data</p>
+        <p style="font-size:9px;color:var(--muted);margin-top:2px">1 · 12 MB</p>
+        <button class="blink" style="margin-top:7px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP C -->
+<p class="grp">Group C — Count-Hero Cards</p>
+
+<!-- V6 -->
+<div class="v">
+<div class="vl"><span class="vn">6</span> Stat-Primary Cards — large count as visual hero, label + size muted below</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:4px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div class="dc" style="padding:12px 16px;min-width:120px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <svg class="ico" width="11" height="11" style="color:var(--muted)"><use href="#ico-film"/></svg>
+            <span style="font-size:17.5px;font-weight:700;color:var(--text);line-height:1">3,000</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">Videos · 32.45 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:12px 16px;min-width:120px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <svg class="ico" width="11" height="11" style="color:var(--muted)"><use href="#ico-img"/></svg>
+            <span style="font-size:17.5px;font-weight:700;color:var(--text);line-height:1">3,000</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">Covers · 24.8 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:12px 16px;min-width:120px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <svg class="ico" width="11" height="11" style="color:var(--muted)"><use href="#ico-file"/></svg>
+            <span style="font-size:17.5px;font-weight:700;color:var(--text);line-height:1">1</span>
+          </div>
+          <p style="font-size:9.5px;color:var(--muted)">1 · 12 MB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V7 -->
+<div class="v">
+<div class="vl"><span class="vn">7</span> Dual-Line Metric — icon+label / count·size / amber download — 3-tier stack</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:4px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div class="dc" style="padding:11px 15px;min-width:130px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="12" height="12"><use href="#ico-film"/></svg>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+          </div>
+          <p style="font-size:12px;font-weight:600;color:var(--text)">3,000 <span style="color:var(--muted);font-weight:400">·</span> <span style="font-size:10px;font-weight:400;color:var(--muted)">32.45 GB</span></p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:11px 15px;min-width:130px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="12" height="12"><use href="#ico-img"/></svg>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+          </div>
+          <p style="font-size:12px;font-weight:600;color:var(--text)">3,000 <span style="color:var(--muted);font-weight:400">·</span> <span style="font-size:10px;font-weight:400;color:var(--muted)">24.8 GB</span></p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:11px 15px;min-width:130px;display:flex;flex-direction:column;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:center;gap:5px;color:var(--muted)">
+            <svg class="ico" width="12" height="12"><use href="#ico-file"/></svg>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+          </div>
+          <p style="font-size:12px;font-weight:600;color:var(--text)">1 <span style="color:var(--muted);font-weight:400">·</span> <span style="font-size:10px;font-weight:400;color:var(--muted)">12 MB</span></p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP D -->
+<p class="grp">Group D — Horizontal Strips</p>
+
+<!-- V8 -->
+<div class="v">
+<div class="vl"><span class="vn">8</span> Row List — no cards, 3 horizontal rows, icon+label+stats left, amber download right</div>
+<div class="shell">
+  <div style="display:flex;flex-direction:column;gap:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--muted)">
+        <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+          <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+          Scanned 2d ago
+        </button>
+      </div>
+      <span style="font-size:10px;color:var(--muted)">Ready to download</span>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:32px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-film"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+        <span style="font-size:10px;color:var(--muted)">3,000 · 32.45 GB</span>
+      </div>
+      <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:32px;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-img"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+        <span style="font-size:10px;color:var(--muted)">3,000 · 24.8 GB</span>
+      </div>
+      <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:32px;padding:9px 0">
+      <div style="display:flex;align-items:center;gap:7px">
+        <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-file"/></svg>
+        <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+        <span style="font-size:10px;color:var(--muted)">1 · 12 MB</span>
+      </div>
+      <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V9 -->
+<div class="v">
+<div class="vl"><span class="vn">9</span> Compact Pill Badges — 3 inline amber-tinted pills with icon, label, count, download arrow</div>
+<div class="shell">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="width:1px;height:18px;background:var(--border)"></div>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.06);color:var(--text);font-size:10.5px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.12)';this.style.borderColor='rgba(245,158,11,0.4)'" onmouseleave="this.style.background='rgba(245,158,11,0.06)';this.style.borderColor='rgba(245,158,11,0.25)'">
+      <svg class="ico" width="11" height="11" style="color:var(--amber)"><use href="#ico-film"/></svg>
+      <span style="font-weight:600">Videos</span>
+      <span style="color:var(--muted)">214 · 2.3 GB</span>
+      <svg class="ico" width="10" height="10" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.06);color:var(--text);font-size:10.5px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.12)';this.style.borderColor='rgba(245,158,11,0.4)'" onmouseleave="this.style.background='rgba(245,158,11,0.06)';this.style.borderColor='rgba(245,158,11,0.25)'">
+      <svg class="ico" width="11" height="11" style="color:var(--amber)"><use href="#ico-img"/></svg>
+      <span style="font-weight:600">Covers</span>
+      <span style="color:var(--muted)">214 · 340 MB</span>
+      <svg class="ico" width="10" height="10" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid rgba(245,158,11,0.25);background:rgba(245,158,11,0.06);color:var(--text);font-size:10.5px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.12)';this.style.borderColor='rgba(245,158,11,0.4)'" onmouseleave="this.style.background='rgba(245,158,11,0.06)';this.style.borderColor='rgba(245,158,11,0.25)'">
+      <svg class="ico" width="11" height="11" style="color:var(--amber)"><use href="#ico-file"/></svg>
+      <span style="font-weight:600">Data</span>
+      <span style="color:var(--muted)">1 · 12 MB</span>
+      <svg class="ico" width="10" height="10" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- V10 -->
+<div class="v">
+<div class="vl"><span class="vn">10</span> Seamless Metrics Bar — one continuous bar, thin vertical separators, each section clickable</div>
+<div class="shell">
+  <div style="border:1px solid var(--border);border-radius:20px;display:flex;overflow:hidden;background:var(--card)">
+    <button class="rs" style="border-radius:0;border:none;border-right:1px solid var(--border);padding:6px 12px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:none;background:transparent;color:var(--text);font-size:10.5px;border-right:1px solid var(--border);transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+      <svg class="ico" width="12" height="12" style="color:var(--amber)"><use href="#ico-film"/></svg>
+      <span style="font-weight:600">Videos</span>
+      <span style="color:var(--muted)">3,000</span>
+      <svg class="ico" width="9" height="9" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:none;background:transparent;color:var(--text);font-size:10.5px;border-right:1px solid var(--border);transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+      <svg class="ico" width="12" height="12" style="color:var(--amber)"><use href="#ico-img"/></svg>
+      <span style="font-weight:600">Covers</span>
+      <span style="color:var(--muted)">3,000</span>
+      <svg class="ico" width="9" height="9" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+    <button style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border:none;background:transparent;color:var(--text);font-size:10.5px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+      <svg class="ico" width="12" height="12" style="color:var(--amber)"><use href="#ico-file"/></svg>
+      <span style="font-weight:600">Data</span>
+      <span style="color:var(--muted)">1</span>
+      <svg class="ico" width="9" height="9" style="color:var(--amber)"><use href="#ico-dl"/></svg>
+    </button>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP E -->
+<p class="grp">Group E — Icon-Forward Cards</p>
+
+<!-- V11 -->
+<div class="v">
+<div class="vl"><span class="vn">11</span> Icon Circle Cards — large amber circle as visual anchor, label + stat + download below</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:6px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div class="dc" style="padding:14px 16px;text-align:center;min-width:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+            <svg class="ico" width="16" height="16"><use href="#ico-film"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Videos</p>
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 32.45 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:14px 16px;text-align:center;min-width:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+            <svg class="ico" width="16" height="16"><use href="#ico-img"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Covers</p>
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 24.8 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div class="dc" style="padding:14px 16px;text-align:center;min-width:120px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+          <div style="width:38px;height:38px;border-radius:50%;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+            <svg class="ico" width="16" height="16"><use href="#ico-file"/></svg>
+          </div>
+          <p style="font-size:11.5px;font-weight:700;color:var(--text)">Data</p>
+          <p style="font-size:9.5px;color:var(--muted)">1 · 12 MB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V12 -->
+<div class="v">
+<div class="vl"><span class="vn">12</span> Icon Strip + Text Panel — one card: left icon column, right label+stat+download rows</div>
+<div class="shell">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div class="dc" style="display:flex;overflow:hidden;min-width:280px">
+      <!-- Left icon strip -->
+      <div style="display:flex;flex-direction:column;gap:0;border-right:1px solid var(--border);padding:10px 12px;background:rgba(245,158,11,0.03)">
+        <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.10);color:var(--amber);margin-bottom:8px">
+          <svg class="ico" width="13" height="13"><use href="#ico-film"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.10);color:var(--amber);margin-bottom:8px">
+          <svg class="ico" width="13" height="13"><use href="#ico-img"/></svg>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.10);color:var(--amber)">
+          <svg class="ico" width="13" height="13"><use href="#ico-file"/></svg>
+        </div>
+      </div>
+      <!-- Right text column -->
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+            <span style="font-size:9.5px;color:var(--muted);margin-left:6px">3,000 · 32.45 GB</span>
+          </div>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+            <span style="font-size:9.5px;color:var(--muted);margin-left:6px">3,000 · 24.8 GB</span>
+          </div>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px">
+          <div>
+            <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+            <span style="font-size:9.5px;color:var(--muted);margin-left:6px">1 · 12 MB</span>
+          </div>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP F -->
+<p class="grp">Group F — Elevated / Shadow</p>
+
+<!-- V13 -->
+<div class="v">
+<div class="vl"><span class="vn">13</span> Shadow-Elevated Cards — no visible border, shadow is the container, clean surface</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:2px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div style="border-radius:12px;border:1px solid transparent;background:var(--card);box-shadow:var(--shadow-md);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 4px 20px rgba(245,158,11,0.15)'" onmouseleave="this.style.boxShadow='var(--shadow-md)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-film"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Videos</p>
+          <p style="font-size:9px;color:var(--muted)">3,000 · 32.45 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="border-radius:12px;border:1px solid transparent;background:var(--card);box-shadow:var(--shadow-md);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 4px 20px rgba(245,158,11,0.15)'" onmouseleave="this.style.boxShadow='var(--shadow-md)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-img"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Covers</p>
+          <p style="font-size:9px;color:var(--muted)">3,000 · 24.8 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="border-radius:12px;border:1px solid transparent;background:var(--card);box-shadow:var(--shadow-md);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:box-shadow .15s" onmouseenter="this.style.boxShadow='0 4px 20px rgba(245,158,11,0.15)'" onmouseleave="this.style.boxShadow='var(--shadow-md)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-file"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Data</p>
+          <p style="font-size:9px;color:var(--muted)">1 · 12 MB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V14 -->
+<div class="v">
+<div class="vl"><span class="vn">14</span> Top-Accent Cards — 2px amber top border, subtle amber bg tint, polished authority</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:2px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div style="border-radius:12px;border:1px solid var(--border);border-top:2px solid var(--amber);background:rgba(245,158,11,0.03);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.07)';this.style.borderColor='rgba(245,158,11,0.35)'" onmouseleave="this.style.background='rgba(245,158,11,0.03)';this.style.borderColor='var(--border)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-film"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Videos</p>
+          <p style="font-size:9px;color:var(--muted)">3,000 · 32.45 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="border-radius:12px;border:1px solid var(--border);border-top:2px solid var(--amber);background:rgba(245,158,11,0.03);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.07)';this.style.borderColor='rgba(245,158,11,0.35)'" onmouseleave="this.style.background='rgba(245,158,11,0.03)';this.style.borderColor='var(--border)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-img"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Covers</p>
+          <p style="font-size:9px;color:var(--muted)">3,000 · 24.8 GB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="border-radius:12px;border:1px solid var(--border);border-top:2px solid var(--amber);background:rgba(245,158,11,0.03);padding:12px 16px;min-width:130px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:88px;transition:all .15s" onmouseenter="this.style.background='rgba(245,158,11,0.07)';this.style.borderColor='rgba(245,158,11,0.35)'" onmouseleave="this.style.background='rgba(245,158,11,0.03)';this.style.borderColor='var(--border)'">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="color:var(--amber)"><svg class="ico" width="14" height="14"><use href="#ico-file"/></svg></div>
+          <p style="font-size:11px;font-weight:600;color:var(--text)">Data</p>
+          <p style="font-size:9px;color:var(--muted)">1 · 12 MB</p>
+        </div>
+        <button class="blink" style="margin-top:6px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V15 -->
+<div class="v">
+<div class="vl"><span class="vn">15</span> Segmented Control Group — 3 cards joined, outer rounded corners only, native toggle feel</div>
+<div class="shell">
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--card)">
+      <div style="padding:11px 16px;text-align:center;border-right:1px solid var(--border);min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+        <div style="display:flex;align-items:center;gap:4px;justify-content:center;color:var(--amber);margin-bottom:5px">
+          <svg class="ico" width="12" height="12"><use href="#ico-film"/></svg>
+          <span style="font-size:10.5px;font-weight:700;color:var(--text)">Videos</span>
+        </div>
+        <p style="font-size:9px;color:var(--muted);margin-bottom:6px">3,000 · 32.45 GB</p>
+        <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="padding:11px 16px;text-align:center;border-right:1px solid var(--border);min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+        <div style="display:flex;align-items:center;gap:4px;justify-content:center;color:var(--amber);margin-bottom:5px">
+          <svg class="ico" width="12" height="12"><use href="#ico-img"/></svg>
+          <span style="font-size:10.5px;font-weight:700;color:var(--text)">Covers</span>
+        </div>
+        <p style="font-size:9px;color:var(--muted);margin-bottom:6px">3,000 · 24.8 GB</p>
+        <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="padding:11px 16px;text-align:center;min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.06)'" onmouseleave="this.style.background='transparent'">
+        <div style="display:flex;align-items:center;gap:4px;justify-content:center;color:var(--amber);margin-bottom:5px">
+          <svg class="ico" width="12" height="12"><use href="#ico-file"/></svg>
+          <span style="font-size:10.5px;font-weight:700;color:var(--text)">Data</span>
+        </div>
+        <p style="font-size:9px;color:var(--muted);margin-bottom:6px">1 · 12 MB</p>
+        <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP G -->
+<p class="grp">Group G — List-Style</p>
+
+<!-- V16 -->
+<div class="v">
+<div class="vl"><span class="vn">16</span> Numbered Step List — amber circle numbers, label+stat, amber download right</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+          <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+          Scanned 2d ago
+        </button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:9px;font-weight:700;color:var(--amber)">1</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:1">
+          <svg class="ico" width="12" height="12" style="color:var(--muted)"><use href="#ico-film"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Videos</span>
+          <span style="font-size:9.5px;color:var(--muted)">3,000 · 32.45 GB</span>
+        </div>
+        <button class="blink" style="font-size:10px;margin-left:20px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:9px;font-weight:700;color:var(--amber)">2</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:1">
+          <svg class="ico" width="12" height="12" style="color:var(--muted)"><use href="#ico-img"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Covers</span>
+          <span style="font-size:9.5px;color:var(--muted)">3,000 · 24.8 GB</span>
+        </div>
+        <button class="blink" style="font-size:10px;margin-left:20px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:9px 0">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <span style="font-size:9px;font-weight:700;color:var(--amber)">3</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex:1">
+          <svg class="ico" width="12" height="12" style="color:var(--muted)"><use href="#ico-file"/></svg>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">Data</span>
+          <span style="font-size:9.5px;color:var(--muted)">1 · 12 MB</span>
+        </div>
+        <button class="blink" style="font-size:10px;margin-left:20px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V17 -->
+<div class="v">
+<div class="vl"><span class="vn">17</span> Icon-Badge Rows — amber rounded-md icon chip, bold label, muted stats, download button right</div>
+<div class="shell">
+  <div style="display:flex;flex-direction:column;gap:0;min-width:320px">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+      <button class="rs" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+        <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+        Scanned 2d ago
+      </button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+          <svg class="ico" width="12" height="12"><use href="#ico-film"/></svg>
+        </div>
+        <div>
+          <span style="font-size:11.5px;font-weight:700;color:var(--text)">Videos</span>
+          <span style="font-size:9.5px;color:var(--muted);margin-left:6px">3,000 · 32.45 GB</span>
+        </div>
+      </div>
+      <button class="boutl"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+          <svg class="ico" width="12" height="12"><use href="#ico-img"/></svg>
+        </div>
+        <div>
+          <span style="font-size:11.5px;font-weight:700;color:var(--text)">Covers</span>
+          <span style="font-size:9.5px;color:var(--muted);margin-left:6px">3,000 · 24.8 GB</span>
+        </div>
+      </div>
+      <button class="boutl"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:26px;height:26px;border-radius:6px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;color:var(--amber)">
+          <svg class="ico" width="12" height="12"><use href="#ico-file"/></svg>
+        </div>
+        <div>
+          <span style="font-size:11.5px;font-weight:700;color:var(--text)">Data</span>
+          <span style="font-size:9.5px;color:var(--muted);margin-left:6px">1 · 12 MB</span>
+        </div>
+      </div>
+      <button class="boutl"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ GROUP H -->
+<p class="grp">Group H — Rich / Premium</p>
+
+<!-- V18 -->
+<div class="v">
+<div class="vl"><span class="vn">18</span> "Ready to Download" Summary Card — warm amber header, body rows, checkout-style confidence</div>
+<div class="shell">
+  <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card);min-width:280px">
+    <!-- Header area -->
+    <div style="background:rgba(245,158,11,0.07);border-bottom:1px solid rgba(245,158,11,0.15);padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:11px;font-weight:700;color:var(--amber)">Ready to download</span>
+      <button class="rs" style="border-color:rgba(245,158,11,0.25);background:rgba(245,158,11,0.08);color:var(--amber)" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+        <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+        Scanned 2d ago
+      </button>
+    </div>
+    <!-- Body rows -->
+    <div style="padding:4px 0">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-film"/></svg>
+          <span style="font-size:11.5px;font-weight:600;color:var(--text)">Videos</span>
+          <span style="font-size:9.5px;color:var(--muted)">3,000 · 32.45 GB</span>
+        </div>
+        <button class="bpill"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-img"/></svg>
+          <span style="font-size:11.5px;font-weight:600;color:var(--text)">Covers</span>
+          <span style="font-size:9.5px;color:var(--muted)">3,000 · 24.8 GB</span>
+        </div>
+        <button class="bpill"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 16px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-file"/></svg>
+          <span style="font-size:11.5px;font-weight:600;color:var(--text)">Data</span>
+          <span style="font-size:9.5px;color:var(--muted)">1 · 12 MB</span>
+        </div>
+        <button class="bpill"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V19 -->
+<div class="v">
+<div class="vl"><span class="vn">19</span> Ambient Background Group — borderless cards inside amber-tinted container, airy and unified</div>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:4px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="background:rgba(245,158,11,0.04);border:1px solid rgba(245,158,11,0.12);border-radius:14px;display:flex;gap:0;overflow:hidden">
+      <div style="padding:12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.08)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber)"><svg class="ico" width="15" height="15"><use href="#ico-film"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Videos</p>
+        <p style="font-size:9px;color:var(--muted)">3,000 · 32.45 GB</p>
+        <button class="blink" style="margin-top:3px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:rgba(245,158,11,0.15);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.08)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber)"><svg class="ico" width="15" height="15"><use href="#ico-img"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Covers</p>
+        <p style="font-size:9px;color:var(--muted)">3,000 · 24.8 GB</p>
+        <button class="blink" style="margin-top:3px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+      <div style="width:1px;background:rgba(245,158,11,0.15);margin:10px 0"></div>
+      <div style="padding:12px 16px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:120px;transition:background .15s" onmouseenter="this.style.background='rgba(245,158,11,0.08)'" onmouseleave="this.style.background='transparent'">
+        <div style="color:var(--amber)"><svg class="ico" width="15" height="15"><use href="#ico-file"/></svg></div>
+        <p style="font-size:11px;font-weight:700;color:var(--text)">Data</p>
+        <p style="font-size:9px;color:var(--muted)">1 · 12 MB</p>
+        <button class="blink" style="margin-top:3px;font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- V20 -->
+<div class="v">
+<div class="vl"><span class="vn">20</span> Hover-Reveal — minimal at rest, expands to show stat + download on hover (CSS transition)</div>
+<style>
+.hrc{border-radius:12px;border:1px solid var(--border);background:var(--card);padding:10px 16px;min-width:120px;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .2s;overflow:hidden;cursor:default}
+.hrc .hrc-rest{display:flex;align-items:center;gap:5px;color:var(--muted)}
+.hrc .hrc-expand{max-height:0;opacity:0;overflow:hidden;transition:max-height .2s ease,opacity .2s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hrc:hover{border-color:var(--amber-35);background:var(--card-hover)}
+.hrc:hover .hrc-expand{max-height:60px;opacity:1}
+.hrc:hover .hrc-rest .hrc-lbl{color:var(--text)}
+</style>
+<div class="shell">
+  <div style="display:flex;align-items:flex-start;gap:10px">
+    <button class="rs" style="margin-top:8px" data-tip="This profile was last scanned 2 days ago. Click ↻ to scan again for new content.">
+      <svg class="ico" width="11" height="11"><use href="#ico-refresh"/></svg>
+      Scanned 2d ago
+    </button>
+    <div style="display:flex;gap:8px">
+      <div class="hrc">
+        <div class="hrc-rest">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-film"/></svg>
+          <span class="hrc-lbl" style="font-size:11px;font-weight:600;transition:color .15s">Videos</span>
+        </div>
+        <div class="hrc-expand">
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 32.45 GB</p>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+      </div>
+      <div class="hrc">
+        <div class="hrc-rest">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-img"/></svg>
+          <span class="hrc-lbl" style="font-size:11px;font-weight:600;transition:color .15s">Covers</span>
+        </div>
+        <div class="hrc-expand">
+          <p style="font-size:9.5px;color:var(--muted)">3,000 · 24.8 GB</p>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+      </div>
+      <div class="hrc">
+        <div class="hrc-rest">
+          <svg class="ico" width="13" height="13" style="color:var(--amber)"><use href="#ico-file"/></svg>
+          <span class="hrc-lbl" style="font-size:11px;font-weight:600;transition:color .15s">Data</span>
+        </div>
+        <div class="hrc-expand">
+          <p style="font-size:9.5px;color:var(--muted)">1 · 12 MB</p>
+          <button class="blink" style="font-size:10px"><svg class="ico" width="9" height="9"><use href="#ico-dl"/></svg> Download</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+</body>
+</html>
